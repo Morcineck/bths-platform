@@ -61,17 +61,17 @@ Objetivo: definir o escopo inicial e documentar as principais decisões antes da
 
 Objetivo: preparar a base técnica da aplicação.
 
-* [ ] Criar projeto com Spring Boot
-* [ ] Configurar Java 17
-* [ ] Configurar Maven
-* [ ] Adicionar Spring Web
-* [ ] Adicionar Spring Data JPA
-* [ ] Adicionar Bean Validation
-* [ ] Adicionar MySQL Driver
-* [ ] Configurar conexão com MySQL
-* [ ] Definir estrutura inicial dos pacotes
-* [ ] Configurar variáveis de ambiente
-* [ ] Validar execução inicial da aplicação
+* [x] Criar projeto com Spring Boot
+* [x] Configurar Java 17
+* [x] Configurar Maven
+* [x] Adicionar Spring Web
+* [x] Adicionar Spring Data JPA
+* [x] Adicionar Bean Validation
+* [x] Adicionar MySQL Driver
+* [x] Configurar conexão com MySQL
+* [x] Definir estrutura inicial dos pacotes
+* [x] Configurar variáveis de ambiente
+* [x] Validar execução inicial da aplicação
 
 ---
 
