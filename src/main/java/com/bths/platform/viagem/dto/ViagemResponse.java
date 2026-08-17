@@ -9,7 +9,7 @@ public class ViagemResponse {
     private Long id;
     private String nome;
     private String evento;
-    private LocalDate dataIcinio;
+    private LocalDate dataInicio;
     private LocalDate dataFim;
     private String endereco;
     private String cidade;
@@ -40,12 +40,12 @@ public class ViagemResponse {
         this.evento = evento;
     }
 
-    public LocalDate getDataIcinio() {
-        return dataIcinio;
+    public LocalDate getDataInicio() {
+        return dataInicio;
     }
 
-    public void setDataIcinio(LocalDate dataIcinio) {
-        this.dataIcinio = dataIcinio;
+    public void setDataInicio(LocalDate dataInicio) {
+        this.dataInicio = dataInicio;
     }
 
     public LocalDate getDataFim() {
