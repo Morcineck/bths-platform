@@ -23,7 +23,7 @@ public class ViagemService {
     public ViagemResponse cadastrarViagem(ViagemRequest request) {
         if (request.getDataFim().isBefore(request.getDataInicio())) {
             throw new IllegalArgumentException(
-                    "A data final da viagem não pode ser anterior á data incial."
+                    "A data final da viagem não pode ser anterior à data inicial."
             );
         }
 
@@ -61,7 +61,7 @@ public class ViagemService {
                 );
         if (request.getDataFim().isBefore(request.getDataInicio())) {
             throw new IllegalArgumentException(
-                    "A data final da viagem não pode ser anteior á data incial."
+                    "A data final da viagem não pode ser anterior à data inicial."
             );
         }
 
