@@ -242,7 +242,7 @@ BTHS Platform
 
 A entidade central do sistema será a **Viagem**.
 
-Uma viagem representa uma experiência organizada pela empresa e poderá possuir diversos hóspedes, hospedagens, traslados e registros de check-in.
+Uma viagemNome representa uma experiência organizada pela empresa e poderá possuir diversos hóspedes, hospedagens, traslados e registros de check-in.
 
 A estrutura conceitual inicial será:
 
@@ -269,7 +269,7 @@ A estrutura conceitual inicial será:
 
 # 🏠 Hospedagem
 
-A hospedagem será responsável por representar o local onde os hóspedes ficarão durante a viagem.
+A hospedagem será responsável por representar o local onde os hóspedes ficarão durante a viagemNome.
 
 Ela poderá possuir:
 
@@ -303,7 +303,7 @@ Viagem
 
 # 🚐 Traslados
 
-Os traslados representarão os deslocamentos realizados durante a viagem.
+Os traslados representarão os deslocamentos realizados durante a viagemNome.
 
 Um traslado poderá possuir:
 
@@ -336,7 +336,7 @@ O check-in será utilizado para registrar a chegada do hóspede.
 O sistema deverá permitir identificar:
 
 * hóspede;
-* viagem;
+* viagemNome;
 * data e horário da chegada;
 * status do check-in.
 
@@ -404,7 +404,7 @@ src/
     │       └── bths/
     │           └── platform/
     │               │
-    │               ├── viagem/
+    │               ├── viagemNome/
     │               ├── hospede/
     │               ├── hospedagem/
     │               ├── reserva/
@@ -427,11 +427,11 @@ A estrutura poderá ser ajustada durante o desenvolvimento caso novas necessidad
 Um fluxo simples de utilização será:
 
 ```text
-1. Administrador cria uma viagem
+1. Administrador cria uma viagemNome
              ↓
 2. Hóspedes são cadastrados
              ↓
-3. Hóspedes são associados à viagem
+3. Hóspedes são associados à viagemNome
              ↓
 4. Hospedagem é configurada
              ↓

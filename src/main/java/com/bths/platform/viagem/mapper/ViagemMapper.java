@@ -1,4 +1,4 @@
-package com.bths.platform.mapper;
+package com.bths.platform.viagem.mapper;
 
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.dto.ViagemRequest;

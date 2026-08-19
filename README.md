@@ -2,13 +2,13 @@
 
 Plataforma de gestão operacional para viagens, hospedagens, traslados e recepção de hóspedes.
 
-O **BTHS Platform** nasceu a partir de uma necessidade real da operação da Beat Trips: centralizar informações importantes de uma viagem em um único sistema e facilitar tanto o trabalho da equipe quanto a experiência dos hóspedes.
+O **BTHS Platform** nasceu a partir de uma necessidade real da operação da Beat Trips: centralizar informações importantes de uma viagemNome em um único sistema e facilitar tanto o trabalho da equipe quanto a experiência dos hóspedes.
 
 ---
 
 ## 🎯 Objetivo
 
-O BTHS Platform tem como objetivo centralizar as principais informações operacionais de uma viagem em uma única plataforma.
+O BTHS Platform tem como objetivo centralizar as principais informações operacionais de uma viagemNome em uma única plataforma.
 
 A primeira versão permitirá que a equipe gerencie:
 
@@ -20,7 +20,7 @@ A primeira versão permitirá que a equipe gerencie:
 * 🚗 Veículos
 * 📍 Endereços e localização
 * ✅ Check-in dos hóspedes
-* 📊 Informações operacionais da viagem
+* 📊 Informações operacionais da viagemNome
 
 Para o hóspede, a plataforma deverá disponibilizar de forma simples todas as informações necessárias para sua experiência.
 
@@ -28,7 +28,7 @@ Para o hóspede, a plataforma deverá disponibilizar de forma simples todas as i
 
 ## 💡 Problema
 
-Durante a organização de uma viagem, informações importantes podem ficar distribuídas entre conversas de WhatsApp, planilhas, documentos e outros meios de comunicação.
+Durante a organização de uma viagemNome, informações importantes podem ficar distribuídas entre conversas de WhatsApp, planilhas, documentos e outros meios de comunicação.
 
 Isso pode gerar dificuldades como:
 
@@ -273,7 +273,7 @@ O projeto encontra-se em fase inicial de planejamento e desenvolvimento.
 
 ## 🎧 Contexto
 
-O BTHS Platform está sendo desenvolvido inicialmente para atender às necessidades operacionais da **Beat Trips**, empresa especializada em experiências de viagem relacionadas a grandes eventos e festivais de música eletrônica.
+O BTHS Platform está sendo desenvolvido inicialmente para atender às necessidades operacionais da **Beat Trips**, empresa especializada em experiências de viagemNome relacionadas a grandes eventos e festivais de música eletrônica.
 
 O sistema será utilizado como ferramenta para organizar e centralizar as operações relacionadas às viagens.
 
