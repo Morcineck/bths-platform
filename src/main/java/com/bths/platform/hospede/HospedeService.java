@@ -56,11 +56,11 @@ public class HospedeService {
         return hospedeMapper.paraResponse(hospedeSalvo);
     }
 
-    public HospedeResponse buscarHospede(Long id) {
+    public HospedeResponse buscarHospedePorId(Long id) {
 
         Hospede hospede = hospedeRepository.findById(id)
                 .orElseThrow(() -> new HospedeNaoEncontradoException(
-                                "Hóspede não  encontrado!"
+                                "Hóspede não encontrado!"
                         )
                 );
         return hospedeMapper.paraResponse(hospede);
