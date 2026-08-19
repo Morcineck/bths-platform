@@ -44,7 +44,7 @@ public class HospedeController {
             @PathVariable Long id
     ) {
         return ResponseEntity.ok(
-                hospedeService.buscarHospede(id)
+                hospedeService.buscarHospedePorId(id)
         );
     }
 
