@@ -1,7 +1,7 @@
 package com.bths.platform.viagem;
 
 import com.bths.platform.exception.ViagemNaoEncontradaException;
-import com.bths.platform.mapper.ViagemMapper;
+import com.bths.platform.viagem.mapper.ViagemMapper;
 import com.bths.platform.viagem.dto.ViagemRequest;
 import com.bths.platform.viagem.dto.ViagemResponse;
 import org.junit.jupiter.api.Test;

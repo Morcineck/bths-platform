@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -19,6 +20,38 @@ public class GlobalExceptionHandler {
                 "erro", "Not Found",
                 "mensagem", exception.getMessage()
         );;
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeJaCadastradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeJaCadastrado(
+            HospedeJaCadastradoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeNaoEncontrado(
+            HospedeNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(erro);
