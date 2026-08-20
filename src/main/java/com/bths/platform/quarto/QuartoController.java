@@ -15,7 +15,7 @@ public class QuartoController {
 
     private final QuartoService quartoService;
 
-    private QuartoController(QuartoService quartoService) {
+    public QuartoController(QuartoService quartoService) {
         this.quartoService = quartoService;
     }
 
