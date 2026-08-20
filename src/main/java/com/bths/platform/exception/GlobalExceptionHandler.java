@@ -57,4 +57,19 @@ public class GlobalExceptionHandler {
                 .body(erro);
     }
 
+    @ExceptionHandler(QuartoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarQuartoNaoEncontrado(
+            QuartoNaoEncontradoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
 }
