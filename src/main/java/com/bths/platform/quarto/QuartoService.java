@@ -71,13 +71,13 @@ public class QuartoService {
 
         Quarto quarto = quartoRepository.findById(id)
                 .orElseThrow(() -> new QuartoNaoEncontradoException(
-                                "Quarto não  encontrado!"
+                                "Quarto não encontrado!"
                         )
                 );
 
         Viagem viagem = viagemRepository.findById(request.getViagemId())
                 .orElseThrow(() -> new ViagemNaoEncontradaException(
-                                "Viagem não  encontrada!"
+                                "Viagem não encontrada!"
                         )
                 );
         quartoMapper.atualizarEntidade(quarto, request);
