@@ -16,7 +16,7 @@ public class AlocacaoQuartoController {
 
     private final AlocacaoService alocacaoService;
 
-    private AlocacaoQuartoController(AlocacaoService alocacaoService) {
+    public AlocacaoQuartoController(AlocacaoService alocacaoService) {
 
         this.alocacaoService = alocacaoService;
     }
@@ -53,7 +53,7 @@ public class AlocacaoQuartoController {
             @PathVariable Long quartoId) {
 
         return ResponseEntity.ok(
-                alocacaoService.listarAlocacaoPorQuarto(quartoId)
+                alocacaoService.listarAlocacoesPorQuarto(quartoId)
         );
     }
 
