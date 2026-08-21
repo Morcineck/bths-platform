@@ -2,6 +2,7 @@ package com.bths.platform.alocacao;
 
 import com.bths.platform.alocacao.dto.AlocacaoQuartoRequest;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
+import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
 import com.bths.platform.alocacao.mapper.AlocacaoQuartoMapper;
 import com.bths.platform.exception.*;
 import com.bths.platform.hospede.Hospede;
@@ -15,19 +16,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.bths.platform.exception.HospedeNaoEncontradoException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AlocacaoQuartoServiceTest {
@@ -1082,4 +1080,58 @@ class AlocacaoQuartoServiceTest {
         verify(alocacaoRepository, never())
                 .delete(any(AlocacaoQuarto.class));
     }
+
+    @Test
+    void deveBuscarOcupacaoDoQuartoComSucesso() {
+
+        Long quartoId = 2L;
+
+        Quarto quarto = new Quarto();
+        quarto.setId(quartoId);
+        quarto.setNome("Suíte 01");
+        quarto.setCapacidade(6);
+
+        when(quartoRepository.findById(quartoId))
+                .thenReturn(Optional.of(quarto));
+
+        when(alocacaoRepository.countByQuartoId(quartoId))
+                .thenReturn(4L);
+
+        OcupacaoQuartoResponse resultado =
+                alocacaoService.buscarOcupacaoPorQuarto(quartoId);
+
+        assertEquals(2L, resultado.getQuartoId());
+        assertEquals("Suíte 01", resultado.getQuartoNome());
+        assertEquals(6, resultado.getCapacidade());
+        assertEquals(4L, resultado.getOcupacao());
+        assertEquals(2L, resultado.getVagasDisponiveis());
+
+        verify(quartoRepository).findById(quartoId);
+        verify(alocacaoRepository).countByQuartoId(quartoId);
+    }
+
+    @Test
+    void deveLancarExcecaoAoBuscarOcupacaoDeQuartoInexistente() {
+
+        Long quartoId = 999L;
+
+        when(quartoRepository.findById(quartoId))
+                .thenReturn(Optional.empty());
+
+        QuartoNaoEncontradoException exception = assertThrows(
+                QuartoNaoEncontradoException.class,
+                () -> alocacaoService.buscarOcupacaoPorQuarto(quartoId)
+        );
+
+        assertEquals(
+                "Quarto não encontrado!",
+                exception.getMessage()
+        );
+
+        verify(quartoRepository).findById(quartoId);
+
+        verify(alocacaoRepository, never())
+                .countByQuartoId(anyLong());
+    }
+
 }

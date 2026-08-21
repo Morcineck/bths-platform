@@ -3,6 +3,7 @@ package com.bths.platform.alocacao;
 
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 
+import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
 import com.bths.platform.exception.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -691,5 +692,69 @@ class AlocacaoQuartoControllerTest {
 
         verify(alocacaoService)
                 .trocarQuarto(alocacaoId, novoQuartoId);
+    }
+
+    @Test
+    void deveBuscarOcupacaoDoQuartoComSucesso() throws Exception {
+
+        Long quartoId = 2L;
+
+        OcupacaoQuartoResponse response =
+                new OcupacaoQuartoResponse();
+
+        response.setQuartoId(quartoId);
+        response.setQuartoNome("Suíte 01");
+        response.setCapacidade(6);
+        response.setOcupacao(4L);
+        response.setVagasDisponiveis(2L);
+
+        when(alocacaoService.buscarOcupacaoPorQuarto(quartoId))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        get(
+                                "/api/alocacoes-quartos/quarto/{quartoId}/ocupacao",
+                                quartoId
+                        )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quartoId").value(2))
+                .andExpect(jsonPath("$.quartoNome").value("Suíte 01"))
+                .andExpect(jsonPath("$.capacidade").value(6))
+                .andExpect(jsonPath("$.ocupacao").value(4))
+                .andExpect(jsonPath("$.vagasDisponiveis").value(2));
+
+        verify(alocacaoService)
+                .buscarOcupacaoPorQuarto(quartoId);
+    }
+
+    @Test
+    void deveRetornar404AoBuscarOcupacaoDeQuartoInexistente() throws Exception {
+
+        Long quartoId = 999L;
+
+        when(alocacaoService.buscarOcupacaoPorQuarto(quartoId))
+                .thenThrow(
+                        new QuartoNaoEncontradoException(
+                                "Quarto não encontrado!"
+                        )
+                );
+
+        mockMvc.perform(
+                        get(
+                                "/api/alocacoes-quartos/quarto/{quartoId}/ocupacao",
+                                quartoId
+                        )
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.erro")
+                        .value("Not Found"))
+                .andExpect(jsonPath("$.mensagem")
+                        .value("Quarto não encontrado!"))
+                .andExpect(jsonPath("$.status")
+                        .value(404));
+
+        verify(alocacaoService)
+                .buscarOcupacaoPorQuarto(quartoId);
     }
 }
