@@ -2,7 +2,7 @@
 
 ## 📌 Objetivo
 
-Este documento apresenta o planejamento de desenvolvimento do **BTHS Platform**.
+Este cpf apresenta o planejamento de desenvolvimento do **BTHS Platform**.
 
 O roadmap está organizado em fases para permitir que a plataforma seja construída de forma progressiva, priorizando primeiro as funcionalidades essenciais da operação.
 
@@ -80,13 +80,13 @@ Objetivo: preparar a base técnica da aplicação.
 Objetivo: implementar o primeiro domínio principal da plataforma.
 
 * [ ] Criar entidade `Viagem`
-* [ ] Definir status da viagem
+* [ ] Definir status da viagemNome
 * [ ] Criar `ViagemRepository`
 * [ ] Criar `ViagemService`
 * [ ] Criar `ViagemController`
 * [ ] Criar DTO de entrada
 * [ ] Criar DTO de saída
-* [ ] Implementar cadastro de viagem
+* [ ] Implementar cadastro de viagemNome
 * [ ] Implementar listagem de viagens
 * [ ] Implementar consulta por ID
 * [ ] Implementar atualização
@@ -119,7 +119,7 @@ Objetivo: permitir o gerenciamento dos participantes das viagens.
 * [ ] Implementar listagem
 * [ ] Implementar consulta
 * [ ] Implementar atualização
-* [ ] Implementar validação de documento
+* [ ] Implementar validação de cpf
 * [ ] Evitar cadastros duplicados
 * [ ] Associar hóspedes às viagens
 
@@ -136,13 +136,13 @@ PUT  /api/hospedes/{id}
 
 # 🏠 Fase 4 — Hospedagem
 
-Objetivo: representar a estrutura física utilizada durante uma viagem.
+Objetivo: representar a estrutura física utilizada durante uma viagemNome.
 
 ## Hospedagem
 
 * [ ] Criar entidade `Hospedagem`
 * [ ] Criar endereço da hospedagem
-* [ ] Associar hospedagem à viagem
+* [ ] Associar hospedagem à viagemNome
 * [ ] Implementar cadastro
 * [ ] Implementar consulta
 * [ ] Implementar atualização
@@ -173,7 +173,7 @@ Objetivo: organizar a distribuição dos hóspedes dentro das hospedagens.
 
 * [ ] Criar entidade `Reserva`
 * [ ] Associar reserva ao hóspede
-* [ ] Associar reserva à viagem
+* [ ] Associar reserva à viagemNome
 * [ ] Associar reserva à hospedagem
 * [ ] Associar reserva ao quarto
 * [ ] Associar reserva à cama
@@ -216,7 +216,7 @@ Objetivo: gerenciar os transportes utilizados durante as viagens.
 * [ ] Definir horário
 * [ ] Associar motorista
 * [ ] Associar veículo
-* [ ] Associar traslado à viagem
+* [ ] Associar traslado à viagemNome
 * [ ] Associar hóspedes ao traslado
 * [ ] Implementar consulta dos passageiros
 * [ ] Validar capacidade do veículo
@@ -234,7 +234,7 @@ Objetivo: controlar a chegada dos hóspedes.
 * [ ] Criar entidade `CheckIn`
 * [ ] Criar status do check-in
 * [ ] Associar check-in ao hóspede
-* [ ] Associar check-in à viagem
+* [ ] Associar check-in à viagemNome
 * [ ] Registrar data e horário automaticamente
 * [ ] Implementar realização do check-in
 * [ ] Impedir check-in duplicado
@@ -271,7 +271,7 @@ Objetivo: proteger a plataforma e definir diferentes níveis de acesso.
 
 # 📊 Fase 9 — Dashboard e operação
 
-Objetivo: fornecer uma visão centralizada da operação da viagem.
+Objetivo: fornecer uma visão centralizada da operação da viagemNome.
 
 O dashboard deverá apresentar informações como:
 
@@ -338,7 +338,7 @@ Tecnologias inicialmente previstas:
 ## Área do hóspede
 
 * [ ] Login
-* [ ] Minha viagem
+* [ ] Minha viagemNome
 * [ ] Minha hospedagem
 * [ ] Meu quarto
 * [ ] Minha cama
@@ -423,7 +423,7 @@ Exemplos de branches:
 
 ```text
 feature/configuracao-spring
-feature/cadastro-viagem
+feature/cadastro-viagemNome
 feature/cadastro-hospede
 feature/hospedagem
 feature/reserva
