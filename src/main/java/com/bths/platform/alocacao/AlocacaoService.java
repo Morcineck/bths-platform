@@ -62,8 +62,8 @@ public class AlocacaoService {
         }
 
         if (quarto.getStatus() == StatusQuarto.INDISPONIVEL) {
-            throw new QuartoNaoEncontradoException(
-                    "Quarto indisponível para alocação"
+            throw new QuartoIndisponivelException(
+                    "Quarto indisponível para alocação!"
             );
         }
 
@@ -123,7 +123,7 @@ public class AlocacaoService {
                 .toList();
     }
 
-    public List<AlocacaoQuartoResponse> listarAlocacaoPorQuarto(
+    public List<AlocacaoQuartoResponse> listarAlocacoesPorQuarto(
             Long quartoId
     ) {
 
@@ -159,13 +159,13 @@ public class AlocacaoService {
 
         if (!alocacao.getViagem().getId().equals(novoQuarto.getViagem().getId())) {
             throw new ViagemIncompativelException(
-                    "Hóspede e quarto pertencem a viagem diferentes!"
+                    "Hóspede e quarto pertencem a viagens diferentes!"
             );
         }
 
         if (novoQuarto.getStatus() == StatusQuarto.INDISPONIVEL) {
             throw new QuartoIndisponivelException(
-                    "Quarto indispinível para alocação!"
+                    "Quarto indisponível para alocação!"
             );
         }
 
@@ -181,7 +181,7 @@ public class AlocacaoService {
 
         AlocacaoQuarto alocacaoAtualizada = alocacaoRepository.save(alocacao);
 
-        return alocacaoMapper.paraResponse(alocacao);
+        return alocacaoMapper.paraResponse(alocacaoAtualizada);
     }
 
     public void removerAlocacao(Long id) {
