@@ -2,6 +2,7 @@ package com.bths.platform.alocacao;
 
 import com.bths.platform.alocacao.dto.AlocacaoQuartoRequest;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
+import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
 import com.bths.platform.alocacao.mapper.AlocacaoQuartoMapper;
 import com.bths.platform.exception.*;
 import com.bths.platform.hospede.Hospede;
@@ -193,5 +194,29 @@ public class AlocacaoService {
                 ));
 
         alocacaoRepository.delete(alocacao);
+    }
+
+    public OcupacaoQuartoResponse buscarOcupacaoPorQuarto(
+            Long quartoId
+    ) {
+
+        Quarto quarto = quartoRepository.findById(quartoId)
+                .orElseThrow(() -> new QuartoNaoEncontradoException(
+                        "Quarto não encontrado!"
+                ));
+
+        Long ocupacao = alocacaoRepository.countByQuartoId(quartoId);
+
+        Long vagasDiponiveis = quarto.getCapacidade() - ocupacao;
+
+        OcupacaoQuartoResponse response = new OcupacaoQuartoResponse();
+
+        response.setQuartoId(quarto.getId());
+        response.setQuartoNome(quarto.getNome());
+        response.setCapacidade(quarto.getCapacidade());
+        response.setOcupacao(ocupacao);
+        response.setVagasDisponiveis(vagasDiponiveis);
+
+        return response;
     }
 }

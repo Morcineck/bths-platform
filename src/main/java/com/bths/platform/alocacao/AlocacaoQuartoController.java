@@ -2,6 +2,7 @@ package com.bths.platform.alocacao;
 
 import com.bths.platform.alocacao.dto.AlocacaoQuartoRequest;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
+import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
 import com.bths.platform.alocacao.dto.TrocarQuartoRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -75,6 +76,16 @@ public class AlocacaoQuartoController {
 
         alocacaoService.removerAlocacao(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/quarto/{quartoId}/ocupacao")
+    public ResponseEntity<OcupacaoQuartoResponse> buscarOcupacaoPorQuarto(
+            @PathVariable Long quartoId
+    ) {
+
+        return ResponseEntity.ok(
+                alocacaoService.buscarOcupacaoPorQuarto(quartoId)
+        );
     }
 
 }
