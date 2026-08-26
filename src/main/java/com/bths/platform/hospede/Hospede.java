@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "hospedes", uniqueConstraints = {
         @UniqueConstraint(name = "uk_hospede_cpf_viagem",
-        columnNames = {"cpf", "viagem_id"})})
+                columnNames = {"cpf", "viagem_id"})})
 public class Hospede {
 
 
@@ -35,6 +35,12 @@ public class Hospede {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusCheckIn statusCheckIn;
+
+    private LocalDateTime dataHoraCheckIn;
+
+    private String responsavelCheckIn;
+
+    private String observacaoCheckIn;
 
     @ManyToOne
     @JoinColumn(name = "viagem_id", nullable = false)
@@ -104,15 +110,35 @@ public class Hospede {
         this.statusCheckIn = statusCheckIn;
     }
 
+    public LocalDateTime getDataHoraCheckIn() {
+        return dataHoraCheckIn;
+    }
+
+    public void setDataHoraCheckIn(LocalDateTime dataHoraCheckIn) {
+        this.dataHoraCheckIn = dataHoraCheckIn;
+    }
+
+    public String getResponsavelCheckIn() {
+        return responsavelCheckIn;
+    }
+
+    public void setResponsavelCheckIn(String responsavelCheckIn) {
+        this.responsavelCheckIn = responsavelCheckIn;
+    }
+
+    public String getObservacaoCheckIn() {
+        return observacaoCheckIn;
+    }
+
+    public void setObservacaoCheckIn(String observacaoCheckIn) {
+        this.observacaoCheckIn = observacaoCheckIn;
+    }
+
     public Viagem getViagem() {
         return viagem;
     }
 
     public void setViagem(Viagem viagem) {
         this.viagem = viagem;
-    }
-
-    public Hospede() {
-
     }
 }

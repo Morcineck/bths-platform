@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
                 "status", HttpStatus.NOT_FOUND.value(),
                 "erro", "Not Found",
                 "mensagem", exception.getMessage()
-        );;
+        );
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(erro);
@@ -148,4 +148,37 @@ public ResponseEntity<Map<String, Object>> tratarQuartoIndisponivel(
                 .status(HttpStatus.CONFLICT)
                 .body(erro);
     }
+
+    @ExceptionHandler(HospedeSemAlocacaoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeSemAlocacao(
+            HospedeSemAlocacaoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(CheckInJaRealizadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarCheckInJaRealizado(
+            CheckInJaRealizadoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
 }
