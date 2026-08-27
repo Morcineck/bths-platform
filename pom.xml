@@ -74,6 +74,18 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Geração e processamento de QR Code -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.5.4</version>
+		</dependency>
 	</dependencies>
 
 	<build>

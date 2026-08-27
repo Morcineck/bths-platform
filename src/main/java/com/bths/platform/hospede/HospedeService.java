@@ -3,6 +3,7 @@ package com.bths.platform.hospede;
 import com.bths.platform.hospede.dto.HospedeRequest;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import com.bths.platform.hospede.mapper.HospedeMapper;
+import com.bths.platform.qrcode.mapper.QrCodeMapper;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import org.springframework.stereotype.Service;
@@ -11,13 +12,14 @@ import com.bths.platform.exception.HospedeJaCadastradoException;
 import com.bths.platform.exception.HospedeNaoEncontradoException;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class HospedeService {
 
     private final HospedeRepository hospedeRepository;
     private final ViagemRepository viagemRepository;
-    private HospedeMapper hospedeMapper;
+    private final HospedeMapper hospedeMapper;
 
     public HospedeService(
             HospedeRepository hospedeRepository,
@@ -27,6 +29,7 @@ public class HospedeService {
         this.hospedeRepository = hospedeRepository;
         this.viagemRepository = viagemRepository;
         this.hospedeMapper = hospedeMapper;
+
 
 
     }
@@ -51,7 +54,12 @@ public class HospedeService {
 
         hospede.setViagem(viagem);
 
-        Hospede hospedeSalvo = hospedeRepository.save(hospede);
+        hospede.setCodigoCheckIn(
+                UUID.randomUUID().toString()
+        );
+
+        Hospede hospedeSalvo =
+                hospedeRepository.save(hospede);
 
         return hospedeMapper.paraResponse(hospedeSalvo);
     }
