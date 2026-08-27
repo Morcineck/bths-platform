@@ -42,6 +42,9 @@ public class Hospede {
 
     private String observacaoCheckIn;
 
+    @Column(name = "codigo_check_in", unique = true)
+    private String codigoCheckIn;
+
     @ManyToOne
     @JoinColumn(name = "viagem_id", nullable = false)
     private Viagem viagem;
@@ -140,5 +143,13 @@ public class Hospede {
 
     public void setViagem(Viagem viagem) {
         this.viagem = viagem;
+    }
+
+    public String getCodigoCheckIn() {
+        return codigoCheckIn;
+    }
+
+    public void setCodigoCheckIn(String codigoCheckIn) {
+        this.codigoCheckIn = codigoCheckIn;
     }
 }
