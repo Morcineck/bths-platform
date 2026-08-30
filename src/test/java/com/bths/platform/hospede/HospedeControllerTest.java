@@ -3,6 +3,7 @@ package com.bths.platform.hospede;
 import com.bths.platform.exception.HospedeJaCadastradoException;
 import com.bths.platform.exception.HospedeNaoEncontradoException;
 import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

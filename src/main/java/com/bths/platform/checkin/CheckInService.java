@@ -10,7 +10,7 @@ import com.bths.platform.exception.HospedeNaoEncontradoException;
 import com.bths.platform.exception.HospedeSemAlocacaoException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
-import com.bths.platform.hospede.StatusCheckIn;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

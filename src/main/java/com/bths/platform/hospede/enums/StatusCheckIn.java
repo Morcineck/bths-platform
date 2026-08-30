@@ -1,4 +1,4 @@
-package com.bths.platform.hospede;
+package com.bths.platform.hospede.enums;
 
 public enum StatusCheckIn {
 

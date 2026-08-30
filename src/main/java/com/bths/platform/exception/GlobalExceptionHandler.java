@@ -181,4 +181,68 @@ public ResponseEntity<Map<String, Object>> tratarQuartoIndisponivel(
                 .body(erro);
     }
 
+    @ExceptionHandler(AeroportoObrigatorioException.class)
+    public ResponseEntity<Map<String, Object>> tratarAeroportoObrigatorio(
+            AeroportoObrigatorioException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Bad Request");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
+    @ExceptionHandler(TrasladoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarTrasladoNaoEncontrado(
+            TrasladoNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(TransicaoStatusTrasladoInvalidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarTransicaoStatusTrasladoInvalida(
+            TransicaoStatusTrasladoInvalidaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MotivoCorrecaoObrigatorioException.class)
+    public ResponseEntity<Map<String, Object>> tratarMotivoCorrecaoObrigatorio(
+            MotivoCorrecaoObrigatorioException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Bad Request");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
 }

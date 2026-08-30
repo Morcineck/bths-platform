@@ -3,6 +3,8 @@ package com.bths.platform.quarto;
 import com.bths.platform.exception.QuartoNaoEncontradoException;
 import com.bths.platform.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoResponse;
+import com.bths.platform.quarto.enums.StatusQuarto;
+import com.bths.platform.quarto.enums.TipoQuarto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

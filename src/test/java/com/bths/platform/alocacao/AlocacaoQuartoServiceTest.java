@@ -9,7 +9,7 @@ import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.quarto.Quarto;
 import com.bths.platform.quarto.QuartoRepository;
-import com.bths.platform.quarto.StatusQuarto;
+import com.bths.platform.quarto.enums.StatusQuarto;
 import com.bths.platform.viagem.Viagem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

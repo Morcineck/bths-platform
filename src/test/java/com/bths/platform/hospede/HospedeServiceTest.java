@@ -5,6 +5,7 @@ import com.bths.platform.exception.HospedeNaoEncontradoException;
 import com.bths.platform.exception.ViagemNaoEncontradaException;
 import com.bths.platform.hospede.dto.HospedeRequest;
 import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.hospede.mapper.HospedeMapper;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
