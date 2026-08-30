@@ -10,7 +10,7 @@ import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.quarto.Quarto;
 import com.bths.platform.quarto.QuartoRepository;
 import org.springframework.stereotype.Service;
-import com.bths.platform.quarto.StatusQuarto;
+import com.bths.platform.quarto.enums.StatusQuarto;
 
 import java.util.List;
 

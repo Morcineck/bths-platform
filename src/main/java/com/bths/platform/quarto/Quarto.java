@@ -1,5 +1,7 @@
 package com.bths.platform.quarto;
 
+import com.bths.platform.quarto.enums.StatusQuarto;
+import com.bths.platform.quarto.enums.TipoQuarto;
 import com.bths.platform.viagem.Viagem;
 import jakarta.persistence.*;
 

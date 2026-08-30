@@ -1,4 +1,4 @@
-package com.bths.platform.viagem;
+package com.bths.platform.viagem.enums;
 
 public enum StatusViagem {
 

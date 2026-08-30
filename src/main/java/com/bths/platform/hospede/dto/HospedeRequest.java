@@ -1,6 +1,6 @@
 package com.bths.platform.hospede.dto;
 
-import com.bths.platform.hospede.StatusCheckIn;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

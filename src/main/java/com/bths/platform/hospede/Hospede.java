@@ -1,5 +1,6 @@
 package com.bths.platform.hospede;
 
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.viagem.Viagem;
 import jakarta.persistence.*;
 

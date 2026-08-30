@@ -1,6 +1,6 @@
 package com.bths.platform.viagem.dto;
 
-import com.bths.platform.viagem.StatusViagem;
+import com.bths.platform.viagem.enums.StatusViagem;
 
 import java.time.LocalDate;
 
