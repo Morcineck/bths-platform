@@ -6,27 +6,27 @@ O **BTHS Platform** nasceu a partir de uma necessidade real da operação da Bea
 
 ---
 
-## 🎯 Objetivo
+## Objetivo
 
 O BTHS Platform tem como objetivo centralizar as principais informações operacionais de uma viagemNome em uma única plataforma.
 
 A primeira versão permitirá que a equipe gerencie:
 
-* 👤 Hóspedes
-* 🏠 Hospedagens
-* 🛏️ Quartos e camas
-* 🚐 Traslados
-* 👨‍✈️ Motoristas
-* 🚗 Veículos
-* 📍 Endereços e localização
-* ✅ Check-in dos hóspedes
-* 📊 Informações operacionais da viagemNome
+*  Hóspedes
+*  Hospedagens
+*  Quartos e camas
+*  Traslados
+*  Motoristas
+*  Veículos
+*  Endereços e localização
+*  Check-in dos hóspedes
+*  Informações operacionais da viagemNome
 
 Para o hóspede, a plataforma deverá disponibilizar de forma simples todas as informações necessárias para sua experiência.
 
 ---
 
-## 💡 Problema
+## Problema
 
 Durante a organização de uma viagemNome, informações importantes podem ficar distribuídas entre conversas de WhatsApp, planilhas, documentos e outros meios de comunicação.
 
@@ -45,9 +45,9 @@ O BTHS Platform busca centralizar essas informações e tornar a operação mais
 
 ---
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
-### 👤 Hóspedes
+### Hóspedes
 
 * Cadastro de hóspedes
 * Consulta de hóspedes
@@ -65,7 +65,7 @@ O BTHS Platform busca centralizar essas informações e tornar a operação mais
 * Capacidade dos quartos
 * Divisão dos hóspedes
 
-### 🚐 Traslados
+### Traslados
 
 * Cadastro de motoristas
 * Cadastro de veículos
@@ -74,17 +74,17 @@ O BTHS Platform busca centralizar essas informações e tornar a operação mais
 * Informações do motorista
 * Status do traslado
 
-### 📍 Localização
+### Localização
 
 O hóspede poderá visualizar o endereço da hospedagem e acessar serviços externos de mapas para facilitar sua chegada.
 
-### ✅ Check-in
+### Check-in
 
 A equipe poderá registrar a chegada dos hóspedes e acompanhar a quantidade de pessoas que já chegaram à hospedagem.
 
 ---
 
-## 🧩 Arquitetura
+## Arquitetura
 
 A primeira versão da plataforma será desenvolvida utilizando uma arquitetura baseada em API REST.
 
@@ -255,7 +255,7 @@ A documentação técnica e funcional do projeto está organizada no diretório 
 
 ---
 
-## 🔐 Segurança
+## Segurança
 
 Informações sensíveis não devem ser armazenadas diretamente no código-fonte.
 
@@ -263,15 +263,15 @@ Credenciais, chaves de API, tokens e configurações privadas deverão utilizar 
 
 ---
 
-## 📌 Status
+## Status
 
-🚧 **Em desenvolvimento**
+**Em desenvolvimento**
 
 O projeto encontra-se em fase inicial de planejamento e desenvolvimento.
 
 ---
 
-## 🎧 Contexto
+## Contexto
 
 O BTHS Platform está sendo desenvolvido inicialmente para atender às necessidades operacionais da **Beat Trips**, empresa especializada em experiências de viagemNome relacionadas a grandes eventos e festivais de música eletrônica.
 
@@ -279,7 +279,7 @@ O sistema será utilizado como ferramenta para organizar e centralizar as opera�
 
 ---
 
-## 👨‍💻 Desenvolvimento
+## Desenvolvimento
 
 Projeto desenvolvido com foco na aplicação prática de conhecimentos em:
 
@@ -295,7 +295,7 @@ Projeto desenvolvido com foco na aplicação prática de conhecimentos em:
 
 ---
 
-## 📄 Licença
+## Licença
 
 Este projeto encontra-se em desenvolvimento e sua licença será definida posteriormente.
 
