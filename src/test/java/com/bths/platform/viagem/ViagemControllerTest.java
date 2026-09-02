@@ -21,8 +21,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import com.bths.platform.security.JwtAuthenticationFilter;
+import com.bths.platform.security.JwtService;
+import com.bths.platform.security.UsuarioDetailsService;
 
 @WebMvcTest(ViagemController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ViagemControllerTest {
 
     @Autowired
@@ -30,6 +35,12 @@ class ViagemControllerTest {
 
     @MockitoBean
     private ViagemService viagemService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UsuarioDetailsService usuarioDetailsService;
 
 
     @Test

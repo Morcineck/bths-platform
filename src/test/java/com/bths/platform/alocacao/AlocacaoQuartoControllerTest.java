@@ -5,8 +5,11 @@ import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 
 import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
 import com.bths.platform.exception.*;
+import com.bths.platform.security.JwtService;
+import com.bths.platform.security.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -25,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.mockito.Mockito.never;
 
 @WebMvcTest(AlocacaoQuartoController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AlocacaoQuartoControllerTest {
 
     @Autowired
@@ -35,6 +39,12 @@ class AlocacaoQuartoControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UsuarioDetailsService usuarioDetailsService;
 
     @Test
     void deveAlocarHospedeComSucesso() throws Exception {

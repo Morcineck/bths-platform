@@ -8,7 +8,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/traslados")
+@RequestMapping("/api/traslados")
 public class TrasladoController {
 
     private final TrasladoService trasladoService;
