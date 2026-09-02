@@ -13,13 +13,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ViagemNaoEncontradaException.class)
     public ResponseEntity<Map<String, Object>> tratarViagemNaoEncontrada(
-            ViagemNaoEncontradaException exception) {
+            ViagemNaoEncontradaException exception
+    ) {
 
-        Map<String, Object> erro = Map.of(
-                "status", HttpStatus.NOT_FOUND.value(),
-                "erro", "Not Found",
-                "mensagem", exception.getMessage()
-        );
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(erro);
@@ -119,7 +121,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ViagemIncompativelException.class)
-    public ResponseEntity<Map<String, Object>> tratarViagemNaoEncontrada (
+    public ResponseEntity<Map<String, Object>> tratarViagemIncompativel(
             ViagemIncompativelException exception
     ) {
         Map<String, Object> erro = new HashMap<>();
@@ -134,8 +136,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(QuartoIndisponivelException.class)
-public ResponseEntity<Map<String, Object>> tratarQuartoIndisponivel(
-        QuartoIndisponivelException exception
+    public ResponseEntity<Map<String, Object>> tratarQuartoIndisponivel(
+            QuartoIndisponivelException exception
     ) {
 
         Map<String, Object> erro = new HashMap<>();
@@ -242,6 +244,54 @@ public ResponseEntity<Map<String, Object>> tratarQuartoIndisponivel(
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
+    @ExceptionHandler(EmailUsuarioJaCadastradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarEmailUsuarioJaCadastrado(
+            EmailUsuarioJaCadastradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<Map<String, Object>> tratarCredenciaisInvalidas(
+            CredenciaisInvalidasException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Unauthorized");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.UNAUTHORIZED.value());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(erro);
+    }
+
+    @ExceptionHandler(UsuarioNaoEncontradoException.class)
+    public  ResponseEntity<Map<String, Object>> tratarUsuarioNaoEncontrado(
+            UsuarioNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(erro);
     }
 
