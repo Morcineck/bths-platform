@@ -58,8 +58,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/viagens/**",
                                 "/api/hospedes/**",
-                                "/api/quartos**",
-                                "/api/alocacoes-quartos**",
+                                "/api/quartos/**",
+                                "/api/alocacoes-quartos/**",
                                 "/api/traslados/**",
                                 "/api/check-in/qr/**"
 
@@ -67,7 +67,7 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "STAFF")
 
                         .anyRequest()
-                        .permitAll()
+                        .authenticated()
                 )
 
                 .addFilterBefore(

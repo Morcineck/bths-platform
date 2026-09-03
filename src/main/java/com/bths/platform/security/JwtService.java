@@ -1,5 +1,6 @@
 package com.bths.platform.security;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,10 +45,18 @@ public class JwtService {
     }
 
     public boolean tokenValido(String token, UserDetails usuario) {
-        String email = extrairEmail(token);
 
-        return email.equals(usuario.getUsername())
-                && !tokenExpirado(token);
+        try {
+
+            String email = extrairEmail(token);
+
+            return email.equals(usuario.getUsername())
+                    && !tokenExpirado(token);
+
+        } catch (JwtException exception) {
+
+            return false;
+        }
     }
 
     private boolean tokenExpirado(String token) {
