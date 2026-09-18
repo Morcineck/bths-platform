@@ -1,6 +1,7 @@
 package com.bths.platform.traslado;
 
 import com.bths.platform.traslado.dto.*;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class TrasladoController {
 
     @PostMapping
     public ResponseEntity<TrasladoResponse> cadastrarTraslado(
-            @RequestBody TrasladoRequest request
+          @Valid @RequestBody TrasladoRequest request
     ) {
 
         TrasladoResponse response =
@@ -69,7 +70,7 @@ public class TrasladoController {
     @PutMapping("/{id}")
     public ResponseEntity<TrasladoResponse> atualizarTraslado(
             @PathVariable Long id,
-            @RequestBody TrasladoUpdateRequest request
+           @Valid @RequestBody TrasladoUpdateRequest request
     ) {
 
         TrasladoResponse response = trasladoService.atualizarTraslado(id, request);
@@ -80,7 +81,7 @@ public class TrasladoController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<TrasladoResponse> atualizarStatusTraslado(
             @PathVariable Long id,
-            @RequestBody TrasladoStatusRequest request
+           @Valid @RequestBody TrasladoStatusRequest request
     ) {
 
         TrasladoResponse response =
@@ -92,7 +93,7 @@ public class TrasladoController {
     @PatchMapping("/{id}/corrigir-status")
     public  ResponseEntity<TrasladoResponse> corrigirStatusTraslado(
             @PathVariable Long id,
-            @RequestBody TrasladoCorrecaoStatusRequest request
+           @Valid @RequestBody TrasladoCorrecaoStatusRequest request
 
     ) {
 

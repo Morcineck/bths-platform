@@ -115,7 +115,7 @@ Objetivo: permitir o gerenciamento dos participantes das viagens.
 
 ---
 
-# 🏠 Fase 4 — Hospedagem operacional
+# ✅ Fase 4 — Hospedagem operacional — V1
 
 Objetivo: representar a estrutura física utilizada durante uma viagem.
 
@@ -211,7 +211,7 @@ CANCELADO
 
 # ✅ Fase 7 — Check-in e QR Code — V1
 
-Objetivo: controlar a chegada dos hóspedes e agilizar sua identificação na operação.
+Objetivo: controlar a chegada dos hóspedes e agilizar identificação na operação.
 
 ## Check-in
 
@@ -237,43 +237,43 @@ Objetivo: controlar a chegada dos hóspedes e agilizar sua identificação na op
 
 ---
 
-# 🔐 Fase 8 — Segurança e usuários — PRÓXIMA
+# ✅ Fase 8 — Segurança e usuários
 
 Objetivo: proteger a plataforma e definir diferentes níveis de acesso.
 
-* [ ] Criar entidade `Usuario`
-* [ ] Criar persistência e DTOs de usuário
-* [ ] Implementar armazenamento seguro de senhas
-* [ ] Configurar Spring Security
-* [ ] Implementar autenticação
-* [ ] Implementar login
-* [ ] Implementar JWT
-* [ ] Implementar autorização
-* [ ] Criar perfil `ADMIN`
-* [ ] Criar perfil `STAFF`
-* [ ] Criar perfil `HOSPEDE`
-* [ ] Definir permissões por perfil
-* [ ] Proteger endpoints
-* [ ] Criar testes automatizados de autenticação e autorização
+* [x] Criar entidade `Usuario`
+* [x] Criar persistência e DTOs de usuário
+* [x] Implementar armazenamento seguro de senhas
+* [x] Configurar Spring Security
+* [x] Implementar autenticação
+* [x] Implementar login
+* [x] Implementar JWT
+* [x] Implementar autorização
+* [x] Criar perfil `ADMIN`
+* [x] Criar perfil `STAFF`
+* [x] Criar perfil `HOSPEDE`
+* [x] Definir permissões por perfil
+* [x] Proteger endpoints
+* [x] Criar testes automatizados de autenticação e autorização
 
 ---
 
-# 📊 Fase 9 — Dashboard e operação
+# ✅ Fase 9 — Dashboard e operação — V1
 
 Objetivo: fornecer uma visão centralizada da operação da viagem.
 
 O dashboard deverá apresentar informações como:
 
-* [ ] Total de hóspedes
-* [ ] Hóspedes que chegaram
-* [ ] Hóspedes pendentes
-* [ ] Taxa de check-in
-* [ ] Ocupação dos quartos
-* [ ] Vagas disponíveis
-* [ ] Traslados aguardando
-* [ ] Traslados em andamento
-* [ ] Traslados concluídos
-* [ ] Próximos traslados
+* [x] Total de hóspedes
+* [x] Hóspedes que chegaram
+* [x] Hóspedes pendentes
+* [x] Taxa de check-in
+* [x] Ocupação dos quartos
+* [x] Vagas disponíveis
+* [x] Traslados aguardando
+* [x] Traslados em andamento
+* [x] Traslados concluídos
+* [x] Próximos traslados
 
 Exemplo:
 
@@ -344,7 +344,7 @@ Objetivo: aumentar a confiabilidade da plataforma e preparar o ambiente de execu
 * [x] Criar testes de Service para os módulos implementados
 * [x] Criar testes de Controller para os módulos implementados
 * [x] Criar testes das principais regras de negócio
-* [ ] Criar testes de Repository quando houver necessidade real
+* [x] Criar testes de Repository quando houver necessidade real
 * [ ] Expandir testes de integração
 
 ## Documentação da API
@@ -411,28 +411,28 @@ Integração
 
 # 📌 Status atual
 
-| Fase | Status                          |
-| --- |---------------------------------|
-| Fase 0 — Planejamento | ✅ Concluída                     |
-| Fase 1 — Fundação Backend | ✅ Concluída                     |
-| Fase 2 — Viagens | ✅ Concluída                     |
-| Fase 3 — Hóspedes | ✅ Concluída                     |
-| Fase 4 — Hospedagem operacional | 🟡 Parcial — Quartos concluídos |
-| Fase 5 — Alocação e Ocupação | ✅ Concluída                     |
-| Fase 6 — Traslados | ✅ V1 concluída                  |
-| Fase 7 — Check-in e QR Code | ✅ V1 concluída                  |
-| Fase 8 — Segurança e Usuários | ✅                               |
-| Fase 9 — Dashboard | ⏳ Próxima                        |
-| Fase 10 — Frontend | ⏳ Planejada                     |
-| Fase 11 — Testes e Infraestrutura | 🔄 Em evolução                  |
-| Fase 12 — Evolução | 💡 Futuro                       |
+| Fase | Status        |
+| --- |---------------|
+| Fase 0 — Planejamento | ✅ Concluída   |
+| Fase 1 — Fundação Backend | ✅ Concluída   |
+| Fase 2 — Viagens | ✅ Concluída   |
+| Fase 3 — Hóspedes | ✅ Concluída   |
+| Fase 4 — Hospedagem operacional | ✅ V1 concluída |
+| Fase 5 — Alocação e Ocupação | ✅ Concluída   |
+| Fase 6 — Traslados | ✅ V1 concluída |
+| Fase 7 — Check-in e QR Code | ✅ V1 concluída |
+| Fase 8 — Segurança e Usuários | ✅ V1 concluída |
+| Fase 9 — Dashboard | ✅ V1 concluída |
+| Fase 10 — Frontend | ⏳ Próxima     |
+| Fase 11 — Testes e Infraestrutura | 🔄 Em evolução |
+| Fase 12 — Evolução | 💡 Futuro     |
 
 ---
 
 ## 🎯 Próximo marco
 
-Com os principais domínios operacionais da primeira etapa implementados, o próximo objetivo é:
+Com os principais domínios operacionais do backend, a segurança e o Dashboard V1 implementados, o próximo objetivo é:
 
-> **Implementar Segurança e Usuários, adicionando autenticação, autorização e proteção dos endpoints do BTHS Platform.**
+> **Iniciar o desenvolvimento do frontend do BTHS Platform, integrando as interfaces operacionais à API já existente.**
 
-Após essa fundação de segurança, o projeto poderá avançar para o dashboard operacional e para o frontend com uma API protegida e preparada para diferentes perfis de acesso.
+A próxima etapa deverá começar pela estrutura base do frontend, autenticação e acesso ao dashboard operacional, evoluindo progressivamente para os demais módulos da plataforma.
