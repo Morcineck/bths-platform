@@ -73,7 +73,7 @@ public class TrasladoService {
         traslado.setTipo(request.getTipo());
         traslado.setAeroporto(request.getAeroporto());
         traslado.setStatus(StatusTraslado.AGUARDANDO);
-        traslado.setDataHoraPrvista(request.getDataHoraPrevista());
+        traslado.setDataHoraPrevista(request.getDataHoraPrevista());
         traslado.setNumeroVoo(request.getNumeroVoo());
         traslado.setCompanhiaAerea(request.getCompanhiaAerea());
         traslado.setLocalOrigem(request.getLocalOrigem());
@@ -149,7 +149,7 @@ public class TrasladoService {
 
         traslado.setTipo(request.getTipo());
         traslado.setAeroporto(request.getAeroporto());
-        traslado.setDataHoraPrvista(request.getDataHoraPrevista());
+        traslado.setDataHoraPrevista(request.getDataHoraPrevista());
         traslado.setNumeroVoo(request.getNumeroVoo());
         traslado.setCompanhiaAerea(request.getCompanhiaAerea());
         traslado.setLocalOrigem(request.getLocalOrigem());

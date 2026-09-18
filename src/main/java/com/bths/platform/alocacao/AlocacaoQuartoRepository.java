@@ -9,6 +9,8 @@ public interface AlocacaoQuartoRepository extends JpaRepository<AlocacaoQuarto, 
 
     long countByQuartoId(Long quartoId);
 
+    long countByViagemId(Long viagemId);
+
     boolean existsByHospedeIdAndViagemId(Long hospedeId, Long viagemId);
 
     List<AlocacaoQuarto> findByQuartoId(Long quartoId);

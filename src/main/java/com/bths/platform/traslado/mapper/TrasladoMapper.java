@@ -23,7 +23,7 @@ public class TrasladoMapper {
         response.setAeroporto(traslado.getAeroporto());
         response.setStatus(traslado.getStatus());
 
-        response.setDataHoraPrevista(traslado.getDataHoraPrvista());
+        response.setDataHoraPrevista(traslado.getDataHoraPrevista());
 
         response.setNumeroVoo(traslado.getNumeroVoo());
         response.setCompanhiaAerea(traslado.getCompanhiaAerea());
