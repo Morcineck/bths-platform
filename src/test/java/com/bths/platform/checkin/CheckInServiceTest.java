@@ -10,7 +10,7 @@ import com.bths.platform.exception.HospedeNaoEncontradoException;
 import com.bths.platform.exception.HospedeSemAlocacaoException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
-import com.bths.platform.hospede.StatusCheckIn;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.quarto.Quarto;
 import com.bths.platform.viagem.Viagem;
 import org.junit.jupiter.api.BeforeEach;

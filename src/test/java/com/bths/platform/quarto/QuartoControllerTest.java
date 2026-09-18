@@ -3,8 +3,13 @@ package com.bths.platform.quarto;
 import com.bths.platform.exception.QuartoNaoEncontradoException;
 import com.bths.platform.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoResponse;
+import com.bths.platform.quarto.enums.StatusQuarto;
+import com.bths.platform.quarto.enums.TipoQuarto;
+import com.bths.platform.security.JwtService;
+import com.bths.platform.security.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(QuartoController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class QuartoControllerTest {
 
     @Autowired
@@ -32,6 +38,12 @@ class QuartoControllerTest {
 
     @MockitoBean
     private QuartoService quartoService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UsuarioDetailsService usuarioDetailsService;
 
 
     @Test

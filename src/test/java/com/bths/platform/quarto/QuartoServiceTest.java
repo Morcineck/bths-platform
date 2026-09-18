@@ -4,6 +4,8 @@ import com.bths.platform.exception.QuartoNaoEncontradoException;
 import com.bths.platform.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoRequest;
 import com.bths.platform.quarto.dto.QuartoResponse;
+import com.bths.platform.quarto.enums.StatusQuarto;
+import com.bths.platform.quarto.enums.TipoQuarto;
 import com.bths.platform.quarto.mapper.QuartoMapper;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;

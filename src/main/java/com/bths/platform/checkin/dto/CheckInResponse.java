@@ -1,6 +1,6 @@
 package com.bths.platform.checkin.dto;
 
-import com.bths.platform.hospede.StatusCheckIn;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 
 import java.time.LocalDateTime;
 

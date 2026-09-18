@@ -1,5 +1,6 @@
 package com.bths.platform.viagem;
 
+import com.bths.platform.viagem.enums.StatusViagem;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

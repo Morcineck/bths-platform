@@ -3,8 +3,12 @@ package com.bths.platform.hospede;
 import com.bths.platform.exception.HospedeJaCadastradoException;
 import com.bths.platform.exception.HospedeNaoEncontradoException;
 import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.enums.StatusCheckIn;
+import com.bths.platform.security.JwtService;
+import com.bths.platform.security.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +29,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
 @WebMvcTest(HospedeController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class HospedeControllerTest {
 
     @Autowired
@@ -32,6 +37,12 @@ class HospedeControllerTest {
 
     @MockitoBean
     private HospedeService hospedeService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UsuarioDetailsService usuarioDetailsService;
 
     @Test
     void deveCadastrarHospedeERetornar201() throws Exception {

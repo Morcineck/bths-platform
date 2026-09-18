@@ -1,6 +1,7 @@
 package com.bths.platform.viagem;
 
 import com.bths.platform.exception.ViagemNaoEncontradaException;
+import com.bths.platform.viagem.enums.StatusViagem;
 import com.bths.platform.viagem.mapper.ViagemMapper;
 import com.bths.platform.viagem.dto.ViagemRequest;
 import com.bths.platform.viagem.dto.ViagemResponse;

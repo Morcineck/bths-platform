@@ -1,7 +1,7 @@
 package com.bths.platform.quarto.dto;
 
-import com.bths.platform.quarto.StatusQuarto;
-import com.bths.platform.quarto.TipoQuarto;
+import com.bths.platform.quarto.enums.StatusQuarto;
+import com.bths.platform.quarto.enums.TipoQuarto;
 
 public class QuartoResponse {
 

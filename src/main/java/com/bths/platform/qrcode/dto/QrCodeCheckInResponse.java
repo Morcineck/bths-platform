@@ -1,6 +1,6 @@
 package com.bths.platform.qrcode.dto;
 
-import com.bths.platform.hospede.StatusCheckIn;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 
 public class QrCodeCheckInResponse {
 
