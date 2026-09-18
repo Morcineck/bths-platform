@@ -61,7 +61,8 @@ public class SecurityConfig {
                                 "/api/quartos/**",
                                 "/api/alocacoes-quartos/**",
                                 "/api/traslados/**",
-                                "/api/check-in/qr/**"
+                                "/api/check-in/qr/**",
+                                "/api/dashboard/**"
 
                         )
                         .hasAnyRole("ADMIN", "STAFF")

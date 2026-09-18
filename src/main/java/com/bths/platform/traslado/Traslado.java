@@ -36,8 +36,8 @@ public class Traslado {
     @Column(nullable = false)
     private StatusTraslado status = StatusTraslado.AGUARDANDO;
 
-    @Column(name = "data_hora_prvista", nullable = false)
-    private LocalDateTime dataHoraPrvista;
+    @Column(name = "data_hora_prevista", nullable = false)
+    private LocalDateTime dataHoraPrevista;
 
     @Column(name = "numero_voo")
     private String numeroVoo;
@@ -102,12 +102,12 @@ public class Traslado {
         this.status = status;
     }
 
-    public LocalDateTime getDataHoraPrvista() {
-        return dataHoraPrvista;
+    public LocalDateTime getDataHoraPrevista() {
+        return dataHoraPrevista;
     }
 
-    public void setDataHoraPrvista(LocalDateTime dataHoraPrvista) {
-        this.dataHoraPrvista = dataHoraPrvista;
+    public void setDataHoraPrevista(LocalDateTime dataHoraPrevista) {
+        this.dataHoraPrevista = dataHoraPrevista;
     }
 
     public String getNumeroVoo() {
