@@ -411,21 +411,21 @@ Integração
 
 # 📌 Status atual
 
-| Fase | Status                          |
-| --- |---------------------------------|
-| Fase 0 — Planejamento | ✅ Concluída                     |
-| Fase 1 — Fundação Backend | ✅ Concluída                     |
-| Fase 2 — Viagens | ✅ Concluída                     |
-| Fase 3 — Hóspedes | ✅ Concluída                     |
+| Fase | Status        |
+| --- |---------------|
+| Fase 0 — Planejamento | ✅ Concluída   |
+| Fase 1 — Fundação Backend | ✅ Concluída   |
+| Fase 2 — Viagens | ✅ Concluída   |
+| Fase 3 — Hóspedes | ✅ Concluída   |
 | Fase 4 — Hospedagem operacional | ✅ V1 concluída |
-| Fase 5 — Alocação e Ocupação | ✅ Concluída                     |
-| Fase 6 — Traslados | ✅ V1 concluída                  |
-| Fase 7 — Check-in e QR Code | ✅ V1 concluída                  |
-| Fase 8 — Segurança e Usuários | ✅                               |
-| Fase 9 — Dashboard | ✅ V1 concluída                  |                        |
-| Fase 10 — Frontend | ⏳ Próxima                       |                                |
-| Fase 11 — Testes e Infraestrutura | 🔄 Em evolução                  |
-| Fase 12 — Evolução | 💡 Futuro                       |
+| Fase 5 — Alocação e Ocupação | ✅ Concluída   |
+| Fase 6 — Traslados | ✅ V1 concluída |
+| Fase 7 — Check-in e QR Code | ✅ V1 concluída |
+| Fase 8 — Segurança e Usuários | ✅ V1 concluída |
+| Fase 9 — Dashboard | ✅ V1 concluída |
+| Fase 10 — Frontend | ⏳ Próxima     |
+| Fase 11 — Testes e Infraestrutura | 🔄 Em evolução |
+| Fase 12 — Evolução | 💡 Futuro     |
 
 ---
 
