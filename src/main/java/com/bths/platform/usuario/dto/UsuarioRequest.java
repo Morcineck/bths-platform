@@ -1,12 +1,23 @@
 package com.bths.platform.usuario.dto;
 
 import com.bths.platform.usuario.enums.PerfilUsuario;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class UsuarioRequest {
 
+    @NotBlank(message = "O nome é obrigatório!")
     private String nome;
+
+    @NotBlank(message = "O e-mail é obrigatório!")
+    @Email(message = "O e-mail deve ser válido!")
     private String email;
+
+    @NotBlank(message = "A senha é obrigatória!")
     private String senha;
+
+    @NotNull(message = "O perfil é obrigatório!")
     private PerfilUsuario perfil;
 
     public String getNome() {

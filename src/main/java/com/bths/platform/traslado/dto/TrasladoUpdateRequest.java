@@ -2,18 +2,30 @@ package com.bths.platform.traslado.dto;
 
 import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.TipoTraslado;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
 public class TrasladoUpdateRequest {
 
+    @NotNull(message = "O tipo de traslado é obrigatório!")
     private TipoTraslado tipo;
+
     private Aeroporto aeroporto;
+
+    @NotNull(message = "A data e hora prevista são obrigatórias!")
     private LocalDateTime dataHoraPrevista;
+
     private String numeroVoo;
     private String companhiaAerea;
+
+    @NotBlank(message = "O local de origem é obrigatório!")
     private String localOrigem;
+
+    @NotBlank(message = "O local de destino é obrigatório!")
     private String localDestino;
+
     private String observacoes;
 
 

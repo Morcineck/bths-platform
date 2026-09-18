@@ -2,6 +2,7 @@ package com.bths.platform.usuario;
 
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioResponse> cadastrarUsuario(
-            @RequestBody UsuarioRequest request
+           @Valid @RequestBody UsuarioRequest request
     ) {
 
         UsuarioResponse response =
