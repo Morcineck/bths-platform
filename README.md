@@ -55,7 +55,7 @@ O BTHS Platform busca centralizar essas informações e tornar a operação mais
 * Associação com viagens
 * Status da chegada
 
-### 🏠 Hospedagem
+### Hospedagem
 
 * Cadastro de hospedagens
 * Endereço
