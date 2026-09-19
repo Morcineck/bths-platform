@@ -1,128 +1,352 @@
 # BTHS Platform
 
-Plataforma de gestão operacional para viagens, hospedagens, traslados e recepção de hóspedes.
+Plataforma web para gestão operacional e experiência do hóspede da Beat Trips.
 
-O **BTHS Platform** nasceu a partir de uma necessidade real da operação da Beat Trips: centralizar informações importantes de uma viagemNome em um único sistema e facilitar tanto o trabalho da equipe quanto a experiência dos hóspedes.
+O **BTHS Platform** nasceu de uma necessidade real da operação da Beat Trips: centralizar em um único sistema informações relacionadas às viagens, hóspedes, hospedagem, quartos, check-in, traslados e demais processos operacionais.
 
----
-
-## Objetivo
-
-O BTHS Platform tem como objetivo centralizar as principais informações operacionais de uma viagemNome em uma única plataforma.
-
-A primeira versão permitirá que a equipe gerencie:
-
-*  Hóspedes
-*  Hospedagens
-*  Quartos e camas
-*  Traslados
-*  Motoristas
-*  Veículos
-*  Endereços e localização
-*  Check-in dos hóspedes
-*  Informações operacionais da viagemNome
-
-Para o hóspede, a plataforma deverá disponibilizar de forma simples todas as informações necessárias para sua experiência.
+O projeto está evoluindo para uma aplicação **full-stack, mobile-first e PWA**, permitindo que a equipe administre a operação enquanto o hóspede acompanha sua experiência de viagem por meio da mesma plataforma.
 
 ---
 
-## Problema
+## Visão geral
 
-Durante a organização de uma viagemNome, informações importantes podem ficar distribuídas entre conversas de WhatsApp, planilhas, documentos e outros meios de comunicação.
+O BTHS Platform possui duas grandes áreas de atuação: **gestão operacional** e **experiência do hóspede**.
 
-Isso pode gerar dificuldades como:
+### Gestão operacional
 
-* localizar informações sobre a hospedagem;
-* organizar a divisão dos quartos;
-* identificar a cama de cada hóspede;
-* controlar a chegada dos participantes;
-* localizar o endereço da hospedagem;
-* encontrar informações sobre traslados;
-* identificar motoristas e veículos;
-* acompanhar quem já realizou o check-in.
+A plataforma fornece à equipe da Beat Trips recursos para administrar:
 
-O BTHS Platform busca centralizar essas informações e tornar a operação mais organizada e eficiente.
+* viagens;
+* hóspedes;
+* quartos e alocações;
+* check-in;
+* traslados;
+* usuários e permissões;
+* informações operacionais;
+* indicadores por meio de dashboard.
+
+### Experiência do hóspede
+
+A área do hóspede será desenvolvida com foco em dispositivos móveis e permitirá consultar informações relacionadas à própria viagem, incluindo:
+
+* identificação por QR Code;
+* situação do check-in;
+* hospedagem;
+* quarto;
+* chegada e traslado;
+* informações da viagem;
+* avisos e orientações.
+
+A equipe administra a operação enquanto o hóspede utiliza a mesma plataforma para acompanhar sua experiência de viagem.
 
 ---
 
-## Funcionalidades
+## Status do projeto
 
-### Hóspedes
+**Em desenvolvimento ativo.**
 
-* Cadastro de hóspedes
-* Consulta de hóspedes
-* Dados pessoais
-* Associação com viagens
-* Status da chegada
+O backend da primeira versão operacional possui uma base funcional implementada e testada.
 
-### 🏠 Hospedagem
+Atualmente estão disponíveis no backend:
 
-* Cadastro de hospedagens
-* Endereço
-* Informações da propriedade
-* Cadastro de quartos
-* Cadastro de camas
-* Capacidade dos quartos
-* Divisão dos hóspedes
+* autenticação e autorização;
+* gerenciamento de usuários;
+* controle de acesso baseado em perfis;
+* gerenciamento de viagens;
+* gerenciamento de hóspedes;
+* gerenciamento de quartos;
+* alocação de hóspedes;
+* check-in;
+* identificação operacional por QR Code;
+* gerenciamento de traslados;
+* histórico operacional de status de traslado;
+* dashboard operacional;
+* tratamento centralizado de exceções;
+* testes automatizados.
 
-### Traslados
+O repositório está sendo reorganizado para comportar backend, frontend e documentação do produto em uma estrutura full-stack.
 
-* Cadastro de motoristas
-* Cadastro de veículos
-* Origem e destino
-* Horário de saída
-* Informações do motorista
-* Status do traslado
+A próxima grande etapa é o desenvolvimento do frontend utilizando Next.js, React e TypeScript.
 
-### Localização
+---
 
-O hóspede poderá visualizar o endereço da hospedagem e acessar serviços externos de mapas para facilitar sua chegada.
+## Perfis de acesso
 
-### Check-in
+O sistema possui três perfis de acesso.
 
-A equipe poderá registrar a chegada dos hóspedes e acompanhar a quantidade de pessoas que já chegaram à hospedagem.
+### ADMIN
+
+Perfil responsável pela administração da plataforma.
+
+Possui acesso às funções administrativas, operacionais e ao gerenciamento de usuários.
+
+### STAFF
+
+Perfil destinado à equipe responsável pela execução da operação.
+
+Seu acesso é concentrado nas atividades necessárias durante as viagens, incluindo hóspedes, check-in, quartos e traslados.
+
+### HOSPEDE
+
+Perfil destinado ao participante da viagem.
+
+A interface é voltada para a experiência individual do hóspede, disponibilizando apenas informações e operações relacionadas à sua participação na viagem.
 
 ---
 
 ## Arquitetura
 
-A primeira versão da plataforma será desenvolvida utilizando uma arquitetura baseada em API REST.
+O BTHS Platform utiliza uma arquitetura baseada na separação entre frontend, API REST e banco de dados.
 
 ```text
-                    BTHS PLATFORM
-                         │
-                         ▼
-                    REST API
-                         │
-                    Spring Boot
-                         │
-        ┌────────────────┼────────────────┐
-        │                │                │
-     Hóspedes        Hospedagem       Traslados
-        │                │                │
-        │          ┌─────┴─────┐          │
-        │       Quartos      Camas        │
-        │                                │
-        └────────────────┬───────────────┘
-                         │
-                       MySQL
+                         BTHS PLATFORM
+                               |
+                 +-------------+-------------+
+                 |                           |
+                 v                           v
+          ADMIN / STAFF                  HOSPEDE
+                 |                           |
+                 +-------------+-------------+
+                               |
+                               v
+                    Next.js / React / PWA
+                         FRONTEND
+                               |
+                           REST / HTTP
+                               |
+                               v
+                   Java + Spring Boot
+                          BACKEND
+                               |
+             +-----------------+-----------------+
+             |                 |                 |
+             v                 v                 v
+        Segurança         Regras de         Persistência
+                           negócio
+             |                 |                 |
+             +-----------------+-----------------+
+                               |
+                               v
+                             MySQL
 ```
 
-A arquitetura poderá evoluir conforme as necessidades do projeto.
+O frontend é responsável pela interface e experiência de utilização.
+
+O backend permanece como autoridade sobre:
+
+* autenticação;
+* autorização;
+* regras de negócio;
+* validações;
+* segurança;
+* persistência;
+* acesso aos dados.
+
+Essa separação evita a duplicação de regras de negócio entre frontend e backend.
 
 ---
 
-## 🛠️ Tecnologias
+## Backend
+
+O backend é uma API REST desenvolvida em Java com Spring Boot.
+
+Principais responsabilidades:
+
+* autenticar usuários;
+* controlar permissões;
+* executar regras de negócio;
+* validar operações;
+* acessar e persistir dados;
+* disponibilizar recursos através da API REST;
+* proteger os recursos da aplicação.
+
+### Organização por domínio
+
+A aplicação é organizada por domínios de negócio.
+
+Entre os principais módulos estão:
+
+```text
+alocacao
+checkin
+dashboard
+hospede
+qrcode
+quarto
+security
+traslado
+usuario
+viagem
+```
+
+Os domínios concentram seus respectivos componentes, como:
+
+```text
+controller
+service
+repository
+dto
+mapper
+exception
+```
+
+O tratamento transversal das exceções da API é centralizado pelo `GlobalExceptionHandler`.
+
+---
+
+## Frontend
+
+O frontend será desenvolvido como uma **Progressive Web App (PWA)** utilizando abordagem **mobile-first**.
+
+Stack definida:
+
+* Next.js;
+* React;
+* TypeScript;
+* Tailwind CSS.
+
+Será utilizada uma única aplicação frontend.
+
+A interface, navegação e operações disponíveis serão adaptadas de acordo com o perfil do usuário autenticado.
+
+### Área administrativa e operacional
+
+A estrutura planejada inclui rotas como:
+
+```text
+/login
+/dashboard
+/hospedes
+/hospedes/{id}
+/check-in
+/quartos
+/quartos/{id}
+/traslados
+/traslados/{id}
+/viagem
+/usuarios
+/usuarios/{id}
+/minha-conta
+```
+
+### Área do hóspede
+
+A área destinada ao hóspede deverá incluir:
+
+```text
+/app
+/app/minha-viagem
+/app/minha-hospedagem
+/app/meu-traslado
+/app/meu-qr
+/app/avisos
+/app/perfil
+```
+
+O frontend consumirá a API REST existente.
+
+Regras de negócio, autenticação, autorização e persistência continuarão sob responsabilidade do backend.
+
+---
+
+## Segurança
+
+A camada de segurança utiliza:
+
+* Spring Security;
+* JWT;
+* BCrypt;
+* autenticação por e-mail e senha;
+* autorização baseada em perfil.
+
+Perfis suportados:
+
+```text
+ADMIN
+STAFF
+HOSPEDE
+```
+
+Informações sensíveis não devem ser armazenadas diretamente no código-fonte.
+
+Credenciais, tokens, chaves e configurações privadas são fornecidos externamente através de variáveis de ambiente.
+
+Um modelo das variáveis necessárias ao backend está disponível em:
+
+```text
+backend/.env.example
+```
+
+Entre as configurações utilizadas estão:
+
+```text
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+```
+
+---
+
+## Testes
+
+O backend possui testes automatizados cobrindo diferentes camadas da aplicação.
+
+Tecnologias utilizadas:
+
+* JUnit;
+* Mockito;
+* Spring Test.
+
+A suíte de testes contempla componentes relacionados a:
+
+* controllers;
+* services;
+* repositories;
+* segurança;
+* validações;
+* regras de negócio.
+
+A reorganização estrutural do backend foi validada executando novamente a suíte de testes a partir do diretório `backend/`, mantendo o build da aplicação com sucesso.
+
+---
+
+## Integração contínua e qualidade
+
+O projeto utiliza GitHub Actions para automação do processo de build e análise.
+
+Após a reorganização estrutural do repositório, o workflow do backend passou a executar o Maven a partir de:
+
+```text
+backend/
+```
+
+O pipeline utiliza Java 17.
+
+O projeto também possui configuração de integração com SonarQube/SonarCloud para análise estática e acompanhamento da qualidade do código.
+
+---
+
+## Tecnologias
 
 ### Backend
 
 * Java 17
-* Spring Boot
+* Spring Boot 4
 * Spring Web
 * Spring Data JPA
-* Bean Validation
 * Spring Security
+* Bean Validation
 * JWT
+* Hibernate
+* Maven
+
+### Frontend
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* PWA
 
 ### Banco de dados
 
@@ -132,174 +356,276 @@ A arquitetura poderá evoluir conforme as necessidades do projeto.
 
 * JUnit
 * Mockito
+* Spring Test
 
-### Documentação da API
-
-* Swagger / OpenAPI
-
-### Infraestrutura
-
-* Docker
-* Docker Compose
-
-### Versionamento
+### Desenvolvimento e qualidade
 
 * Git
 * GitHub
+* GitHub Actions
+* SonarQube / SonarCloud
 
-### Frontend
+### Tecnologias planejadas
 
-Planejado para uma etapa posterior:
-
-* Next.js
-* React
-* TypeScript
+* Swagger / OpenAPI
+* Docker
+* Docker Compose
 
 ---
 
-## 📂 Estrutura do projeto
+## Estrutura do projeto
+
+O BTHS Platform utiliza um único repositório para organizar backend, frontend e documentação.
 
 ```text
 bths-platform/
-│
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   └── resources/
-│   │
-│   └── test/
-│
-├── docs/
-│   ├── arquitetura.md
-│   ├── regras-negocio.md
-│   └── roadmap.md
-│
-├── README.md
-├── pom.xml
-├── docker-compose.yml
-└── .gitignore
+|
++-- backend/
+|   +-- .mvn/
+|   +-- src/
+|   |   +-- main/
+|   |   +-- test/
+|   +-- .env.example
+|   +-- mvnw
+|   +-- mvnw.cmd
+|   +-- pom.xml
+|
++-- frontend/
+|   +-- # Next.js / React / TypeScript
+|
++-- docs/
+|   +-- arquitetura.md
+|   +-- regras-negocio.md
+|   +-- roadmap.md
+|
++-- .github/
+|   +-- workflows/
+|
++-- .gitignore
++-- CHANGELOG.md
++-- README.md
+```
+
+O backend e o frontend pertencem ao mesmo produto, mas são aplicações independentes em execução.
+
+---
+
+## Executando o backend
+
+### Pré-requisitos
+
+Para executar o backend localmente é necessário possuir:
+
+* Java 17;
+* MySQL;
+* Git.
+
+O Maven Wrapper está incluído no projeto, portanto não é necessário instalar o Maven separadamente.
+
+### Acessar o backend
+
+A partir da raiz do repositório:
+
+```bash
+cd backend
+```
+
+### Configurar o ambiente
+
+Utilize como referência:
+
+```text
+.env.example
+```
+
+As principais configurações necessárias são:
+
+```text
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+```
+
+O banco de dados utilizado pela configuração atual é:
+
+```text
+bths_platform
+```
+
+### Executar no Windows
+
+```powershell
+.\mvnw spring-boot:run
+```
+
+### Executar no Linux ou macOS
+
+```bash
+./mvnw spring-boot:run
 ```
 
 ---
 
-## 🗺️ Roadmap
+## Executando os testes
 
-### Fase 1 — Fundação
+Os comandos devem ser executados dentro do diretório `backend/`.
 
-* [ ] Criar projeto Spring Boot
-* [ ] Configurar banco de dados MySQL
-* [ ] Configurar estrutura inicial
-* [ ] Criar entidade `Viagem`
-* [ ] Criar entidade `Hospede`
-* [ ] Criar API REST
-* [ ] Documentar endpoints
+### Windows
 
-### Fase 2 — Hospedagem
+```powershell
+.\mvnw clean test
+```
 
-* [ ] Criar quartos
-* [ ] Criar camas
-* [ ] Criar reservas
-* [ ] Associar hóspedes aos quartos
-* [ ] Associar hóspedes às camas
+### Linux ou macOS
 
-### Fase 3 — Traslados
+```bash
+./mvnw clean test
+```
 
-* [ ] Criar motoristas
-* [ ] Criar veículos
-* [ ] Criar traslados
-* [ ] Associar hóspedes aos traslados
-* [ ] Controle de horários
-* [ ] Status do traslado
+Um build bem-sucedido deve finalizar com:
 
-### Fase 4 — Check-in
-
-* [ ] Registrar chegada
-* [ ] Consultar hóspedes presentes
-* [ ] Criar dashboard operacional
-* [ ] Implementar QR Code para check-in
-
-### Fase 5 — Autenticação
-
-* [ ] Implementar Spring Security
-* [ ] Implementar JWT
-* [ ] Criar usuários administrativos
-* [ ] Criar perfis de acesso
-* [ ] Implementar controle de permissões
-
-### Fase 6 — Frontend
-
-* [ ] Criar portal administrativo
-* [ ] Criar área do hóspede
-* [ ] Criar dashboard
-* [ ] Criar área de hospedagem
-* [ ] Criar área de traslados
-* [ ] Criar área de check-in
-
-### Fase 7 — Evolução
-
-* [ ] Implementar notificações
-* [ ] Integração com mapas
-* [ ] Criar relatórios
-* [ ] Criar métricas operacionais
-* [ ] Avaliar aplicativo mobile
+```text
+BUILD SUCCESS
+```
 
 ---
 
-## 📚 Documentação
+## Roadmap
 
-A documentação técnica e funcional do projeto está organizada no diretório [`docs`](./docs).
+O roadmap abaixo apresenta uma visão resumida do estágio atual do projeto.
+
+### Fundação do backend
+
+* [x] Criar projeto Spring Boot
+* [x] Configurar MySQL
+* [x] Estruturar API REST
+* [x] Organizar aplicação por domínio
+* [x] Implementar tratamento global de exceções
+* [x] Implementar testes automatizados
+
+### Segurança e usuários
+
+* [x] Implementar Spring Security
+* [x] Implementar JWT
+* [x] Implementar BCrypt
+* [x] Criar gerenciamento de usuários
+* [x] Criar perfis `ADMIN`, `STAFF` e `HOSPEDE`
+* [x] Implementar controle de acesso por perfil
+
+### Viagens e hóspedes
+
+* [x] Implementar gerenciamento de viagens
+* [x] Implementar gerenciamento de hóspedes
+* [x] Relacionar hóspedes à operação da viagem
+
+### Hospedagem e check-in
+
+* [x] Implementar gerenciamento de quartos
+* [x] Implementar controle de capacidade
+* [x] Implementar alocação de hóspedes
+* [x] Implementar troca de quarto
+* [x] Implementar check-in
+* [x] Implementar identificação operacional por QR Code
+
+### Traslados
+
+* [x] Implementar gerenciamento de traslados
+* [x] Implementar controle de status
+* [x] Implementar histórico de alterações de status
+* [x] Implementar validações operacionais
+
+### Dashboard
+
+* [x] Implementar indicadores de hóspedes
+* [x] Implementar indicadores de hospedagem
+* [x] Implementar indicadores de traslados
+* [x] Implementar consulta de próximos traslados
+
+### Frontend
+
+* [ ] Criar aplicação Next.js
+* [ ] Configurar TypeScript
+* [ ] Configurar Tailwind CSS
+* [ ] Configurar estrutura PWA
+* [ ] Implementar identidade visual
+* [ ] Implementar login
+* [ ] Integrar autenticação com backend
+* [ ] Implementar navegação baseada em perfil
+* [ ] Criar dashboard para `ADMIN` e `STAFF`
+* [ ] Criar fluxos operacionais
+* [ ] Criar área do hóspede
+* [ ] Implementar experiência mobile-first
+
+### Próximas evoluções
+
+* [ ] Documentar API com Swagger / OpenAPI
+* [ ] Adicionar Docker
+* [ ] Adicionar Docker Compose
+* [ ] Ampliar CI/CD para o frontend
+* [ ] Evoluir gerenciamento de motoristas e veículos
+* [ ] Implementar notificações
+* [ ] Integrar serviços de mapas
+* [ ] Implementar relatórios
+* [ ] Expandir métricas operacionais
+* [ ] Implementar push notifications
+
+---
+
+## Documentação
+
+A documentação técnica e funcional do projeto está organizada no diretório:
+
+```text
+docs/
+```
+
+Principais documentos:
 
 * [Arquitetura](./docs/arquitetura.md)
 * [Regras de negócio](./docs/regras-negocio.md)
 * [Roadmap](./docs/roadmap.md)
 
----
+O `README.md` fornece uma visão geral do produto e do estado do desenvolvimento.
 
-## Segurança
-
-Informações sensíveis não devem ser armazenadas diretamente no código-fonte.
-
-Credenciais, chaves de API, tokens e configurações privadas deverão utilizar variáveis de ambiente ou mecanismos apropriados de gerenciamento de secrets.
+Detalhes de arquitetura, decisões técnicas e regras de negócio devem permanecer nos documentos específicos do projeto.
 
 ---
 
-## Status
+## Contexto do projeto
 
-**Em desenvolvimento**
+O BTHS Platform está sendo desenvolvido inicialmente para atender às necessidades operacionais da **Beat Trips**, empresa voltada à organização de experiências de viagem relacionadas a grandes eventos e festivais de música eletrônica.
 
-O projeto encontra-se em fase inicial de planejamento e desenvolvimento.
+O projeto surgiu a partir de processos e necessidades reais da operação.
 
----
+Seu objetivo é substituir informações dispersas entre diferentes meios por uma plataforma centralizada, permitindo maior organização operacional e uma experiência mais simples para os hóspedes.
 
-## Contexto
+Além de atender a uma necessidade real de negócio, o desenvolvimento do BTHS Platform também é utilizado para aplicação prática e evolução de conhecimentos relacionados a:
 
-O BTHS Platform está sendo desenvolvido inicialmente para atender às necessidades operacionais da **Beat Trips**, empresa especializada em experiências de viagemNome relacionadas a grandes eventos e festivais de música eletrônica.
-
-O sistema será utilizado como ferramenta para organizar e centralizar as operações relacionadas às viagens.
-
----
-
-## Desenvolvimento
-
-Projeto desenvolvido com foco na aplicação prática de conhecimentos em:
-
-* Java
-* Spring Boot
-* APIs REST
-* Banco de dados
-* Arquitetura de software
-* Testes automatizados
-* Segurança
-* Git e GitHub
-* Docker
+* desenvolvimento backend com Java;
+* Spring Boot;
+* APIs REST;
+* segurança de aplicações;
+* bancos de dados;
+* testes automatizados;
+* arquitetura de software;
+* desenvolvimento frontend;
+* React e Next.js;
+* TypeScript;
+* PWA;
+* Git e GitHub;
+* integração contínua;
+* qualidade de software.
 
 ---
 
 ## Licença
 
-Este projeto encontra-se em desenvolvimento e sua licença será definida posteriormente.
+O projeto encontra-se em desenvolvimento.
+
+A licença de distribuição e utilização será definida posteriormente.
 
 ---
 
 **BTHS Platform**
+
 *Tecnologia para organizar experiências.*
