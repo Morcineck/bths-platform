@@ -1,363 +1,637 @@
-# 🏗️ Arquitetura - BTHS Platform
+# Arquitetura - BTHS Platform
 
-## 📌 Visão geral
+## 1. Visão geral
 
-O **BTHS Platform** será desenvolvido inicialmente como uma aplicação web baseada em uma **API REST**, responsável por centralizar as informações operacionais relacionadas às viagens.
+O **BTHS Platform** é uma plataforma full-stack desenvolvida para centralizar a operação das viagens da Beat Trips e oferecer uma experiência digital aos hóspedes.
 
-A primeira versão terá como foco:
+O sistema é composto por:
 
-* gerenciamento de hóspedes;
-* gerenciamento de viagens;
-* organização da hospedagem;
-* divisão de quartos e camas;
-* gerenciamento de traslados;
-* cadastro de motoristas e veículos;
-* controle de chegada e check-in.
+* backend REST desenvolvido em Java e Spring Boot;
+* frontend web mobile-first desenvolvido com Next.js;
+* banco de dados relacional MySQL;
+* autenticação e autorização baseadas em Spring Security e JWT;
+* uma única aplicação frontend com experiências adaptadas aos perfis ADMIN, STAFF e HOSPEDE.
 
-A arquitetura será construída de forma modular, permitindo que novas funcionalidades sejam adicionadas conforme a necessidade do projeto.
+A arquitetura prioriza simplicidade, separação de responsabilidades e evolução incremental.
+
+O backend permanece como autoridade sobre:
+
+* autenticação;
+* autorização;
+* regras de negócio;
+* validações;
+* persistência;
+* integridade dos dados.
+
+O frontend é responsável pela experiência de uso e pelo consumo dos recursos disponibilizados pelo backend.
 
 ---
 
-## 🧱 Arquitetura geral
+# 2. Arquitetura geral
 
-A aplicação será organizada inicialmente da seguinte forma:
+A arquitetura atual e planejada do produto pode ser representada da seguinte forma:
 
 ```text
-                    BTHS PLATFORM
-                         │
-                         ▼
-                    REST API
-                         │
-                         ▼
-                  Spring Boot
-                         │
-        ┌────────────────┼────────────────┐
-        │                │                │
-     Hóspedes        Hospedagem       Traslados
-        │                │                │
-        │          ┌─────┴─────┐          │
-        │       Quartos      Camas        │
-        │                                 │
-        └────────────────┬────────────────┘
-                         │
-                         ▼
-                       MySQL
+                         BTHS PLATFORM
+                               |
+                +--------------+--------------+
+                |                             |
+                v                             v
+         FRONTEND PWA                    BACKEND REST
+           Next.js                       Spring Boot
+           React                             |
+         TypeScript                          |
+       Tailwind CSS                          |
+                |                            |
+                +-------- HTTP/JSON ---------+
+                                             |
+                                   Spring Security + JWT
+                                             |
+                                             v
+                                      Controllers
+                                             |
+                                             v
+                                        Services
+                                             |
+                                             v
+                                      Repositories
+                                             |
+                                             v
+                                           MySQL
 ```
 
-O frontend será desenvolvido posteriormente e consumirá os endpoints disponibilizados pelo backend.
+A aplicação é desenvolvida como um produto full-stack, mantendo frontend e backend separados por responsabilidade, mas versionados no mesmo repositório.
 
 ---
 
-# ☕ Backend
+# 3. Estrutura do repositório
 
-O backend será desenvolvido utilizando:
+A organização do repositório segue a estrutura:
 
-* **Java 17**
-* **Spring Boot**
-* **Spring Web**
-* **Spring Data JPA**
-* **Bean Validation**
-* **MySQL**
+```text
+bths-platform/
+|
+├── backend/
+│   ├── .mvn/
+│   ├── src/
+│   ├── .env.example
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   └── pom.xml
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── ...
+│
+├── docs/
+│
+├── .github/
+│
+├── .gitignore
+├── CHANGELOG.md
+└── README.md
+```
 
-Em etapas posteriores poderão ser adicionados:
+O diretório `backend/` contém exclusivamente a aplicação Spring Boot.
 
+O diretório `frontend/` contém a aplicação Next.js.
+
+O diretório `docs/` centraliza documentação técnica e funcional do projeto.
+
+O diretório `.github/` concentra configurações relacionadas ao GitHub e aos workflows de integração contínua.
+
+Arquivos de documentação geral do produto permanecem na raiz.
+
+---
+
+# 4. Backend
+
+## 4.1 Stack
+
+O backend utiliza atualmente:
+
+* Java 17;
+* Spring Boot 4.1.0;
+* Spring Web;
+* Spring Data JPA;
 * Spring Security;
 * JWT;
-* Swagger/OpenAPI;
+* Bean Validation;
+* Hibernate;
+* MySQL;
+* Lombok;
+* Maven;
 * JUnit;
-* Mockito;
-* Docker.
+* Mockito.
+
+O Maven Wrapper é utilizado para manter consistência na execução do projeto independentemente da instalação global do Maven.
 
 ---
 
-# 🌐 API REST
+# 5. Organização do backend
 
-O backend disponibilizará uma API REST responsável pela comunicação entre o frontend e o banco de dados.
+O backend utiliza uma organização orientada por domínio.
 
-Exemplo:
+Estrutura conceitual:
 
 ```text
-Frontend
-   │
-   │ HTTP Request
-   ▼
+com.bths.platform
+|
+├── alocacao/
+├── checkin/
+├── dashboard/
+├── handler/
+├── hospede/
+├── qrcode/
+├── quarto/
+├── security/
+├── traslado/
+├── usuario/
+└── viagem/
+```
+
+Cada domínio pode conter seus próprios:
+
+```text
 Controller
-   │
-   ▼
 Service
-   │
-   ▼
 Repository
-   │
-   ▼
-MySQL
+Entity
+DTO
+Mapper
+Enum
+Exception
 ```
 
-Exemplo de uma requisição:
+conforme a necessidade.
 
-```http
-GET /api/viagens
-```
-
-O fluxo esperado será:
-
-```text
-Cliente
-   │
-   ▼
-ViagemController
-   │
-   ▼
-ViagemService
-   │
-   ▼
-ViagemRepository
-   │
-   ▼
-MySQL
-```
+Essa organização evita concentrar todos os controllers, services ou repositories da aplicação em pacotes globais e facilita a localização do código relacionado a cada contexto funcional.
 
 ---
 
-# 🧩 Camadas da aplicação
+# 6. Camadas do backend
 
-A aplicação utilizará uma separação por responsabilidades.
+Embora organizado por domínio, o backend mantém separação clara de responsabilidades.
 
-## Controller
+## 6.1 Controller
 
-Responsável por receber as requisições HTTP e retornar as respostas da API.
-
-Exemplo:
-
-```text
-ViagemController
-```
+O Controller representa a camada HTTP da aplicação.
 
 Responsabilidades:
 
 * receber requisições;
-* validar parâmetros básicos;
-* chamar o Service;
-* retornar respostas HTTP.
+* receber parâmetros e payloads;
+* delegar operações para Services;
+* retornar respostas HTTP;
+* definir os endpoints da API.
 
-O Controller não deverá conter regras de negócio complexas.
+O Controller não deve concentrar regras complexas de negócio.
+
+Fluxo típico:
+
+```text
+HTTP Request
+     |
+     v
+Controller
+     |
+     v
+Service
+```
 
 ---
 
-## Service
+## 6.2 Service
 
-Responsável pelas regras de negócio da aplicação.
-
-Exemplo:
-
-```text
-ViagemService
-```
+O Service concentra a lógica de aplicação e as principais regras de negócio.
 
 Responsabilidades:
 
-* executar regras de negócio;
-* coordenar operações;
 * validar condições do domínio;
-* utilizar os repositories necessários.
-
----
-
-## Repository
-
-Responsável pela comunicação com o banco de dados.
+* coordenar operações;
+* consultar repositories;
+* aplicar regras de consistência;
+* lançar exceções de negócio;
+* preparar operações de persistência.
 
 Exemplo:
 
 ```text
-ViagemRepository
+AlocacaoService
+      |
+      +--> HospedeRepository
+      |
+      +--> QuartoRepository
+      |
+      +--> AlocacaoQuartoRepository
 ```
 
-Será implementado utilizando o **Spring Data JPA**.
+Um Service pode utilizar múltiplos repositories quando uma regra atravessa diferentes entidades.
 
 ---
 
-## Entity
+## 6.3 Repository
 
-Representará as principais entidades persistidas no banco de dados.
+Repositories são responsáveis pelo acesso aos dados persistidos.
 
-Exemplos:
+São implementados utilizando Spring Data JPA.
+
+Responsabilidades:
+
+* consultas;
+* persistência;
+* verificações de existência;
+* contagens;
+* filtros;
+* consultas específicas do domínio.
+
+Exemplo:
+
+```text
+Service
+   |
+   v
+Repository
+   |
+   v
+JPA / Hibernate
+   |
+   v
+MySQL
+```
+
+---
+
+## 6.4 Entity
+
+Entities representam objetos persistidos no banco de dados.
+
+As entidades refletem o modelo atual necessário à operação.
+
+O projeto não deve criar entidades apenas porque determinado conceito existe no mundo real.
+
+Um conceito somente deve se tornar entidade independente quando houver necessidade funcional ou de persistência que justifique essa separação.
+
+---
+
+## 6.5 DTO
+
+DTOs controlam os dados de entrada e saída da API.
+
+O backend não deve depender da exposição direta das entidades persistidas para comunicação com clientes.
+
+O projeto utiliza DTOs específicos conforme o contexto, como:
+
+```text
+Request
+Response
+UpdateRequest
+StatusRequest
+```
+
+Essa separação permite que a API evolua sem acoplar diretamente seu contrato HTTP ao modelo de persistência.
+
+---
+
+## 6.6 Mapper
+
+Mappers realizam a conversão entre:
+
+```text
+Entity <-> DTO
+```
+
+Essa responsabilidade é mantida fora dos Controllers para reduzir acoplamento e duplicação.
+
+---
+
+## 6.7 Exceptions
+
+As exceções de negócio são organizadas junto aos domínios aos quais pertencem.
+
+Exemplo:
+
+```text
+hospede/
+└── exception/
+    ├── HospedeJaCadastradoException
+    └── HospedeNaoEncontradoException
+
+quarto/
+└── exception/
+    ├── QuartoIndisponivelException
+    ├── QuartoLotadoException
+    └── QuartoNaoEncontradoException
+
+traslado/
+└── exception/
+    ├── AeroportoObrigatorioException
+    ├── MotivoCorrecaoObrigatorioException
+    ├── TransicaoStatusTrasladoInvalidaException
+    └── TrasladoNaoEncontradoException
+```
+
+Exceções transversais são tratadas centralmente por:
+
+```text
+handler/
+└── GlobalExceptionHandler
+```
+
+Essa estrutura mantém a origem semântica da exceção próxima ao domínio e centraliza sua tradução para respostas HTTP.
+
+---
+
+# 7. Domínios atuais
+
+A arquitetura atual do backend possui os seguintes contextos principais:
+
+```text
+                       VIAGEM
+                          |
+          +---------------+---------------+
+          |               |               |
+          v               v               v
+       HOSPEDE          QUARTO         TRASLADO
+          |               |
+          +-------+-------+
+                  |
+                  v
+               ALOCACAO
+                  |
+                  v
+               CHECK-IN
+                  |
+                  v
+                QR CODE
+
+          +-----------------------+
+          |                       |
+          v                       v
+       USUARIO                DASHBOARD
+          |
+          v
+       SECURITY
+```
+
+O diagrama é conceitual e não representa necessariamente relacionamentos físicos de banco de dados.
+
+---
+
+# 8. Viagem como contexto operacional
+
+A `Viagem` funciona como um dos principais elementos agregadores da operação.
+
+Hóspedes, quartos, alocações e traslados são relacionados à viagem correspondente.
+
+Essa associação permite separar operações de eventos ou edições diferentes.
+
+Exemplo:
 
 ```text
 Viagem
-Hospede
-Quarto
+|
+├── Hospedes
+├── Quartos
+│   └── Alocacoes
+├── Traslados
+└── Dashboard
+```
+
+A arquitetura deve impedir associações incompatíveis entre objetos pertencentes a viagens diferentes.
+
+As regras específicas estão documentadas em `regras-negocio.md`.
+
+---
+
+# 9. Hospedagem
+
+Na arquitetura atual, hospedagem não é um domínio persistido independente.
+
+A necessidade operacional da V1 é atendida principalmente por:
+
+```text
+Viagem
+   |
+   v
+Quartos
+   |
+   v
+Alocacoes
+   |
+   v
+Hospedes
+```
+
+O `Quarto` possui capacidade e estado operacional.
+
+A `AlocacaoQuarto` representa a associação do hóspede ao quarto.
+
+Não existem atualmente entidades independentes para:
+
+```text
+Hospedagem
 Cama
 Reserva
-Motorista
-Veiculo
-Traslado
-CheckIn
 ```
+
+Essa decisão reduz complexidade enquanto esses conceitos não forem necessários como objetos independentes de negócio.
+
+Caso a operação futura exija múltiplas propriedades, controle individual de camas ou reservas independentes, o modelo poderá evoluir.
 
 ---
 
-## DTO
+# 10. Check-in e QR Code
 
-Os DTOs serão utilizados para controlar os dados recebidos e enviados pela API.
+Check-in e QR Code são contextos relacionados, mas possuem responsabilidades diferentes.
 
-Exemplo:
+## 10.1 QR Code
+
+O QR Code é utilizado como mecanismo de identificação operacional.
+
+Fluxo conceitual:
 
 ```text
-ViagemRequestDTO
-ViagemResponseDTO
+Hospede cadastrado
+       |
+       v
+codigoCheckIn
+       |
+       v
+QR Code
+       |
+       v
+Identificacao do hospede
 ```
 
-A utilização de DTOs evita que as entidades do banco sejam expostas diretamente pela API.
+O código é gerado para o hóspede e utilizado para recuperar sua identificação operacional.
 
 ---
 
-# 🗂️ Organização dos módulos
+## 10.2 Check-in
 
-O sistema será dividido inicialmente nos seguintes módulos:
+O check-in registra a chegada do hóspede.
+
+Fluxo:
 
 ```text
-BTHS Platform
-│
-├── Viagens
-│
-├── Hóspedes
-│
-├── Hospedagem
-│   ├── Quartos
-│   └── Camas
-│
-├── Reservas
-│
-├── Traslados
-│   ├── Motoristas
-│   └── Veículos
-│
-└── Check-in
+Identificacao do hospede
+          |
+          v
+Verificacao de alocacao
+          |
+          v
+Validacao do status
+          |
+          v
+Registro do check-in
 ```
+
+O backend permanece responsável por decidir se o check-in pode ser realizado.
 
 ---
 
-# 🧠 Domínio da aplicação
+# 11. Traslados
 
-A entidade central do sistema será a **Viagem**.
+O domínio `traslado` representa deslocamentos relacionados aos hóspedes.
 
-Uma viagemNome representa uma experiência organizada pela empresa e poderá possuir diversos hóspedes, hospedagens, traslados e registros de check-in.
-
-A estrutura conceitual inicial será:
-
-```text
-                         VIAGEM
-                            │
-             ┌──────────────┼──────────────┐
-             │              │              │
-             ▼              ▼              ▼
-         HÓSPEDES      HOSPEDAGEM       TRASLADOS
-                            │              │
-                       ┌────┴────┐     ┌───┴────┐
-                       ▼         ▼     ▼        ▼
-                    QUARTOS    CAMAS MOTORISTA VEÍCULO
-             │
-             ▼
-          RESERVAS
-             │
-             ▼
-          CHECK-IN
-```
-
----
-
-# 🏠 Hospedagem
-
-A hospedagem será responsável por representar o local onde os hóspedes ficarão durante a viagemNome.
-
-Ela poderá possuir:
-
-* endereço;
-* quartos;
-* camas;
-* capacidade;
-* informações adicionais.
-
-A divisão dos hóspedes será realizada através das reservas.
-
-Exemplo:
+Estrutura conceitual atual:
 
 ```text
 Viagem
-└── Hospedagem
-    ├── Quarto 01
-    │   ├── Cama 01
-    │   ├── Cama 02
-    │   ├── Cama 03
-    │   └── Cama 04
-    │
-    └── Quarto 02
-        ├── Cama 01
-        ├── Cama 02
-        ├── Cama 03
-        └── Cama 04
+   |
+   v
+Traslado
+   |
+   +--> Hospede
+   |
+   +--> Tipo
+   |
+   +--> Aeroporto
+   |
+   +--> Data/hora prevista
+   |
+   +--> Origem
+   |
+   +--> Destino
+   |
+   +--> Status
+   |
+   └--> Historico de status
 ```
+
+O domínio possui controle de transições de status e histórico das alterações.
+
+Motoristas e veículos não são domínios implementados atualmente.
+
+Eles poderão ser adicionados posteriormente caso a operação necessite de gerenciamento estruturado desses recursos.
 
 ---
 
-# 🚐 Traslados
+# 12. Dashboard
 
-Os traslados representarão os deslocamentos realizados durante a viagemNome.
+O Dashboard é uma camada de leitura agregada da operação.
 
-Um traslado poderá possuir:
+Ele não substitui os domínios que fornecem os dados.
 
-* origem;
-* destino;
-* data;
-* horário de saída;
-* motorista;
-* veículo;
-* status.
+Sua função é consolidar informações existentes.
 
-Exemplo:
+Estrutura conceitual:
 
 ```text
-Aeroporto de Guarulhos
-          │
-          │ 09:30
-          ▼
-    Chácara
+                  DashboardService
+                         |
+        +----------------+----------------+
+        |                |                |
+        v                v                v
+ HospedeRepository  QuartoRepository  TrasladoRepository
+        |                |
+        |         AlocacaoRepository
+        |
+        +----------------+----------------+
+                         |
+                         v
+                 DashboardResponse
 ```
 
-O hóspede poderá consultar as informações do seu traslado através da aplicação.
+Atualmente o dashboard consolida:
+
+* situação dos hóspedes e check-ins;
+* ocupação da hospedagem;
+* situação dos traslados;
+* próximos traslados.
 
 ---
 
-# ✅ Check-in
+# 13. Usuários e segurança
 
-O check-in será utilizado para registrar a chegada do hóspede.
+Usuário e hóspede representam conceitos diferentes.
 
-O sistema deverá permitir identificar:
+Um `Hospede` representa uma pessoa participante de uma viagem.
 
-* hóspede;
-* viagemNome;
-* data e horário da chegada;
-* status do check-in.
+Um `Usuario` representa uma identidade autenticável no sistema.
 
-Exemplo:
+Essa separação permite que a plataforma evolua sem acoplar diretamente os dados operacionais do hóspede ao mecanismo de autenticação.
+
+---
+
+# 14. Spring Security
+
+A segurança já faz parte da arquitetura atual.
+
+O backend utiliza:
+
+* Spring Security;
+* autenticação por e-mail e senha;
+* BCrypt;
+* JWT;
+* filtro JWT;
+* autorização baseada em roles;
+* respostas específicas para falha de autenticação e acesso negado;
+* sessão stateless.
+
+Fluxo simplificado:
 
 ```text
-Hóspede: João da Silva
-Viagem: Tomorrowland Brasil 2027
-Status: CHECK-IN REALIZADO
-Horário: 11:42
+Login
+  |
+  v
+AuthController
+  |
+  v
+AuthService
+  |
+  v
+AuthenticationManager
+  |
+  v
+JWT
+```
+
+Para requisições autenticadas:
+
+```text
+HTTP Request
+     |
+     v
+JwtAuthenticationFilter
+     |
+     v
+Spring Security
+     |
+     +--> autorizado --> Controller
+     |
+     └--> rejeitado
 ```
 
 ---
 
-# 🔐 Segurança
+# 15. Perfis e autorização
 
-A autenticação e autorização serão implementadas em uma etapa posterior utilizando **Spring Security**.
-
-A arquitetura deverá permitir diferentes níveis de acesso.
-
-Inicialmente serão considerados:
+Os perfis da aplicação são:
 
 ```text
 ADMIN
@@ -365,116 +639,381 @@ STAFF
 HOSPEDE
 ```
 
-As permissões específicas serão definidas posteriormente nas regras de negócio.
-
----
-
-# 🗄️ Banco de dados
-
-O banco de dados inicial será o **MySQL**.
-
-As principais entidades previstas são:
+Na configuração atual do backend:
 
 ```text
-Viagem
-Hospede
-Hospedagem
-Quarto
-Cama
-Reserva
-Motorista
-Veiculo
-Traslado
-CheckIn
+/api/auth/**
 ```
 
-Os relacionamentos serão definidos e documentados antes da implementação das entidades Java.
-
----
-
-# 📁 Estrutura prevista do backend
-
-A estrutura inicial do backend seguirá uma organização por domínio:
+é público.
 
 ```text
-src/
-└── main/
-    ├── java/
-    │   └── com/
-    │       └── bths/
-    │           └── platform/
-    │               │
-    │               ├── viagemNome/
-    │               ├── hospede/
-    │               ├── hospedagem/
-    │               ├── reserva/
-    │               ├── traslado/
-    │               ├── motorista/
-    │               ├── veiculo/
-    │               └── checkin/
-    │
-    └── resources/
-        ├── application.properties
-        └── ...
+/api/usuarios/**
 ```
 
-A estrutura poderá ser ajustada durante o desenvolvimento caso novas necessidades arquiteturais apareçam.
+é restrito ao ADMIN.
+
+Os principais endpoints operacionais são acessíveis por:
+
+```text
+ADMIN
+STAFF
+```
+
+A autorização específica para a futura área do HOSPEDE será desenvolvida conforme forem criados os endpoints destinados à experiência do participante.
+
+A interface não substitui essa proteção.
+
+Mesmo que um recurso esteja oculto no frontend, o backend deve validar a autorização correspondente.
 
 ---
 
-# 🔄 Fluxo básico da aplicação
+# 16. Frontend
 
-Um fluxo simples de utilização será:
+O frontend do BTHS Platform será desenvolvido como uma aplicação web mobile-first.
+
+Stack definida:
+
+* Next.js;
+* React;
+* TypeScript;
+* Tailwind CSS;
+* PWA.
+
+O frontend consumirá a API REST do backend.
+
+---
+
+# 17. Aplicação única e experiência por perfil
+
+Não serão mantidos aplicativos separados para ADMIN, STAFF e HOSPEDE.
+
+Uma única aplicação será responsável pelas diferentes experiências.
+
+Após a autenticação, navegação, telas e ações disponíveis serão adaptadas ao perfil do usuário.
+
+Estrutura conceitual:
 
 ```text
-1. Administrador cria uma viagemNome
-             ↓
-2. Hóspedes são cadastrados
-             ↓
-3. Hóspedes são associados à viagemNome
-             ↓
-4. Hospedagem é configurada
-             ↓
-5. Quartos e camas são cadastrados
-             ↓
-6. Hóspedes são distribuídos
-             ↓
-7. Traslados são cadastrados
-             ↓
-8. Motoristas e veículos são associados
-             ↓
-9. Hóspedes consultam suas informações
-             ↓
-10. Hóspedes chegam à hospedagem
-             ↓
-11. Equipe realiza o check-in
+                       LOGIN
+                         |
+                         v
+                  Usuario autenticado
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+        ADMIN          STAFF         HOSPEDE
+          |              |              |
+          v              v              v
+     /dashboard      /dashboard        /app
 ```
 
 ---
 
-# 📈 Evolução da arquitetura
+# 18. Área operacional
 
-A arquitetura inicial será mantida simples para facilitar o desenvolvimento e a evolução do projeto.
+ADMIN e STAFF compartilham a base da interface operacional.
 
-Novas tecnologias e componentes serão adicionados conforme houver necessidade real, evitando complexidade prematura.
+Rotas previstas:
 
-Possíveis evoluções:
+```text
+/dashboard
+/hospedes
+/hospedes/{id}
+/check-in
+/quartos
+/quartos/{id}
+/traslados
+/traslados/{id}
+/viagem
+/minha-conta
+```
 
-* autenticação com JWT;
-* documentação completa da API;
-* testes automatizados;
+ADMIN poderá possuir adicionalmente recursos administrativos, como:
+
+```text
+/usuarios
+/usuarios/{id}
+```
+
+As ações disponíveis dentro de cada tela devem respeitar as permissões do usuário autenticado.
+
+---
+
+# 19. Área do hóspede
+
+O perfil HOSPEDE terá uma experiência simplificada e orientada à própria viagem.
+
+Rotas planejadas:
+
+```text
+/app
+/app/minha-viagem
+/app/minha-hospedagem
+/app/meu-traslado
+/app/meu-qr
+/app/avisos
+/app/perfil
+```
+
+A arquitetura deverá garantir que o hóspede acesse somente informações autorizadas relacionadas à sua própria experiência.
+
+---
+
+# 20. Responsabilidades frontend x backend
+
+A separação entre frontend e backend deve permanecer clara.
+
+## Frontend
+
+Responsável por:
+
+* interface;
+* navegação;
+* formulários;
+* experiência mobile;
+* estados visuais;
+* consumo da API;
+* apresentação de informações;
+* tratamento de respostas da API.
+
+## Backend
+
+Responsável por:
+
+* autenticação;
+* autorização;
+* regras de negócio;
+* persistência;
+* integridade;
+* validações críticas;
+* geração e validação dos dados operacionais;
+* controle de acesso.
+
+O Next.js não deve se transformar em um segundo backend contendo cópias das regras existentes no Spring Boot.
+
+---
+
+# 21. Estratégia de autenticação do frontend
+
+## Arquitetura definida
+
+O backend atual retorna JWT após autenticação válida.
+
+Para a integração com o frontend, a arquitetura deverá evoluir preservando o backend como autoridade da autenticação.
+
+A direção definida para a aplicação web é utilizar cookie `HttpOnly` para reduzir a exposição direta do token ao JavaScript do navegador.
+
+Também estão previstos:
+
+* endpoint para recuperar o usuário autenticado;
+* logout com expiração da autenticação;
+* redirecionamento conforme perfil;
+* tratamento de `401 Unauthorized`;
+* tratamento de `403 Forbidden`.
+
+Esses recursos devem ser implementados incrementalmente durante a integração do frontend.
+
+A arquitetura de autenticação poderá ser refinada durante essa etapa sem duplicar o mecanismo de segurança do backend.
+
+---
+
+# 22. Banco de dados
+
+O banco de dados utilizado pelo backend é MySQL.
+
+A persistência é realizada através de:
+
+```text
+Spring Data JPA
+      |
+      v
+Hibernate
+      |
+      v
+MySQL
+```
+
+O modelo de banco deve acompanhar os domínios realmente necessários à operação.
+
+Novas tabelas e relacionamentos devem ser introduzidos conforme novos requisitos sejam validados.
+
+---
+
+# 23. Tratamento de erros
+
+Exceções de negócio são geradas nos Services e tratadas de maneira centralizada.
+
+Fluxo:
+
+```text
+Service
+   |
+   v
+Domain Exception
+   |
+   v
+GlobalExceptionHandler
+   |
+   v
+HTTP Response
+```
+
+Essa abordagem evita espalhar lógica de tratamento HTTP pelos Services.
+
+Erros de autenticação e autorização possuem tratamento específico dentro da camada de segurança.
+
+---
+
+# 24. Testes
+
+Testes automatizados fazem parte da arquitetura atual do backend.
+
+O projeto utiliza:
+
+```text
+JUnit
+Mockito
+```
+
+A suíte atual cobre Services, Controllers, Security, Repositories e outros comportamentos relevantes do backend.
+
+Os testes devem acompanhar a evolução das regras de negócio.
+
+Alterações estruturais não devem ser consideradas concluídas quando provocarem regressões na suíte existente.
+
+---
+
+# 25. Integração contínua
+
+O projeto possui workflow de integração contínua em:
+
+```text
+.github/workflows/
+```
+
+A execução do backend considera sua localização dentro do diretório:
+
+```text
+backend/
+```
+
+O pipeline realiza build e análise automatizada do projeto.
+
+A integração contínua deverá evoluir junto da estrutura full-stack para incluir as verificações necessárias ao frontend quando ele for incorporado.
+
+---
+
+# 26. Configuração e variáveis de ambiente
+
+Informações sensíveis não devem ser versionadas diretamente no repositório.
+
+O backend utiliza variáveis de ambiente para configurações como:
+
+```text
+DB_USERNAME
+DB_PASSWORD
+JWT_SECRET
+```
+
+Um arquivo de exemplo pode documentar as variáveis necessárias sem armazenar valores reais.
+
+O arquivo `.env` real permanece ignorado pelo Git.
+
+---
+
+# 27. PWA e mobile-first
+
+O frontend será construído priorizando dispositivos móveis.
+
+Essa decisão reflete o contexto de uso do produto, principalmente durante viagens e eventos.
+
+A aplicação deverá funcionar como PWA, permitindo uma experiência próxima à de um aplicativo sem exigir, na primeira versão, aplicações nativas independentes.
+
+### Definido para V1
+
+Não será desenvolvido inicialmente um aplicativo nativo ou híbrido separado.
+
+A prioridade é:
+
+```text
+Web
+  |
+  v
+Mobile-first
+  |
+  v
+PWA
+```
+
+A necessidade de aplicações nativas poderá ser reavaliada futuramente.
+
+---
+
+# 28. Evoluções planejadas
+
+A arquitetura está preparada para evolução incremental.
+
+Entre os recursos ainda planejados estão:
+
+* Swagger/OpenAPI;
 * Docker;
-* sistema de notificações;
+* Docker Compose;
+* frontend completo;
+* endpoints específicos para HOSPEDE;
+* motoristas;
+* veículos;
+* notificações;
+* push notifications;
 * integração com mapas;
-* dashboard operacional;
-* QR Code para check-in;
-* frontend web;
-* aplicativo mobile.
+* relatórios;
+* métricas adicionais;
+* expansão da integração contínua;
+* testes de integração adicionais.
+
+Essas tecnologias ou módulos somente devem ser incorporados quando trouxerem benefício real ao produto.
 
 ---
 
-## 📌 Princípio arquitetural
+# 29. Princípios arquiteturais
+
+A evolução do BTHS Platform deve respeitar alguns princípios.
+
+## Simplicidade
+
+Evitar abstrações e componentes sem necessidade funcional atual.
+
+## Separação de responsabilidades
+
+Cada camada e domínio deve possuir responsabilidades claras.
+
+## Backend como autoridade
+
+Regras críticas, segurança e integridade permanecem no backend.
+
+## Organização por domínio
+
+Código relacionado ao mesmo contexto funcional deve permanecer próximo sempre que possível.
+
+## Evolução incremental
+
+A arquitetura deve crescer conforme necessidades reais do produto.
+
+## Segurança por padrão
+
+Permissões não devem depender apenas da interface.
+
+## Mobile-first
+
+A experiência principal do frontend deve considerar primeiro o uso em dispositivos móveis.
+
+---
+
+# 30. Princípio central
 
 > **Construir primeiro o que a operação precisa, mantendo o código simples, organizado e preparado para evoluir.**
 
-A arquitetura do BTHS Platform deverá acompanhar a evolução do produto, evitando decisões complexas antes que elas sejam necessárias.
+A arquitetura do BTHS Platform deve acompanhar a evolução da Beat Trips sem introduzir complexidade antes que ela seja necessária.
+
+O objetivo não é construir a arquitetura mais complexa possível, mas uma arquitetura suficientemente sólida para resolver o problema atual e evoluir com segurança.
