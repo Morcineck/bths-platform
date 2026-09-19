@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 
 export default function LoginPage() {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-6">
+    <Card>
       <header>
         <p className="text-sm font-medium text-primary">
           Beat Trips
@@ -55,9 +56,9 @@ export default function LoginPage() {
           />
         </div>
         <Button type="submit">
-        Entrar
+          Entrar
         </Button>
       </form>
-    </section>
+    </Card>
   );
 }
