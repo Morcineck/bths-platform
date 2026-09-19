@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.viagem.exception;
 
 public class ViagemNaoEncontradaException extends RuntimeException {
     public ViagemNaoEncontradaException(String mensagem) {

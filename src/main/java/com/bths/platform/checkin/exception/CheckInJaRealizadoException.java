@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.checkin.exception;
 
 public class CheckInJaRealizadoException extends RuntimeException {
     public CheckInJaRealizadoException(String mensagem) {

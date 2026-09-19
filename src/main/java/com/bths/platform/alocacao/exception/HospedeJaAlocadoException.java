@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.alocacao.exception;
 
 public class HospedeJaAlocadoException extends RuntimeException {
     public HospedeJaAlocadoException(String mensagem) {

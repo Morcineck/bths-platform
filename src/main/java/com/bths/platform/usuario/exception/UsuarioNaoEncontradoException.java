@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.usuario.exception;
 
 public class UsuarioNaoEncontradoException extends RuntimeException {
     public UsuarioNaoEncontradoException(String mensagem) {

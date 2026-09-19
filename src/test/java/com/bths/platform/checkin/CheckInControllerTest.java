@@ -2,7 +2,9 @@ package com.bths.platform.checkin;
 
 import com.bths.platform.checkin.dto.CheckInRequest;
 import com.bths.platform.checkin.dto.CheckInResponse;
-import com.bths.platform.exception.*;
+import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
+import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
+import com.bths.platform.handler.*;
 import com.bths.platform.hospede.enums.StatusCheckIn;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import com.bths.platform.exception.HospedeNaoEncontradoException;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 
 @ExtendWith(MockitoExtension.class)
 class CheckInControllerTest {

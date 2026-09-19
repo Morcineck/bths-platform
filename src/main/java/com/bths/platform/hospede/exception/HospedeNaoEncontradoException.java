@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.hospede.exception;
 
 public class HospedeNaoEncontradoException extends RuntimeException {
 

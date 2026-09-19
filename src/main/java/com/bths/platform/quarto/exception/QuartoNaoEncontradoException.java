@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.quarto.exception;
 
 public class QuartoNaoEncontradoException extends RuntimeException {
     public QuartoNaoEncontradoException(String mensagem) {

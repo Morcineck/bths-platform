@@ -4,7 +4,13 @@ package com.bths.platform.alocacao;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 
 import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
-import com.bths.platform.exception.*;
+import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
+import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
+import com.bths.platform.alocacao.exception.ViagemIncompativelException;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.quarto.exception.QuartoIndisponivelException;
+import com.bths.platform.quarto.exception.QuartoLotadoException;
+import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.security.JwtService;
 import com.bths.platform.security.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;

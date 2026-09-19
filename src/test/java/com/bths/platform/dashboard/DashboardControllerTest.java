@@ -4,7 +4,7 @@ import com.bths.platform.dashboard.dto.DashboardHospedagemResponse;
 import com.bths.platform.dashboard.dto.DashboardHospedesResponse;
 import com.bths.platform.dashboard.dto.DashboardResponse;
 import com.bths.platform.dashboard.dto.DashboardTrasladosResponse;
-import com.bths.platform.exception.ViagemNaoEncontradaException;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.security.JwtService;
 import com.bths.platform.security.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;

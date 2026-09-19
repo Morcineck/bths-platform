@@ -1,6 +1,6 @@
 package com.bths.platform.security;
 
-import com.bths.platform.exception.CredenciaisInvalidasException;
+import com.bths.platform.security.exception.CredenciaisInvalidasException;
 import com.bths.platform.security.dto.LoginRequest;
 import com.bths.platform.security.dto.LoginResponse;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -2,7 +2,7 @@ package com.bths.platform.qrcode;
 
 import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
-import com.bths.platform.exception.HospedeNaoEncontradoException;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.qrcode.dto.QrCodeCheckInResponse;

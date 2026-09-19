@@ -1,4 +1,4 @@
-package com.bths.platform.exception;
+package com.bths.platform.traslado.exception;
 
 public class TrasladoNaoEncontradoException extends RuntimeException {
     public TrasladoNaoEncontradoException(String mensagem) {

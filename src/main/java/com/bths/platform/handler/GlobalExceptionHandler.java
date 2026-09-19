@@ -1,5 +1,23 @@
-package com.bths.platform.exception;
+package com.bths.platform.handler;
 
+import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
+import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
+import com.bths.platform.alocacao.exception.ViagemIncompativelException;
+import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
+import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
+import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.quarto.exception.QuartoIndisponivelException;
+import com.bths.platform.quarto.exception.QuartoLotadoException;
+import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
+import com.bths.platform.security.exception.CredenciaisInvalidasException;
+import com.bths.platform.traslado.exception.AeroportoObrigatorioException;
+import com.bths.platform.traslado.exception.MotivoCorrecaoObrigatorioException;
+import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
+import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
+import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

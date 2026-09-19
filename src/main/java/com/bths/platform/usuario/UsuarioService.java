@@ -1,7 +1,7 @@
 package com.bths.platform.usuario;
 
-import com.bths.platform.exception.EmailUsuarioJaCadastradoException;
-import com.bths.platform.exception.UsuarioNaoEncontradoException;
+import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.mapper.UsuarioMapper;

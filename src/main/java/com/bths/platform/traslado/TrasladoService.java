@@ -1,16 +1,22 @@
 package com.bths.platform.traslado;
 
-import com.bths.platform.exception.*;
+import com.bths.platform.alocacao.exception.ViagemIncompativelException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.traslado.dto.*;
 import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
+import com.bths.platform.traslado.exception.AeroportoObrigatorioException;
+import com.bths.platform.traslado.exception.MotivoCorrecaoObrigatorioException;
+import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
+import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
 import com.bths.platform.traslado.mapper.HistoricoStatusTrasladoMapper;
 import com.bths.platform.traslado.mapper.TrasladoMapper;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 

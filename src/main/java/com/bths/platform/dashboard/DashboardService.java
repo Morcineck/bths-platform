@@ -2,7 +2,7 @@ package com.bths.platform.dashboard;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.dashboard.dto.*;
-import com.bths.platform.exception.ViagemNaoEncontradaException;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.quarto.QuartoRepository;

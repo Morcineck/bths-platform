@@ -1,7 +1,7 @@
 package com.bths.platform.quarto;
 
-import com.bths.platform.exception.QuartoNaoEncontradoException;
-import com.bths.platform.exception.ViagemNaoEncontradaException;
+import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoRequest;
 import com.bths.platform.quarto.dto.QuartoResponse;
 import com.bths.platform.quarto.mapper.QuartoMapper;
