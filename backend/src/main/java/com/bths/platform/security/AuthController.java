@@ -8,6 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -55,5 +56,13 @@ public class AuthController {
                 authService.buscarUsuarioAutenticado(authentication.getName());
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/csrf")
+    public ResponseEntity<CsrfToken> csrf(
+            CsrfToken csrfToken
+    ) {
+
+        return ResponseEntity.ok(csrfToken);
     }
 }
