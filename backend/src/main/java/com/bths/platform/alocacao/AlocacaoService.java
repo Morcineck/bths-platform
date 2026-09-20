@@ -225,4 +225,22 @@ public class AlocacaoService {
 
         return response;
     }
+
+    public AlocacaoQuartoResponse buscarAlocacaoPorHospedeEViagem(
+            Long hospedeId,
+            Long viagemId
+    ) {
+
+        AlocacaoQuarto alocacao = alocacaoRepository
+                .findByHospedeIdAndViagemId(
+                        hospedeId,
+                        viagemId
+                )
+                .orElseThrow(() -> new AlocacaoNaoEncontradaException(
+                                "Alocação não encontrada!"
+                        )
+                );
+
+        return alocacaoMapper.paraResponse(alocacao);
+    }
 }

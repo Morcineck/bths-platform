@@ -4,7 +4,12 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 
 import { Card } from "@/components/ui/Card";
-import { alocarHospedeEmQuarto } from "@/features/alocacao/services/alocacaoService";
+import {
+  alocarHospedeEmQuarto,
+  buscarAlocacaoPorHospedeEViagem,
+  trocarQuarto,
+} from "@/features/alocacao/services/alocacaoService";
+import type { AlocacaoQuarto } from "@/features/alocacao/types/alocacao";
 import {
   consultarCheckIn,
   realizarCheckIn,
@@ -40,6 +45,9 @@ export default function HospedeDetalhePage({
   const [quartos, setQuartos] =
     useState<Quarto[]>([]);
 
+  const [alocacao, setAlocacao] =
+    useState<AlocacaoQuarto | null>(null);
+
   const [
     quartoSelecionadoId,
     setQuartoSelecionadoId,
@@ -50,6 +58,25 @@ export default function HospedeDetalhePage({
 
   const [erroAlocacao, setErroAlocacao] =
     useState("");
+
+  const [
+    sucessoAlocacao,
+    setSucessoAlocacao,
+  ] = useState("");
+
+  const [novoQuartoId, setNovoQuartoId] =
+    useState("");
+
+  const [trocandoQuarto, setTrocandoQuarto] =
+    useState(false);
+
+  const [erroTrocaQuarto, setErroTrocaQuarto] =
+    useState("");
+
+  const [
+    sucessoTrocaQuarto,
+    setSucessoTrocaQuarto,
+  ] = useState("");
 
   const [carregando, setCarregando] =
     useState(true);
@@ -86,6 +113,16 @@ export default function HospedeDetalhePage({
           );
 
         setCheckIn(dadosCheckIn);
+
+        if (dadosCheckIn.quartoId !== null) {
+          const dadosAlocacao =
+            await buscarAlocacaoPorHospedeEViagem(
+              Number(id),
+              dados.viagemId,
+            );
+
+          setAlocacao(dadosAlocacao);
+        }
 
         const dadosQuartos =
           await listarQuartosPorViagem(
@@ -128,8 +165,9 @@ export default function HospedeDetalhePage({
     try {
       setAlocandoQuarto(true);
       setErroAlocacao("");
+      setSucessoAlocacao("");
 
-      const alocacao =
+      const novaAlocacao =
         await alocarHospedeEmQuarto({
           hospedeId: Number(id),
           quartoId: Number(
@@ -137,24 +175,91 @@ export default function HospedeDetalhePage({
           ),
         });
 
+      setAlocacao(novaAlocacao);
+
       setCheckIn((checkInAtual) =>
         checkInAtual
           ? {
               ...checkInAtual,
-              quartoId: alocacao.quartoId,
+              quartoId:
+                novaAlocacao.quartoId,
               quartoNome:
-                alocacao.quartoNome,
+                novaAlocacao.quartoNome,
             }
           : checkInAtual,
       );
 
       setQuartoSelecionadoId("");
+
+      setSucessoAlocacao(
+        `Hóspede alocado com sucesso no quarto ${novaAlocacao.quartoNome}.`,
+      );
     } catch {
+      setSucessoAlocacao("");
+
       setErroAlocacao(
         "Não foi possível alocar o hóspede no quarto.",
       );
     } finally {
       setAlocandoQuarto(false);
+    }
+  }
+
+  async function handleTrocarQuarto() {
+    if (!alocacao) {
+      setErroTrocaQuarto(
+        "Alocação do hóspede não encontrada.",
+      );
+      return;
+    }
+
+    if (!novoQuartoId) {
+      setErroTrocaQuarto(
+        "Selecione o novo quarto.",
+      );
+      return;
+    }
+
+    try {
+      setTrocandoQuarto(true);
+      setErroTrocaQuarto("");
+      setSucessoTrocaQuarto("");
+
+      const alocacaoAtualizada =
+        await trocarQuarto(
+          alocacao.id,
+          Number(novoQuartoId),
+        );
+
+      setAlocacao(alocacaoAtualizada);
+
+      setCheckIn((checkInAtual) =>
+        checkInAtual
+          ? {
+              ...checkInAtual,
+              quartoId:
+                alocacaoAtualizada.quartoId,
+              quartoNome:
+                alocacaoAtualizada.quartoNome,
+            }
+          : checkInAtual,
+      );
+
+      setNovoQuartoId("");
+
+      setSucessoTrocaQuarto(
+        `Quarto alterado com sucesso para ${alocacaoAtualizada.quartoNome}.`,
+      );
+    } catch (error) {
+      setSucessoTrocaQuarto("");
+
+      setErroTrocaQuarto(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível trocar o quarto do hóspede.",
+      );
+    } finally {
+      setTrocandoQuarto(false);
     }
   }
 
@@ -392,19 +497,95 @@ export default function HospedeDetalhePage({
         </div>
 
         {checkIn &&
-          checkIn.statusCheckIn !==
-            "REALIZADO" &&
+          checkIn.quartoId !== null &&
+          alocacao && (
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="novo-quarto"
+                  className="mb-2 block text-sm font-medium text-foreground"
+                >
+                  Trocar quarto
+                </label>
+
+                <select
+                  id="novo-quarto"
+                  value={novoQuartoId}
+                  onChange={(event) =>
+                    setNovoQuartoId(
+                      event.target.value,
+                    )
+                  }
+                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                >
+                  <option value="">
+                    Selecione o novo quarto
+                  </option>
+
+                  {quartos
+                    .filter(
+                      (quarto) =>
+                        quarto.id !==
+                        checkIn.quartoId,
+                    )
+                    .map((quarto) => (
+                      <option
+                        key={quarto.id}
+                        value={quarto.id}
+                      >
+                        {quarto.nome} —{" "}
+                        {quarto.tipo}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {erroTrocaQuarto && (
+                <p
+                  role="alert"
+                  className="text-sm text-red-400"
+                >
+                  {erroTrocaQuarto}
+                </p>
+              )}
+
+              {sucessoTrocaQuarto && (
+                <p className="text-sm text-green-400">
+                  {sucessoTrocaQuarto}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleTrocarQuarto}
+                disabled={
+                  trocandoQuarto ||
+                  !novoQuartoId
+                }
+                className="rounded-xl border border-primary px-5 py-3 text-sm font-semibold text-primary transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {trocandoQuarto
+                  ? "Trocando quarto..."
+                  : "Trocar quarto"}
+              </button>
+            </div>
+          )}
+
+        {checkIn &&
           checkIn.quartoId === null && (
             <div className="space-y-4">
-              <div className="rounded-xl border border-border bg-surface p-4">
-                <p className="text-sm font-medium text-foreground">
-                  Check-in indisponível
-                </p>
+              {checkIn.statusCheckIn !==
+                "REALIZADO" && (
+                <div className="rounded-xl border border-border bg-surface p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    Check-in indisponível
+                  </p>
 
-                <p className="mt-1 text-sm text-muted">
-                  Este hóspede precisa ser alocado em um quarto antes de realizar o check-in.
-                </p>
-              </div>
+                  <p className="mt-1 text-sm text-muted">
+                    Este hóspede precisa ser alocado em um quarto antes de realizar o check-in.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label
@@ -450,6 +631,12 @@ export default function HospedeDetalhePage({
                   className="text-sm text-red-400"
                 >
                   {erroAlocacao}
+                </p>
+              )}
+
+              {sucessoAlocacao && (
+                <p className="text-sm text-green-400">
+                  {sucessoAlocacao}
                 </p>
               )}
 
