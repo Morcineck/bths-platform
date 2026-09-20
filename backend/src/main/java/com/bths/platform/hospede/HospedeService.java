@@ -130,5 +130,22 @@ public class HospedeService {
         hospedeRepository.delete(hospede);
     }
 
+    public List<HospedeResponse> listarHospedesPorViagem(
+            Long viagemId
+
+    ) {
+
+        if (!viagemRepository.existsById(viagemId)) {
+            throw new HospedeNaoEncontradoException(
+                    "Viagem não encontrada!"
+            );
+        }
+
+        return hospedeRepository.findByViagemId(viagemId)
+                .stream()
+                .map(hospedeMapper::paraResponse)
+                .toList();
+    }
+
 }
 

@@ -13,13 +13,12 @@ export function OperationalNavigation() {
             <span>Início</span>
           </Link>
 
-          <button
-            type="button"
-            disabled
-            className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs text-muted opacity-50"
+          <Link
+            href="/hospedes"
+            className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
           >
             <span>Hóspedes</span>
-          </button>
+          </Link>
 
           <button
             type="button"
@@ -55,13 +54,12 @@ export function OperationalNavigation() {
                 Dashboard
               </Link>
 
-              <button
-                type="button"
-                disabled
-                className="block w-full rounded-xl px-4 py-3 text-left text-sm text-muted opacity-50"
-              >
-                Hóspedes
-              </button>
+            <Link
+              href="/hospedes"
+              className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
+            >
+              Hóspedes
+            </Link>
 
               <button
                 type="button"

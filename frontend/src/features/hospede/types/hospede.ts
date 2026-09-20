@@ -1,0 +1,17 @@
+export type StatusCheckIn =
+  | "PENDENTE"
+  | "REALIZADO"
+  | "NAO_COMPARECEU";
+
+export type Hospede = {
+  id: number;
+  nomeCompleto: string;
+  cpf: string;
+  telefone: string;
+  email: string;
+  dataNascimento: string;
+  horarioPrevistoChegada: string;
+  statusCheckIn: StatusCheckIn;
+  viagemId: number;
+  viagemNome: string;
+};
