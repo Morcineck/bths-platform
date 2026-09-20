@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { OperationalNavigation } from "@/components/layout/OperationalNavigation";
 
 import { buscarUsuarioAutenticado } from "@/features/auth/services/authService";
 import type { UsuarioAutenticado } from "@/features/auth/types/auth";
@@ -59,7 +60,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex w-full items-center justify-between px-6 py-4">
           <div>
             <p className="text-sm font-semibold text-primary">
               Beat Trips
@@ -82,9 +83,15 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-6 py-8">
-        {children}
-      </main>
+      <div className="flex min-h-[calc(100vh-73px)]">
+        <OperationalNavigation />
+
+        <main className="w-full min-w-0 px-6 py-8 pb-24 md:pb-8">
+          <div className="mx-auto w-full max-w-6xl">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

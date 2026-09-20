@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { QuickActions } from "@/features/dashboard/components/QuickActions";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { buscarDashboard } from "@/features/dashboard/services/dashboardService";
@@ -225,6 +226,50 @@ export default function DashboardPage() {
           </p>
         </Card>
       </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">
+            Atenção necessária
+          </h2>
+
+          <p className="mt-1 text-sm text-muted">
+            Situações que merecem acompanhamento da equipe.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <p className="text-sm font-medium text-foreground">
+              Check-ins pendentes
+            </p>
+
+            <p className="mt-2 text-3xl font-semibold text-foreground">
+              {dashboard.hospedes.pendentes}
+            </p>
+
+            <p className="mt-2 text-sm text-muted">
+              Hóspedes ainda aguardando check-in.
+            </p>
+          </Card>
+
+          <Card>
+            <p className="text-sm font-medium text-foreground">
+              Capacidade disponível
+            </p>
+
+            <p className="mt-2 text-3xl font-semibold text-foreground">
+              {dashboard.hospedagem.disponiveis}
+            </p>
+
+            <p className="mt-2 text-sm text-muted">
+              Vagas ainda disponíveis na hospedagem.
+            </p>
+          </Card>
+        </div>
+      </section>
+
+      <QuickActions />
 
       <section className="space-y-4">
         <div>
