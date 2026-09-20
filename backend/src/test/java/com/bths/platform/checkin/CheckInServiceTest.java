@@ -4,20 +4,24 @@ import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.checkin.dto.CheckInRequest;
 import com.bths.platform.checkin.dto.CheckInResponse;
-import com.bths.platform.checkin.mapper.CheckInMapper;
 import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
-import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
+import com.bths.platform.checkin.mapper.CheckInMapper;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.enums.StatusCheckIn;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.quarto.Quarto;
+import com.bths.platform.usuario.Usuario;
+import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.viagem.Viagem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
 
@@ -36,6 +40,9 @@ class CheckInServiceTest {
     @Mock
     private CheckInMapper checkInMapper;
 
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
     private CheckInService checkInService;
 
     @BeforeEach
@@ -44,7 +51,16 @@ class CheckInServiceTest {
         checkInService = new CheckInService(
                 hospedeRepository,
                 alocacaoRepository,
-                checkInMapper
+                checkInMapper,
+                usuarioRepository
+        );
+    }
+
+    private Authentication criarAuthentication() {
+
+        return new UsernamePasswordAuthenticationToken(
+                "admin@beattrips.com",
+                null
         );
     }
 
@@ -53,6 +69,9 @@ class CheckInServiceTest {
 
         // Arrange
         Long hospedeId = 1L;
+
+        Authentication authentication =
+                criarAuthentication();
 
         Viagem viagem = new Viagem();
         viagem.setId(1L);
@@ -63,46 +82,90 @@ class CheckInServiceTest {
         Hospede hospede = new Hospede();
         hospede.setId(hospedeId);
         hospede.setNomeCompleto("João da Silva");
-        hospede.setStatusCheckIn(StatusCheckIn.PENDENTE);
+        hospede.setStatusCheckIn(
+                StatusCheckIn.PENDENTE
+        );
         hospede.setViagem(viagem);
 
-        AlocacaoQuarto alocacao = new AlocacaoQuarto();
+        AlocacaoQuarto alocacao =
+                new AlocacaoQuarto();
+
         alocacao.setHospede(hospede);
         alocacao.setQuarto(quarto);
         alocacao.setViagem(viagem);
 
-        CheckInRequest request = new CheckInRequest();
-        request.setResponsavel("Robson");
-        request.setObservacao("Hóspede chegou normalmente");
+        Usuario usuario = new Usuario();
+        usuario.setNome("Robson");
+        usuario.setEmail("admin@beattrips.com");
 
-        CheckInResponse responseEsperada = new CheckInResponse();
+        CheckInRequest request =
+                new CheckInRequest();
+
+        request.setObservacao(
+                "Hóspede chegou normalmente"
+        );
+
+        CheckInResponse responseEsperada =
+                new CheckInResponse();
+
         responseEsperada.setHospedeId(hospedeId);
-        responseEsperada.setStatusCheckIn(StatusCheckIn.REALIZADO);
+        responseEsperada.setStatusCheckIn(
+                StatusCheckIn.REALIZADO
+        );
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.of(hospede));
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
 
-        when(alocacaoRepository.findByHospedeIdAndViagemId(
-                hospedeId,
-                viagem.getId()
-        )).thenReturn(Optional.of(alocacao));
+        when(
+                alocacaoRepository
+                        .findByHospedeIdAndViagemId(
+                                hospedeId,
+                                viagem.getId()
+                        )
+        ).thenReturn(
+                Optional.of(alocacao)
+        );
 
-        when(hospedeRepository.save(hospede))
-                .thenReturn(hospede);
+        when(
+                usuarioRepository.findByEmail(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
 
-        when(checkInMapper.paraResponse(hospede, alocacao))
-                .thenReturn(responseEsperada);
+        when(
+                hospedeRepository.save(hospede)
+        ).thenReturn(hospede);
+
+        when(
+                checkInMapper.paraResponse(
+                        hospede,
+                        alocacao
+                )
+        ).thenReturn(responseEsperada);
 
         // Act
         CheckInResponse response =
                 checkInService.realizarCheckIn(
                         hospedeId,
-                        request
+                        request,
+                        authentication
                 );
 
         // Assert
         assertNotNull(response);
-        assertEquals(hospedeId, response.getHospedeId());
+
+        assertEquals(
+                hospedeId,
+                response.getHospedeId()
+        );
+
         assertEquals(
                 StatusCheckIn.REALIZADO,
                 response.getStatusCheckIn()
@@ -113,28 +176,47 @@ class CheckInServiceTest {
                 hospede.getStatusCheckIn()
         );
 
-        assertNotNull(hospede.getDataHoraCheckIn());
+        assertNotNull(
+                hospede.getDataHoraCheckIn()
+        );
+
         assertEquals(
                 "Robson",
                 hospede.getResponsavelCheckIn()
         );
+
         assertEquals(
                 "Hóspede chegou normalmente",
                 hospede.getObservacaoCheckIn()
         );
 
-        verify(hospedeRepository).findById(hospedeId);
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
-        verify(alocacaoRepository)
-                .findByHospedeIdAndViagemId(
-                        hospedeId,
-                        viagem.getId()
-                );
+        verify(
+                alocacaoRepository
+        ).findByHospedeIdAndViagemId(
+                hospedeId,
+                viagem.getId()
+        );
 
-        verify(hospedeRepository).save(hospede);
+        verify(
+                usuarioRepository
+        ).findByEmail(
+                "admin@beattrips.com"
+        );
 
-        verify(checkInMapper)
-                .paraResponse(hospede, alocacao);
+        verify(
+                hospedeRepository
+        ).save(hospede);
+
+        verify(
+                checkInMapper
+        ).paraResponse(
+                hospede,
+                alocacao
+        );
     }
 
     @Test
@@ -143,20 +225,30 @@ class CheckInServiceTest {
         // Arrange
         Long hospedeId = 999L;
 
-        CheckInRequest request = new CheckInRequest();
-        request.setResponsavel("Robson");
+        Authentication authentication =
+                criarAuthentication();
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.empty());
+        CheckInRequest request =
+                new CheckInRequest();
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
 
         // Act + Assert
         HospedeNaoEncontradoException exception =
                 assertThrows(
                         HospedeNaoEncontradoException.class,
-                        () -> checkInService.realizarCheckIn(
-                                hospedeId,
-                                request
-                        )
+                        () ->
+                                checkInService.realizarCheckIn(
+                                        hospedeId,
+                                        request,
+                                        authentication
+                                )
                 );
 
         assertEquals(
@@ -164,15 +256,22 @@ class CheckInServiceTest {
                 exception.getMessage()
         );
 
-        verify(hospedeRepository).findById(hospedeId);
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
         verifyNoInteractions(
                 alocacaoRepository,
-                checkInMapper
+                checkInMapper,
+                usuarioRepository
         );
 
-        verify(hospedeRepository, never())
-                .save(any(Hospede.class));
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
     }
 
     @Test
@@ -181,24 +280,36 @@ class CheckInServiceTest {
         // Arrange
         Long hospedeId = 1L;
 
+        Authentication authentication =
+                criarAuthentication();
+
         Hospede hospede = new Hospede();
         hospede.setId(hospedeId);
-        hospede.setStatusCheckIn(StatusCheckIn.REALIZADO);
+        hospede.setStatusCheckIn(
+                StatusCheckIn.REALIZADO
+        );
 
-        CheckInRequest request = new CheckInRequest();
-        request.setResponsavel("Robson");
+        CheckInRequest request =
+                new CheckInRequest();
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.of(hospede));
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
 
         // Act + Assert
         CheckInJaRealizadoException exception =
                 assertThrows(
                         CheckInJaRealizadoException.class,
-                        () -> checkInService.realizarCheckIn(
-                                hospedeId,
-                                request
-                        )
+                        () ->
+                                checkInService.realizarCheckIn(
+                                        hospedeId,
+                                        request,
+                                        authentication
+                                )
                 );
 
         assertEquals(
@@ -206,14 +317,21 @@ class CheckInServiceTest {
                 exception.getMessage()
         );
 
-        verify(hospedeRepository).findById(hospedeId);
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
-        verify(hospedeRepository, never())
-                .save(any(Hospede.class));
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
 
         verifyNoInteractions(
                 alocacaoRepository,
-                checkInMapper
+                checkInMapper,
+                usuarioRepository
         );
     }
 
@@ -224,33 +342,50 @@ class CheckInServiceTest {
         Long hospedeId = 4L;
         Long viagemId = 1L;
 
+        Authentication authentication =
+                criarAuthentication();
+
         Viagem viagem = new Viagem();
         viagem.setId(viagemId);
 
         Hospede hospede = new Hospede();
         hospede.setId(hospedeId);
-        hospede.setStatusCheckIn(StatusCheckIn.PENDENTE);
+        hospede.setStatusCheckIn(
+                StatusCheckIn.PENDENTE
+        );
         hospede.setViagem(viagem);
 
-        CheckInRequest request = new CheckInRequest();
-        request.setResponsavel("Robson");
+        CheckInRequest request =
+                new CheckInRequest();
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.of(hospede));
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
 
-        when(alocacaoRepository.findByHospedeIdAndViagemId(
-                hospedeId,
-                viagemId
-        )).thenReturn(Optional.empty());
+        when(
+                alocacaoRepository
+                        .findByHospedeIdAndViagemId(
+                                hospedeId,
+                                viagemId
+                        )
+        ).thenReturn(
+                Optional.empty()
+        );
 
         // Act + Assert
         HospedeSemAlocacaoException exception =
                 assertThrows(
                         HospedeSemAlocacaoException.class,
-                        () -> checkInService.realizarCheckIn(
-                                hospedeId,
-                                request
-                        )
+                        () ->
+                                checkInService.realizarCheckIn(
+                                        hospedeId,
+                                        request,
+                                        authentication
+                                )
                 );
 
         assertEquals(
@@ -258,18 +393,28 @@ class CheckInServiceTest {
                 exception.getMessage()
         );
 
-        verify(hospedeRepository).findById(hospedeId);
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
-        verify(alocacaoRepository)
-                .findByHospedeIdAndViagemId(
-                        hospedeId,
-                        viagemId
-                );
+        verify(
+                alocacaoRepository
+        ).findByHospedeIdAndViagemId(
+                hospedeId,
+                viagemId
+        );
 
-        verify(hospedeRepository, never())
-                .save(any(Hospede.class));
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
 
-        verifyNoInteractions(checkInMapper);
+        verifyNoInteractions(
+                checkInMapper,
+                usuarioRepository
+        );
     }
 
     @Test
@@ -288,61 +433,130 @@ class CheckInServiceTest {
 
         Hospede hospede = new Hospede();
         hospede.setId(hospedeId);
-        hospede.setNomeCompleto("João da Silva");
-        hospede.setStatusCheckIn(StatusCheckIn.REALIZADO);
+        hospede.setNomeCompleto(
+                "João da Silva"
+        );
+        hospede.setStatusCheckIn(
+                StatusCheckIn.REALIZADO
+        );
         hospede.setViagem(viagem);
 
-        AlocacaoQuarto alocacao = new AlocacaoQuarto();
+        AlocacaoQuarto alocacao =
+                new AlocacaoQuarto();
+
         alocacao.setHospede(hospede);
         alocacao.setQuarto(quarto);
         alocacao.setViagem(viagem);
 
-        CheckInResponse responseEsperada = new CheckInResponse();
-        responseEsperada.setHospedeId(hospedeId);
-        responseEsperada.setHospedeNome("João da Silva");
-        responseEsperada.setStatusCheckIn(StatusCheckIn.REALIZADO);
+        CheckInResponse responseEsperada =
+                new CheckInResponse();
+
+        responseEsperada.setHospedeId(
+                hospedeId
+        );
+
+        responseEsperada.setHospedeNome(
+                "João da Silva"
+        );
+
+        responseEsperada.setStatusCheckIn(
+                StatusCheckIn.REALIZADO
+        );
+
         responseEsperada.setQuartoId(2L);
-        responseEsperada.setQuartoNome("Suíte 01");
+        responseEsperada.setQuartoNome(
+                "Suíte 01"
+        );
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.of(hospede));
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
 
-        when(alocacaoRepository.findByHospedeIdAndViagemId(
-                hospedeId,
-                viagemId
-        )).thenReturn(Optional.of(alocacao));
+        when(
+                alocacaoRepository
+                        .findByHospedeIdAndViagemId(
+                                hospedeId,
+                                viagemId
+                        )
+        ).thenReturn(
+                Optional.of(alocacao)
+        );
 
-        when(checkInMapper.paraResponse(hospede, alocacao))
-                .thenReturn(responseEsperada);
+        when(
+                checkInMapper.paraResponse(
+                        hospede,
+                        alocacao
+                )
+        ).thenReturn(
+                responseEsperada
+        );
 
         // Act
         CheckInResponse response =
-                checkInService.consultarCheckIn(hospedeId);
+                checkInService.consultarCheckIn(
+                        hospedeId
+                );
 
         // Assert
         assertNotNull(response);
-        assertEquals(hospedeId, response.getHospedeId());
-        assertEquals("João da Silva", response.getHospedeNome());
+
+        assertEquals(
+                hospedeId,
+                response.getHospedeId()
+        );
+
+        assertEquals(
+                "João da Silva",
+                response.getHospedeNome()
+        );
+
         assertEquals(
                 StatusCheckIn.REALIZADO,
                 response.getStatusCheckIn()
         );
-        assertEquals(2L, response.getQuartoId());
-        assertEquals("Suíte 01", response.getQuartoNome());
 
-        verify(hospedeRepository).findById(hospedeId);
+        assertEquals(
+                2L,
+                response.getQuartoId()
+        );
 
-        verify(alocacaoRepository)
-                .findByHospedeIdAndViagemId(
-                        hospedeId,
-                        viagemId
-                );
+        assertEquals(
+                "Suíte 01",
+                response.getQuartoNome()
+        );
 
-        verify(checkInMapper)
-                .paraResponse(hospede, alocacao);
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
-        verify(hospedeRepository, never())
-                .save(any(Hospede.class));
+        verify(
+                alocacaoRepository
+        ).findByHospedeIdAndViagemId(
+                hospedeId,
+                viagemId
+        );
+
+        verify(
+                checkInMapper
+        ).paraResponse(
+                hospede,
+                alocacao
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+
+        verifyNoInteractions(
+                usuarioRepository
+        );
     }
 
     @Test
@@ -357,29 +571,61 @@ class CheckInServiceTest {
 
         Hospede hospede = new Hospede();
         hospede.setId(hospedeId);
-        hospede.setNomeCompleto("Carlos Henrique");
-        hospede.setStatusCheckIn(StatusCheckIn.PENDENTE);
+        hospede.setNomeCompleto(
+                "Carlos Henrique"
+        );
+        hospede.setStatusCheckIn(
+                StatusCheckIn.PENDENTE
+        );
         hospede.setViagem(viagem);
 
-        CheckInResponse responseEsperada = new CheckInResponse();
-        responseEsperada.setHospedeId(hospedeId);
-        responseEsperada.setHospedeNome("Carlos Henrique");
-        responseEsperada.setStatusCheckIn(StatusCheckIn.PENDENTE);
+        CheckInResponse responseEsperada =
+                new CheckInResponse();
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.of(hospede));
+        responseEsperada.setHospedeId(
+                hospedeId
+        );
 
-        when(alocacaoRepository.findByHospedeIdAndViagemId(
-                hospedeId,
-                viagemId
-        )).thenReturn(Optional.empty());
+        responseEsperada.setHospedeNome(
+                "Carlos Henrique"
+        );
 
-        when(checkInMapper.paraResponse(hospede, null))
-                .thenReturn(responseEsperada);
+        responseEsperada.setStatusCheckIn(
+                StatusCheckIn.PENDENTE
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
+
+        when(
+                alocacaoRepository
+                        .findByHospedeIdAndViagemId(
+                                hospedeId,
+                                viagemId
+                        )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        when(
+                checkInMapper.paraResponse(
+                        hospede,
+                        null
+                )
+        ).thenReturn(
+                responseEsperada
+        );
 
         // Act
         CheckInResponse response =
-                checkInService.consultarCheckIn(hospedeId);
+                checkInService.consultarCheckIn(
+                        hospedeId
+                );
 
         // Assert
         assertNotNull(response);
@@ -399,23 +645,42 @@ class CheckInServiceTest {
                 response.getStatusCheckIn()
         );
 
-        assertNull(response.getQuartoId());
-        assertNull(response.getQuartoNome());
+        assertNull(
+                response.getQuartoId()
+        );
 
-        verify(hospedeRepository)
-                .findById(hospedeId);
+        assertNull(
+                response.getQuartoNome()
+        );
 
-        verify(alocacaoRepository)
-                .findByHospedeIdAndViagemId(
-                        hospedeId,
-                        viagemId
-                );
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
-        verify(checkInMapper)
-                .paraResponse(hospede, null);
+        verify(
+                alocacaoRepository
+        ).findByHospedeIdAndViagemId(
+                hospedeId,
+                viagemId
+        );
 
-        verify(hospedeRepository, never())
-                .save(any(Hospede.class));
+        verify(
+                checkInMapper
+        ).paraResponse(
+                hospede,
+                null
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+
+        verifyNoInteractions(
+                usuarioRepository
+        );
     }
 
     @Test
@@ -424,14 +689,22 @@ class CheckInServiceTest {
         // Arrange
         Long hospedeId = 999L;
 
-        when(hospedeRepository.findById(hospedeId))
-                .thenReturn(Optional.empty());
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
 
         // Act + Assert
         HospedeNaoEncontradoException exception =
                 assertThrows(
                         HospedeNaoEncontradoException.class,
-                        () -> checkInService.consultarCheckIn(hospedeId)
+                        () ->
+                                checkInService.consultarCheckIn(
+                                        hospedeId
+                                )
                 );
 
         assertEquals(
@@ -439,15 +712,21 @@ class CheckInServiceTest {
                 exception.getMessage()
         );
 
-        verify(hospedeRepository)
-                .findById(hospedeId);
+        verify(
+                hospedeRepository
+        ).findById(hospedeId);
 
         verifyNoInteractions(
                 alocacaoRepository,
-                checkInMapper
+                checkInMapper,
+                usuarioRepository
         );
 
-        verify(hospedeRepository, never())
-                .save(any(Hospede.class));
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
     }
 }

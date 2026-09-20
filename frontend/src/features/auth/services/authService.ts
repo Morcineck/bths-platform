@@ -1,37 +1,14 @@
+import {
+  buscarCsrfTokenDoCookie,
+  inicializarCsrf,
+} from "./csrfService";
+
 import type {
   LoginRequest,
   UsuarioAutenticado,
 } from "../types/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-async function inicializarCsrf(): Promise<void> {
-  const response = await fetch(`${API_URL}/api/auth/csrf`, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      "Não foi possível obter o token de segurança.",
-    );
-  }
-}
-
-function buscarCsrfTokenDoCookie(): string {
-  const cookie = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith("XSRF-TOKEN="));
-
-  if (!cookie) {
-    throw new Error(
-      "Token de segurança não encontrado.",
-    );
-  }
-
-  return decodeURIComponent(
-    cookie.substring("XSRF-TOKEN=".length),
-  );
-}
 
 export async function login(
   dados: LoginRequest,
@@ -51,7 +28,9 @@ export async function login(
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível realizar o login.");
+    throw new Error(
+      "Não foi possível realizar o login.",
+    );
   }
 }
 

@@ -4,10 +4,13 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 
 import { Card } from "@/components/ui/Card";
+import {
+  consultarCheckIn,
+  realizarCheckIn,
+} from "@/features/checkin/services/checkInService";
+import type { CheckInResponse } from "@/features/checkin/types/checkin";
 import { buscarHospedePorId } from "@/features/hospede/services/hospedeService";
 import type { Hospede } from "@/features/hospede/types/hospede";
-import { consultarCheckIn } from "@/features/checkin/services/checkInService";
-import type { CheckInResponse } from "@/features/checkin/types/checkin";
 import { listarTrasladosPorHospede } from "@/features/traslado/services/trasladoService";
 import type { Traslado } from "@/features/traslado/types/traslado";
 
@@ -34,6 +37,15 @@ export default function HospedeDetalhePage({
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
 
+  const [observacaoCheckIn, setObservacaoCheckIn] =
+    useState("");
+
+  const [realizandoCheckIn, setRealizandoCheckIn] =
+    useState(false);
+
+  const [erroCheckIn, setErroCheckIn] =
+    useState("");
+
   useEffect(() => {
     async function carregarHospede() {
       try {
@@ -51,12 +63,12 @@ export default function HospedeDetalhePage({
 
         setCheckIn(dadosCheckIn);
 
-        const dadosTraslados = await listarTrasladosPorHospede(
-          Number(id),
-        );
+        const dadosTraslados =
+          await listarTrasladosPorHospede(
+            Number(id),
+          );
 
         setTraslados(dadosTraslados);
-
       } catch {
         setErro(
           "Não foi possível carregar os dados do hóspede.",
@@ -68,6 +80,41 @@ export default function HospedeDetalhePage({
 
     carregarHospede();
   }, [id]);
+
+  async function handleRealizarCheckIn() {
+    try {
+      setRealizandoCheckIn(true);
+      setErroCheckIn("");
+
+      const response = await realizarCheckIn(
+        Number(id),
+        {
+          observacao:
+            observacaoCheckIn || undefined,
+        },
+      );
+
+      setCheckIn(response);
+
+      setHospede((hospedeAtual) =>
+        hospedeAtual
+          ? {
+              ...hospedeAtual,
+              statusCheckIn:
+                response.statusCheckIn,
+            }
+          : hospedeAtual,
+      );
+
+      setObservacaoCheckIn("");
+    } catch {
+      setErroCheckIn(
+        "Não foi possível realizar o check-in.",
+      );
+    } finally {
+      setRealizandoCheckIn(false);
+    }
+  }
 
   if (carregando) {
     return (
@@ -186,6 +233,7 @@ export default function HospedeDetalhePage({
           </p>
         </Card>
       </section>
+
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">
@@ -206,7 +254,8 @@ export default function HospedeDetalhePage({
             <p className="mt-2 font-medium text-foreground">
               {checkIn?.statusCheckIn === "REALIZADO"
                 ? "Realizado"
-                : checkIn?.statusCheckIn === "NAO_COMPARECEU"
+                : checkIn?.statusCheckIn ===
+                    "NAO_COMPARECEU"
                   ? "Não compareceu"
                   : "Pendente"}
             </p>
@@ -218,7 +267,8 @@ export default function HospedeDetalhePage({
             </p>
 
             <p className="mt-2 font-medium text-foreground">
-              {checkIn?.quartoNome ?? "Ainda não alocado"}
+              {checkIn?.quartoNome ??
+                "Ainda não alocado"}
             </p>
           </Card>
 
@@ -242,7 +292,8 @@ export default function HospedeDetalhePage({
             </p>
 
             <p className="mt-2 font-medium text-foreground">
-              {checkIn?.responsavel ?? "Não informado"}
+              {checkIn?.responsavel ??
+                "Não informado"}
             </p>
           </Card>
 
@@ -252,11 +303,75 @@ export default function HospedeDetalhePage({
             </p>
 
             <p className="mt-2 font-medium text-foreground">
-              {checkIn?.observacao ?? "Nenhuma observação registrada"}
+              {checkIn?.observacao ??
+                "Nenhuma observação registrada"}
             </p>
           </Card>
         </div>
+
+        {checkIn &&
+          checkIn.statusCheckIn !== "REALIZADO" &&
+          checkIn.quartoId === null && (
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="text-sm font-medium text-foreground">
+                Check-in indisponível
+              </p>
+
+              <p className="mt-1 text-sm text-muted">
+                Este hóspede precisa ser alocado em um quarto antes de realizar o check-in.
+              </p>
+            </div>
+          )}
+
+        {checkIn &&
+          checkIn.statusCheckIn !== "REALIZADO" &&
+          checkIn.quartoId !== null && (
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="observacao-checkin"
+                  className="mb-2 block text-sm font-medium text-foreground"
+                >
+                  Observação do check-in
+                </label>
+
+                <textarea
+                  id="observacao-checkin"
+                  value={observacaoCheckIn}
+                  onChange={(event) =>
+                    setObservacaoCheckIn(
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Adicione uma observação, se necessário."
+                  rows={4}
+                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                />
+              </div>
+
+              {erroCheckIn && (
+                <p
+                  role="alert"
+                  className="text-sm text-red-400"
+                >
+                  {erroCheckIn}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleRealizarCheckIn}
+                disabled={realizandoCheckIn}
+                className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {realizandoCheckIn
+                  ? "Realizando check-in..."
+                  : "Realizar check-in"}
+              </button>
+            </div>
+          )}
       </section>
+
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">
@@ -282,24 +397,29 @@ export default function HospedeDetalhePage({
                   <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
                       <p className="font-semibold text-foreground">
-                        {traslado.tipo === "AEROPORTO_PARA_HOSPEDAGEM"
+                        {traslado.tipo ===
+                        "AEROPORTO_PARA_HOSPEDAGEM"
                           ? "Aeroporto → Hospedagem"
-                          : traslado.tipo === "HOSPEDAGEM_PARA_AEROPORTO"
+                          : traslado.tipo ===
+                              "HOSPEDAGEM_PARA_AEROPORTO"
                             ? "Hospedagem → Aeroporto"
                             : "Outro traslado"}
                       </p>
 
                       <p className="mt-1 text-sm text-muted">
-                        {traslado.localOrigem} → {traslado.localDestino}
+                        {traslado.localOrigem} →{" "}
+                        {traslado.localDestino}
                       </p>
                     </div>
 
                     <p className="text-sm font-medium text-foreground">
                       {traslado.status === "AGUARDANDO"
                         ? "Aguardando"
-                        : traslado.status === "EM_ANDAMENTO"
+                        : traslado.status ===
+                            "EM_ANDAMENTO"
                           ? "Em andamento"
-                          : traslado.status === "CONCLUIDO"
+                          : traslado.status ===
+                              "CONCLUIDO"
                             ? "Concluído"
                             : "Cancelado"}
                     </p>
@@ -324,7 +444,8 @@ export default function HospedeDetalhePage({
                       </p>
 
                       <p className="mt-1 font-medium text-foreground">
-                        {traslado.aeroporto ?? "Não informado"}
+                        {traslado.aeroporto ??
+                          "Não informado"}
                       </p>
                     </div>
 
@@ -334,7 +455,8 @@ export default function HospedeDetalhePage({
                       </p>
 
                       <p className="mt-1 font-medium text-foreground">
-                        {traslado.numeroVoo ?? "Não informado"}
+                        {traslado.numeroVoo ??
+                          "Não informado"}
                       </p>
                     </div>
 
@@ -344,7 +466,8 @@ export default function HospedeDetalhePage({
                       </p>
 
                       <p className="mt-1 font-medium text-foreground">
-                        {traslado.companhiaAerea ?? "Não informada"}
+                        {traslado.companhiaAerea ??
+                          "Não informada"}
                       </p>
                     </div>
                   </div>

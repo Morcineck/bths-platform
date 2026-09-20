@@ -11,6 +11,10 @@ import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.enums.StatusCheckIn;
+import com.bths.platform.usuario.Usuario;
+import com.bths.platform.usuario.UsuarioRepository;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,21 +25,26 @@ public class CheckInService {
     private final HospedeRepository hospedeRepository;
     private final AlocacaoQuartoRepository alocacaoRepository;
     private final CheckInMapper checkInMapper;
+    private final UsuarioRepository usuarioRepository;
 
     public CheckInService(
             HospedeRepository hospedeRepository,
             AlocacaoQuartoRepository alocacaoRepository,
-            CheckInMapper checkInMapper
+            CheckInMapper checkInMapper,
+            UsuarioRepository usuarioRepository
+
     ) {
         this.hospedeRepository = hospedeRepository;
         this.alocacaoRepository = alocacaoRepository;
         this.checkInMapper = checkInMapper;
+        this.usuarioRepository = usuarioRepository;
 
     }
 
     public CheckInResponse realizarCheckIn(
             Long hospedeId,
-            CheckInRequest request
+            CheckInRequest request,
+            Authentication authentication
     ) {
 
         Hospede hospede = hospedeRepository
@@ -66,8 +75,21 @@ public class CheckInService {
 
         hospede.setStatusCheckIn(StatusCheckIn.REALIZADO);
         hospede.setDataHoraCheckIn(LocalDateTime.now());
-        hospede.setResponsavelCheckIn(request.getResponsavel());
-        hospede.setObservacaoCheckIn(request.getObservacao());
+
+        Usuario usuario = usuarioRepository
+                .findByEmail(authentication.getName())
+                .orElseThrow(() ->
+                        new UsuarioNaoEncontradoException(
+                                "Usuário autenticado não encontrado!"
+                        )
+                );
+
+        hospede.setResponsavelCheckIn(
+                usuario.getNome()
+        );
+
+        hospede.setObservacaoCheckIn(
+                request.getObservacao());
 
         Hospede hospedeAtualizado = hospedeRepository.save(hospede);
 
