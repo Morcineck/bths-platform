@@ -1,8 +1,12 @@
 package com.bths.platform.security;
 
+import com.bths.platform.security.dto.UsuarioAutenticadoResponse;
 import com.bths.platform.security.exception.CredenciaisInvalidasException;
 import com.bths.platform.security.dto.LoginRequest;
 import com.bths.platform.security.dto.LoginResponse;
+import com.bths.platform.usuario.Usuario;
+import com.bths.platform.usuario.UsuarioRepository;
+import com.bths.platform.usuario.enums.PerfilUsuario;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +18,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -23,6 +30,9 @@ class AuthServiceTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
+
+    @Mock
+    private UsuarioRepository usuarioRepository;
 
     @Mock
     private JwtService jwtService;
@@ -99,5 +109,45 @@ class AuthServiceTest {
 
         verify(jwtService, never())
                 .gerarToken(any(UserDetails.class));
+    }
+
+    @Test
+    void deveBuscarUsuarioAutenticado() {
+
+        UUID id = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+        usuario.setNome("Administrador Beat Trips");
+        usuario.setEmail("admin@beattrips.com");
+        usuario.setPerfil(PerfilUsuario.ADMIN);
+        usuario.setAtivo(true);
+
+        when(usuarioRepository.findByEmail(
+                "admin@beattrips.com"
+        )).thenReturn(Optional.of(usuario));
+
+        UsuarioAutenticadoResponse response =
+                authService.buscarUsuarioAutenticado(
+                        "admin@beattrips.com"
+                );
+
+        assertNotNull(response);
+        assertEquals(id, response.getId());
+        assertEquals(
+                "Administrador Beat Trips",
+                response.getNome()
+        );
+        assertEquals(
+                "admin@beattrips.com",
+                response.getEmail()
+        );
+        assertEquals(
+                PerfilUsuario.ADMIN,
+                response.getPerfil()
+        );
+
+        verify(usuarioRepository)
+                .findByEmail("admin@beattrips.com");
     }
 }

@@ -1,11 +1,15 @@
 package com.bths.platform.security;
 
 import com.bths.platform.security.dto.LoginResponse;
+import com.bths.platform.security.dto.UsuarioAutenticadoResponse;
+import com.bths.platform.usuario.Usuario;
+import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.usuario.UsuarioService;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.enums.PerfilUsuario;
 import com.bths.platform.viagem.ViagemService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -16,9 +20,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,6 +55,9 @@ class SecurityAuthorizationTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @Mock
+    private UsuarioRepository usuarioRepository;
 
 
 
@@ -271,4 +282,81 @@ class SecurityAuthorizationTest {
                 .andExpect(jsonPath("$.token")
                         .value("jwt-token-gerado"));
     }
+
+    @Test
+    void deveRetornar401QuandoAcessarMeSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/api/auth/me")
+                )
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(
+                        "application/json"
+                ))
+                .andExpect(jsonPath("$.erro")
+                        .value("Unauthorized"))
+                .andExpect(jsonPath("$.mensagem")
+                        .value(
+                                "Autenticação necessária para acessar este recurso!"
+                        ))
+                .andExpect(jsonPath("$.status")
+                        .value(401));
+    }
+
+    @Test
+    void deveRetornarUsuarioAutenticadoAoAcessarMeComJwtValido()
+            throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        UsuarioAutenticadoResponse response =
+                new UsuarioAutenticadoResponse(
+                        id,
+                        "Administrador Beat Trips",
+                        "admin@beattrips.com",
+                        PerfilUsuario.ADMIN
+                );
+
+        when(jwtService.extrairEmail("token-admin"))
+                .thenReturn("admin@beattrips.com");
+
+        when(usuarioDetailsService.loadUserByUsername(
+                "admin@beattrips.com"
+        )).thenReturn(admin);
+
+        when(jwtService.tokenValido(
+                "token-admin",
+                admin
+        )).thenReturn(true);
+
+        when(authService.buscarUsuarioAutenticado(
+                "admin@beattrips.com"
+        )).thenReturn(response);
+
+        mockMvc.perform(
+                        get("/api/auth/me")
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id")
+                        .value(id.toString()))
+                .andExpect(jsonPath("$.nome")
+                        .value("Administrador Beat Trips"))
+                .andExpect(jsonPath("$.email")
+                        .value("admin@beattrips.com"))
+                .andExpect(jsonPath("$.perfil")
+                        .value("ADMIN"));
+    }
+
+
 }
