@@ -1,13 +1,14 @@
 package com.bths.platform.security;
 
+import com.bths.platform.security.dto.LoginRequest;
 import com.bths.platform.security.dto.LoginResponse;
 import com.bths.platform.security.dto.UsuarioAutenticadoResponse;
-import com.bths.platform.usuario.Usuario;
 import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.usuario.UsuarioService;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.enums.PerfilUsuario;
 import com.bths.platform.viagem.ViagemService;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -358,5 +357,93 @@ class SecurityAuthorizationTest {
                         .value("ADMIN"));
     }
 
+    @Test
+    void deveRetornarUsuarioAutenticadoAoAcessarMeComCookieJwtValido()
+            throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        UsuarioAutenticadoResponse response =
+                new UsuarioAutenticadoResponse(
+                        id,
+                        "Administrador Beat Trips",
+                        "admin@beattrips.com",
+                        PerfilUsuario.ADMIN
+                );
+
+        when(jwtService.extrairEmail("token-admin"))
+                .thenReturn("admin@beattrips.com");
+
+        when(usuarioDetailsService.loadUserByUsername(
+                "admin@beattrips.com"
+        )).thenReturn(admin);
+
+        when(jwtService.tokenValido(
+                "token-admin",
+                admin
+        )).thenReturn(true);
+
+        when(authService.buscarUsuarioAutenticado(
+                "admin@beattrips.com"
+        )).thenReturn(response);
+
+        mockMvc.perform(
+                        get("/api/auth/me")
+                                .cookie(
+                                        new Cookie(
+                                                "BTHS_TOKEN",
+                                                "token-admin"
+                                        )
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id")
+                        .value(id.toString()))
+                .andExpect(jsonPath("$.nome")
+                        .value("Administrador Beat Trips"))
+                .andExpect(jsonPath("$.email")
+                        .value("admin@beattrips.com"))
+                .andExpect(jsonPath("$.perfil")
+                        .value("ADMIN"));
+    }
+
+    @Test
+    void deveCriarCookieHttpOnlyAoRealizarLogin()
+            throws Exception {
+
+        LoginResponse loginResponse =
+                new LoginResponse("token-admin");
+
+        when(authService.login(any(LoginRequest.class)))
+                .thenReturn(loginResponse);
+
+        mockMvc.perform(
+                        post("/api/auth/login")
+                                .contentType("application/json")
+                                .content("""
+                                    {
+                                      "email": "admin@beattrips.com",
+                                      "senha": "senha"
+                                    }
+                                    """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Set-Cookie",
+                        allOf(
+                                containsString("BTHS_TOKEN=token-admin"),
+                                containsString("HttpOnly"),
+                                containsString("SameSite=Lax"),
+                                containsString("Path=/"),
+                                containsString("Max-Age=3600")
+                        )
+                ));
+    }
 
 }
