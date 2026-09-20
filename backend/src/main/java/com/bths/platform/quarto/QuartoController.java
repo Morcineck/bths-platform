@@ -15,6 +15,7 @@ public class QuartoController {
 
     private final QuartoService quartoService;
 
+
     public QuartoController(QuartoService quartoService) {
         this.quartoService = quartoService;
     }
@@ -67,4 +68,15 @@ public class QuartoController {
         return ResponseEntity.noContent().build();
 
     }
+
+    @GetMapping("/viagem/{viagemId}")
+    public ResponseEntity<List<QuartoResponse>> listarQuartosPorViagem(
+            @PathVariable Long viagemId
+    ) {
+
+        return ResponseEntity.ok(
+                quartoService.listarQuartosPorViagem(viagemId)
+        );
+    }
+
 }

@@ -99,4 +99,24 @@ public class QuartoService {
 
         quartoRepository.delete(quarto);
     }
+
+    public List<QuartoResponse> listarQuartosPorViagem(
+            Long viagemId
+
+    ) {
+
+        viagemRepository.findById(viagemId)
+                .orElseThrow(() ->
+                        new ViagemNaoEncontradaException(
+                                "Viagem não encontrada!"
+                        )
+                );
+
+
+        return quartoRepository.findByViagemId(viagemId)
+                .stream()
+                .map(quartoMapper::paraResponse)
+                .toList();
+
+    }
 }
