@@ -21,7 +21,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
+    public ResponseEntity<Void> login(
             @RequestBody LoginRequest request,
             HttpServletResponse httpResponse
     ) {
@@ -42,7 +42,7 @@ public class AuthController {
         );
 
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")

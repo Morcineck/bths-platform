@@ -18,6 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -27,10 +30,8 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 
 @SpringBootTest
@@ -57,7 +58,6 @@ class SecurityAuthorizationTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
-
 
 
     @Test
@@ -269,17 +269,17 @@ class SecurityAuthorizationTest {
 
         mockMvc.perform(
                         post("/api/auth/login")
+                                .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                    {
-                                      "email": "admin@beattrips.com",
-                                      "senha": "senha123"
-                                    }
-                                    """)
+                                        {
+                                          "email": "admin@beattrips.com",
+                                          "senha": "senha123"
+                                        }
+                                        """)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token")
-                        .value("jwt-token-gerado"));
+                .andExpect(content().string(""));
     }
 
     @Test
@@ -425,13 +425,14 @@ class SecurityAuthorizationTest {
 
         mockMvc.perform(
                         post("/api/auth/login")
+                                .with(csrf())
                                 .contentType("application/json")
                                 .content("""
-                                    {
-                                      "email": "admin@beattrips.com",
-                                      "senha": "senha"
-                                    }
-                                    """)
+                                        {
+                                          "email": "admin@beattrips.com",
+                                          "senha": "senha"
+                                        }
+                                        """)
                 )
                 .andExpect(status().isOk())
                 .andExpect(header().string(
@@ -443,6 +444,33 @@ class SecurityAuthorizationTest {
                                 containsString("Path=/"),
                                 containsString("Max-Age=3600")
                         )
+                ))
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    void devePermitirCorsParaFrontendLocal()
+            throws Exception {
+
+        mockMvc.perform(
+                        options("/api/auth/login")
+                                .header(
+                                        "Origin",
+                                        "http://localhost:3000"
+                                )
+                                .header(
+                                        "Access-Control-Request-Method",
+                                        "POST"
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Access-Control-Allow-Origin",
+                        "http://localhost:3000"
+                ))
+                .andExpect(header().string(
+                        "Access-Control-Allow-Credentials",
+                        "true"
                 ));
     }
 
