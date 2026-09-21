@@ -13,6 +13,7 @@ import type { AlocacaoQuarto } from "@/features/alocacao/types/alocacao";
 import {
   consultarCheckIn,
   realizarCheckIn,
+  registrarNaoComparecimento,
 } from "@/features/checkin/services/checkInService";
 import type { CheckInResponse } from "@/features/checkin/types/checkin";
 import { buscarHospedePorId } from "@/features/hospede/services/hospedeService";
@@ -95,6 +96,26 @@ export default function HospedeDetalhePage({
 
   const [erroCheckIn, setErroCheckIn] =
     useState("");
+
+  const [
+      motivoNaoComparecimento,
+      setMotivoNaoComparecimento,
+  ] = useState("");
+
+  const [
+      registrandoNaoComparecimento,
+      setRegistrandoNaoComparecimento,
+  ] = useState(false);
+
+  const [
+      erroNaoComparecimento,
+      setErroNaoComparecimento,
+  ] = useState("");
+
+  const [
+      sucessoNaoComparecimento,
+      setSucessoNaoComparecimento,
+  ] = useState("");
 
   useEffect(() => {
     async function carregarHospede() {
@@ -297,6 +318,57 @@ export default function HospedeDetalhePage({
       );
     } finally {
       setRealizandoCheckIn(false);
+    }
+  }
+
+  async function handleRegistrarNaoComparecimento() {
+    if (!motivoNaoComparecimento.trim()) {
+      setErroNaoComparecimento(
+        "Informe o motivo do não comparecimento.",
+      );
+      return;
+    }
+
+    try {
+      setRegistrandoNaoComparecimento(true);
+      setErroNaoComparecimento("");
+      setSucessoNaoComparecimento("");
+
+      const response =
+        await registrarNaoComparecimento(
+          Number(id),
+          {
+            motivo: motivoNaoComparecimento.trim(),
+          },
+        );
+
+      setCheckIn(response);
+
+      setHospede((hospedeAtual) =>
+        hospedeAtual
+          ? {
+              ...hospedeAtual,
+              statusCheckIn:
+                response.statusCheckIn,
+            }
+          : hospedeAtual,
+      );
+
+      setMotivoNaoComparecimento("");
+
+      setSucessoNaoComparecimento(
+        "Não comparecimento registrado com sucesso.",
+      );
+    } catch (error) {
+      setSucessoNaoComparecimento("");
+
+      setErroNaoComparecimento(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível registrar o não comparecimento.",
+      );
+    } finally {
+      setRegistrandoNaoComparecimento(false);
     }
   }
 
@@ -709,6 +781,58 @@ export default function HospedeDetalhePage({
                 {realizandoCheckIn
                   ? "Realizando check-in..."
                   : "Realizar check-in"}
+              </button>
+            </div>
+          )}
+        {checkIn &&
+          checkIn.statusCheckIn === "PENDENTE" && (
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="motivo-nao-comparecimento"
+                  className="mb-2 block text-sm font-medium text-foreground"
+                >
+                  Motivo do não comparecimento
+                </label>
+
+                <textarea
+                  id="motivo-nao-comparecimento"
+                  value={motivoNaoComparecimento}
+                  onChange={(event) =>
+                    setMotivoNaoComparecimento(
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Informe o motivo do não comparecimento."
+                  rows={4}
+                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                />
+              </div>
+
+              {erroNaoComparecimento && (
+                <p
+                  role="alert"
+                  className="text-sm text-red-400"
+                >
+                  {erroNaoComparecimento}
+                </p>
+              )}
+
+              {sucessoNaoComparecimento && (
+                <p className="text-sm text-green-400">
+                  {sucessoNaoComparecimento}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleRegistrarNaoComparecimento}
+                disabled={registrandoNaoComparecimento}
+                className="rounded-xl border border-red-400 px-5 py-3 text-sm font-semibold text-red-400 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {registrandoNaoComparecimento
+                  ? "Registrando..."
+                  : "Marcar como não compareceu"}
               </button>
             </div>
           )}

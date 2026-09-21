@@ -4,7 +4,9 @@ import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
 import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
 import com.bths.platform.alocacao.exception.ViagemIncompativelException;
 import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
+import com.bths.platform.checkin.exception.HospedeJaRealizouCheckInException;
 import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
+import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoException;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.quarto.exception.QuartoIndisponivelException;
@@ -313,4 +315,35 @@ public class GlobalExceptionHandler {
                 .body(erro);
     }
 
+    @ExceptionHandler(HospedeJaRealizouCheckInException.class)
+    public ResponseEntity<Map<String, Object>>
+    tratarHospedeJaRealizouCheckIn(
+            HospedeJaRealizouCheckInException exception
+    )  {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(NaoComparecimentoJaRegistradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarNaoComparecimentoJaRegistrado(
+            NaoComparecimentoJaRegistradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
 }

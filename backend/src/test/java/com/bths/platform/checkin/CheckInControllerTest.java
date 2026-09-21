@@ -2,8 +2,11 @@ package com.bths.platform.checkin;
 
 import com.bths.platform.checkin.dto.CheckInRequest;
 import com.bths.platform.checkin.dto.CheckInResponse;
+import com.bths.platform.checkin.dto.NaoComparecimentoRequest;
 import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
+import com.bths.platform.checkin.exception.HospedeJaRealizouCheckInException;
 import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
+import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoException;
 import com.bths.platform.handler.GlobalExceptionHandler;
 import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
@@ -21,7 +24,9 @@ import tools.jackson.databind.ObjectMapper;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -69,6 +74,7 @@ class CheckInControllerTest {
                 criarAuthentication();
 
         CheckInRequest request = new CheckInRequest();
+
         request.setObservacao(
                 "Hóspede chegou normalmente"
         );
@@ -78,25 +84,33 @@ class CheckInControllerTest {
 
         response.setHospedeId(hospedeId);
         response.setHospedeNome("João da Silva");
+
         response.setStatusCheckIn(
                 StatusCheckIn.REALIZADO
         );
+
         response.setResponsavel("Robson");
+
         response.setObservacao(
                 "Hóspede chegou normalmente"
         );
+
         response.setViagemId(1L);
+
         response.setViagemNome(
                 "Tomorrowland Brasil 2027"
         );
+
         response.setQuartoId(2L);
         response.setQuartoNome("Suíte 01");
 
-        when(checkInService.realizarCheckIn(
-                eq(hospedeId),
-                any(CheckInRequest.class),
-                any(Authentication.class)
-        )).thenReturn(response);
+        when(
+                checkInService.realizarCheckIn(
+                        eq(hospedeId),
+                        any(CheckInRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenReturn(response);
 
         // Act + Assert
         mockMvc.perform(
@@ -105,7 +119,9 @@ class CheckInControllerTest {
                                 hospedeId
                         )
                                 .principal(authentication)
-                                .contentType(MediaType.APPLICATION_JSON)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content(
                                         objectMapper.writeValueAsString(
                                                 request
@@ -174,17 +190,23 @@ class CheckInControllerTest {
 
         response.setHospedeId(hospedeId);
         response.setHospedeNome("João da Silva");
+
         response.setStatusCheckIn(
                 StatusCheckIn.REALIZADO
         );
+
         response.setResponsavel("Robson");
+
         response.setObservacao(
                 "Hóspede chegou normalmente"
         );
+
         response.setViagemId(1L);
+
         response.setViagemNome(
                 "Tomorrowland Brasil 2027"
         );
+
         response.setQuartoId(2L);
         response.setQuartoNome("Suíte 01");
 
@@ -308,11 +330,13 @@ class CheckInControllerTest {
                 "Tentativa de check-in duplicado"
         );
 
-        when(checkInService.realizarCheckIn(
-                eq(hospedeId),
-                any(CheckInRequest.class),
-                any(Authentication.class)
-        )).thenThrow(
+        when(
+                checkInService.realizarCheckIn(
+                        eq(hospedeId),
+                        any(CheckInRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenThrow(
                 new CheckInJaRealizadoException(
                         "Check-in já realizado para este hóspede!"
                 )
@@ -375,11 +399,13 @@ class CheckInControllerTest {
                 "Teste de hóspede sem alocação"
         );
 
-        when(checkInService.realizarCheckIn(
-                eq(hospedeId),
-                any(CheckInRequest.class),
-                any(Authentication.class)
-        )).thenThrow(
+        when(
+                checkInService.realizarCheckIn(
+                        eq(hospedeId),
+                        any(CheckInRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenThrow(
                 new HospedeSemAlocacaoException(
                         "Hóspede não possui alocação de quarto!"
                 )
@@ -437,10 +463,13 @@ class CheckInControllerTest {
 
         response.setHospedeId(hospedeId);
         response.setHospedeNome("Carlos Henrique");
+
         response.setStatusCheckIn(
                 StatusCheckIn.PENDENTE
         );
+
         response.setViagemId(1L);
+
         response.setViagemNome(
                 "Tomorrowland Brasil 2027"
         );
@@ -504,5 +533,351 @@ class CheckInControllerTest {
 
         verify(checkInService)
                 .consultarCheckIn(hospedeId);
+    }
+
+    @Test
+    void deveRegistrarNaoComparecimentoComSucesso()
+            throws Exception {
+
+        // Arrange
+        Long hospedeId = 5L;
+
+        Authentication authentication =
+                criarAuthentication();
+
+        NaoComparecimentoRequest request =
+                new NaoComparecimentoRequest();
+
+        request.setMotivo(
+                "Hóspede não chegou até o encerramento do check-in."
+        );
+
+        CheckInResponse response =
+                new CheckInResponse();
+
+        response.setHospedeId(hospedeId);
+        response.setHospedeNome("Ana Paula");
+
+        response.setStatusCheckIn(
+                StatusCheckIn.NAO_COMPARECEU
+        );
+
+        response.setViagemId(1L);
+
+        response.setViagemNome(
+                "Tomorrowland Brasil 2027"
+        );
+
+        response.setQuartoId(3L);
+        response.setQuartoNome("Suíte 02");
+
+        when(
+                checkInService.registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenReturn(response);
+
+        // Act + Assert
+        mockMvc.perform(
+                        post(
+                                "/api/hospedes/{hospedeId}/nao-comparecimento",
+                                hospedeId
+                        )
+                                .principal(authentication)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request
+                                        )
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.hospedeId")
+                                .value(5)
+                )
+                .andExpect(
+                        jsonPath("$.hospedeNome")
+                                .value("Ana Paula")
+                )
+                .andExpect(
+                        jsonPath("$.statusCheckIn")
+                                .value("NAO_COMPARECEU")
+                )
+                .andExpect(
+                        jsonPath("$.viagemId")
+                                .value(1)
+                )
+                .andExpect(
+                        jsonPath("$.quartoId")
+                                .value(3)
+                )
+                .andExpect(
+                        jsonPath("$.quartoNome")
+                                .value("Suíte 02")
+                );
+
+        verify(checkInService)
+                .registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                );
+    }
+
+    @Test
+    void deveRetornarConflictAoRegistrarNaoComparecimentoQuandoCheckInJaFoiRealizado()
+            throws Exception {
+
+        // Arrange
+        Long hospedeId = 1L;
+
+        Authentication authentication =
+                criarAuthentication();
+
+        NaoComparecimentoRequest request =
+                new NaoComparecimentoRequest();
+
+        request.setMotivo(
+                "Hóspede não compareceu"
+        );
+
+        when(
+                checkInService.registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenThrow(
+                new HospedeJaRealizouCheckInException(
+                        "O hóspede já realizou o check-in!"
+                )
+        );
+
+        // Act + Assert
+        mockMvc.perform(
+                        post(
+                                "/api/hospedes/{hospedeId}/nao-comparecimento",
+                                hospedeId
+                        )
+                                .principal(authentication)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request
+                                        )
+                                )
+                )
+                .andExpect(status().isConflict())
+                .andExpect(
+                        jsonPath("$.erro")
+                                .value("Conflict")
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "O hóspede já realizou o check-in!"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(409)
+                );
+
+        verify(checkInService)
+                .registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                );
+    }
+
+    @Test
+    void deveRetornarConflictQuandoNaoComparecimentoJaFoiRegistrado()
+            throws Exception {
+
+        // Arrange
+        Long hospedeId = 5L;
+
+        Authentication authentication =
+                criarAuthentication();
+
+        NaoComparecimentoRequest request =
+                new NaoComparecimentoRequest();
+
+        request.setMotivo(
+                "Nova tentativa"
+        );
+
+        when(
+                checkInService.registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenThrow(
+                new NaoComparecimentoJaRegistradoException(
+                        "O não comparecimento já foi registrado para esse hóspede!"
+                )
+        );
+
+        // Act + Assert
+        mockMvc.perform(
+                        post(
+                                "/api/hospedes/{hospedeId}/nao-comparecimento",
+                                hospedeId
+                        )
+                                .principal(authentication)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request
+                                        )
+                                )
+                )
+                .andExpect(status().isConflict())
+                .andExpect(
+                        jsonPath("$.erro")
+                                .value("Conflict")
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "O não comparecimento já foi registrado para esse hóspede!"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(409)
+                );
+
+        verify(checkInService)
+                .registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                );
+    }
+
+    @Test
+    void deveRetornarNotFoundAoRegistrarNaoComparecimentoParaHospedeInexistente()
+            throws Exception {
+
+        // Arrange
+        Long hospedeId = 999L;
+
+        Authentication authentication =
+                criarAuthentication();
+
+        NaoComparecimentoRequest request =
+                new NaoComparecimentoRequest();
+
+        request.setMotivo(
+                "Hóspede não compareceu"
+        );
+
+        when(
+                checkInService.registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                )
+        ).thenThrow(
+                new HospedeNaoEncontradoException(
+                        "Hóspede não encontrado!"
+                )
+        );
+
+        // Act + Assert
+        mockMvc.perform(
+                        post(
+                                "/api/hospedes/{hospedeId}/nao-comparecimento",
+                                hospedeId
+                        )
+                                .principal(authentication)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request
+                                        )
+                                )
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(
+                        jsonPath("$.erro")
+                                .value("Not Found")
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Hóspede não encontrado!"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(404)
+                );
+
+        verify(checkInService)
+                .registrarNaoComparecimento(
+                        eq(hospedeId),
+                        any(NaoComparecimentoRequest.class),
+                        any(Authentication.class)
+                );
+    }
+
+    @Test
+    void deveRetornarBadRequestQuandoMotivoNaoComparecimentoEstiverVazio()
+            throws Exception {
+
+        // Arrange
+        Long hospedeId = 5L;
+
+        Authentication authentication =
+                criarAuthentication();
+
+        NaoComparecimentoRequest request =
+                new NaoComparecimentoRequest();
+
+        request.setMotivo("");
+
+        // Act + Assert
+        mockMvc.perform(
+                        post(
+                                "/api/hospedes/{hospedeId}/nao-comparecimento",
+                                hospedeId
+                        )
+                                .principal(authentication)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request
+                                        )
+                                )
+                )
+                .andExpect(
+                        status().isBadRequest()
+                );
+
+        verify(
+                checkInService,
+                never()
+        ).registrarNaoComparecimento(
+                eq(hospedeId),
+                any(NaoComparecimentoRequest.class),
+                any(Authentication.class)
+        );
     }
 }

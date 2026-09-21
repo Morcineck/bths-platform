@@ -4,6 +4,9 @@ import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.checkin.dto.CheckInRequest;
 import com.bths.platform.checkin.dto.CheckInResponse;
+import com.bths.platform.checkin.dto.NaoComparecimentoRequest;
+import com.bths.platform.checkin.exception.HospedeJaRealizouCheckInException;
+import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoException;
 import com.bths.platform.checkin.mapper.CheckInMapper;
 import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
@@ -124,4 +127,77 @@ public class CheckInService {
 
     }
 
+    public CheckInResponse registrarNaoComparecimento(
+            Long hospedeId,
+            NaoComparecimentoRequest request,
+            Authentication authentication
+    ) {
+
+        Hospede hospede = hospedeRepository
+                .findById(hospedeId)
+                .orElseThrow(() -> new HospedeNaoEncontradoException(
+                                "Hóspede não encontrado!"
+                        )
+                );
+
+        if (hospede.getStatusCheckIn() == StatusCheckIn.REALIZADO) {
+            throw new HospedeJaRealizouCheckInException(
+                    "O hóspede já realizou o check-in!"
+            );
+        }
+
+        if (hospede.getStatusCheckIn() == StatusCheckIn.NAO_COMPARECEU) {
+            throw new NaoComparecimentoJaRegistradoException(
+                    "O não comparecimento já foi registrado para esse hóspede!"
+            );
+        }
+
+
+        Usuario usuario = usuarioRepository
+                .findByEmail(authentication.getName())
+                .orElseThrow(() -> new UsuarioNaoEncontradoException(
+                                "Usuário autenticado não encontrado!"
+                        )
+                );
+
+        hospede.setStatusCheckIn(
+                StatusCheckIn.NAO_COMPARECEU
+        );
+
+        hospede.setDataHoraNaoComparecimento(
+                LocalDateTime.now()
+        );
+
+        hospede.setResponsavelNaoComparecimento(
+                usuario.getNome()
+        );
+
+        hospede.setMotivoNaoComparecimento(
+                request.getMotivo()
+        );
+
+        Hospede hospedeAtualizado =
+                hospedeRepository.save(hospede);
+
+        Long viagemId =
+                hospedeAtualizado
+                        .getViagem()
+                        .getId();
+
+        AlocacaoQuarto alocacao =
+                alocacaoRepository
+                        .findByHospedeIdAndViagemId(
+                                hospedeId,
+                                viagemId
+                        )
+                        .orElse(null);
+
+        return checkInMapper.paraResponse(
+                hospedeAtualizado,
+                alocacao
+        );
+
+
+    }
 }
+
