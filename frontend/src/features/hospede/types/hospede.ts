@@ -15,3 +15,14 @@ export type Hospede = {
   viagemId: number;
   viagemNome: string;
 };
+
+export type CadastrarHospedeRequest = {
+  nomeCompleto: string;
+  cpf: string;
+  telefone?: string;
+  email?: string;
+  dataNascimento?: string;
+  horarioPrevistoChegada?: string;
+  statusCheckIn: "PENDENTE";
+  viagemId: number;
+};

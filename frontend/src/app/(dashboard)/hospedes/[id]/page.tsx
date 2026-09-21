@@ -98,23 +98,23 @@ export default function HospedeDetalhePage({
     useState("");
 
   const [
-      motivoNaoComparecimento,
-      setMotivoNaoComparecimento,
+    motivoNaoComparecimento,
+    setMotivoNaoComparecimento,
   ] = useState("");
 
   const [
-      registrandoNaoComparecimento,
-      setRegistrandoNaoComparecimento,
+    registrandoNaoComparecimento,
+    setRegistrandoNaoComparecimento,
   ] = useState(false);
 
   const [
-      erroNaoComparecimento,
-      setErroNaoComparecimento,
+    erroNaoComparecimento,
+    setErroNaoComparecimento,
   ] = useState("");
 
   const [
-      sucessoNaoComparecimento,
-      setSucessoNaoComparecimento,
+    sucessoNaoComparecimento,
+    setSucessoNaoComparecimento,
   ] = useState("");
 
   useEffect(() => {
@@ -338,7 +338,8 @@ export default function HospedeDetalhePage({
         await registrarNaoComparecimento(
           Number(id),
           {
-            motivo: motivoNaoComparecimento.trim(),
+            motivo:
+              motivoNaoComparecimento.trim(),
           },
         );
 
@@ -485,9 +486,11 @@ export default function HospedeDetalhePage({
           </p>
 
           <p className="mt-2 font-medium text-foreground">
-            {new Date(
-              hospede.horarioPrevistoChegada,
-            ).toLocaleString("pt-BR")}
+            {hospede.horarioPrevistoChegada
+              ? new Date(
+                  hospede.horarioPrevistoChegada,
+                ).toLocaleString("pt-BR")
+              : "Não informada"}
           </p>
         </Card>
       </section>
@@ -644,7 +647,9 @@ export default function HospedeDetalhePage({
           )}
 
         {checkIn &&
-          checkIn.quartoId === null && (
+          checkIn.quartoId === null &&
+          checkIn.statusCheckIn !==
+            "NAO_COMPARECEU" && (
             <div className="space-y-4">
               {checkIn.statusCheckIn !==
                 "REALIZADO" && (
@@ -733,6 +738,8 @@ export default function HospedeDetalhePage({
         {checkIn &&
           checkIn.statusCheckIn !==
             "REALIZADO" &&
+          checkIn.statusCheckIn !==
+            "NAO_COMPARECEU" &&
           checkIn.quartoId !== null && (
             <div className="space-y-4">
               <div>
@@ -784,8 +791,16 @@ export default function HospedeDetalhePage({
               </button>
             </div>
           )}
+
+        {sucessoNaoComparecimento && (
+          <p className="text-sm text-green-400">
+            {sucessoNaoComparecimento}
+          </p>
+        )}
+
         {checkIn &&
-          checkIn.statusCheckIn === "PENDENTE" && (
+          checkIn.statusCheckIn ===
+            "PENDENTE" && (
             <div className="space-y-4">
               <div>
                 <label
@@ -797,7 +812,9 @@ export default function HospedeDetalhePage({
 
                 <textarea
                   id="motivo-nao-comparecimento"
-                  value={motivoNaoComparecimento}
+                  value={
+                    motivoNaoComparecimento
+                  }
                   onChange={(event) =>
                     setMotivoNaoComparecimento(
                       event.target.value,
@@ -818,16 +835,14 @@ export default function HospedeDetalhePage({
                 </p>
               )}
 
-              {sucessoNaoComparecimento && (
-                <p className="text-sm text-green-400">
-                  {sucessoNaoComparecimento}
-                </p>
-              )}
-
               <button
                 type="button"
-                onClick={handleRegistrarNaoComparecimento}
-                disabled={registrandoNaoComparecimento}
+                onClick={
+                  handleRegistrarNaoComparecimento
+                }
+                disabled={
+                  registrandoNaoComparecimento
+                }
                 className="rounded-xl border border-red-400 px-5 py-3 text-sm font-semibold text-red-400 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {registrandoNaoComparecimento
