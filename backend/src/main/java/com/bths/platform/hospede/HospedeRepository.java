@@ -5,11 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface HospedeRepository extends JpaRepository<Hospede, Long> {
 
     boolean existsByCpfAndViagemId(String cpf, Long viagemId);
+
+    List<Hospede> findByViagemId(Long viagemId);
 
     boolean existsByCpfAndViagemIdAndIdNot(
             String cpf,
@@ -38,4 +41,6 @@ public interface HospedeRepository extends JpaRepository<Hospede, Long> {
     Optional<Hospede> findByCodigoCheckIn(
             @Param("codigoCheckIn") String codigoCheckIn
     );
+
+
 }

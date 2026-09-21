@@ -67,4 +67,14 @@ public class HospedeController {
 
     }
 
+    @GetMapping("/viagem/{viagemId}")
+    public ResponseEntity<List<HospedeResponse>> listarHospedesPorViagem(
+            @PathVariable Long viagemId
+    ) {
+
+        return ResponseEntity.ok(
+                hospedeService.listarHospedesPorViagem(viagemId)
+        );
+    }
+
 }

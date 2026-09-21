@@ -88,4 +88,18 @@ public class AlocacaoQuartoController {
         );
     }
 
+    @GetMapping("/hospede/{hospedeId}/viagem/{viagemId}")
+    public ResponseEntity<AlocacaoQuartoResponse> buscarAlocacaoPorHospedeEViagem(
+            @PathVariable Long hospedeId,
+            @PathVariable Long viagemId
+    ) {
+
+        return ResponseEntity.ok(
+                alocacaoService
+                        .buscarAlocacaoPorHospedeEViagem(
+                                hospedeId,
+                                viagemId
+                        )
+        );
+    }
 }

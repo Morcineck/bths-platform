@@ -33,6 +33,7 @@ public class Hospede {
 
     private LocalDateTime horarioPrevistoChegada;
 
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusCheckIn statusCheckIn;
@@ -42,6 +43,12 @@ public class Hospede {
     private String responsavelCheckIn;
 
     private String observacaoCheckIn;
+
+    private LocalDateTime dataHoraNaoComparecimento;
+
+    private String responsavelNaoComparecimento;
+
+    private String motivoNaoComparecimento;
 
     @Column(name = "codigo_check_in", unique = true)
     private String codigoCheckIn;
@@ -138,6 +145,30 @@ public class Hospede {
         this.observacaoCheckIn = observacaoCheckIn;
     }
 
+    public LocalDateTime getDataHoraNaoComparecimento() {
+        return dataHoraNaoComparecimento;
+    }
+
+    public void setDataHoraNaoComparecimento(LocalDateTime dataHoraNaoComparecimento) {
+        this.dataHoraNaoComparecimento = dataHoraNaoComparecimento;
+    }
+
+    public String getResponsavelNaoComparecimento() {
+        return responsavelNaoComparecimento;
+    }
+
+    public void setResponsavelNaoComparecimento(String responsavelNaoComparecimento) {
+        this.responsavelNaoComparecimento = responsavelNaoComparecimento;
+    }
+
+    public String getMotivoNaoComparecimento() {
+        return motivoNaoComparecimento;
+    }
+
+    public void setMotivoNaoComparecimento(String motivoNaoComparecimento) {
+        this.motivoNaoComparecimento = motivoNaoComparecimento;
+    }
+
     public Viagem getViagem() {
         return viagem;
     }
@@ -153,4 +184,6 @@ public class Hospede {
     public void setCodigoCheckIn(String codigoCheckIn) {
         this.codigoCheckIn = codigoCheckIn;
     }
+
+
 }
