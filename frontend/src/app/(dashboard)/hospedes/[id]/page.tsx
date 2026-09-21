@@ -10,6 +10,7 @@ import {
   trocarQuarto,
 } from "@/features/alocacao/services/alocacaoService";
 import type { AlocacaoQuarto } from "@/features/alocacao/types/alocacao";
+import { buscarUsuarioAutenticado } from "@/features/auth/services/authService";
 import {
   consultarCheckIn,
   realizarCheckIn,
@@ -82,7 +83,11 @@ export default function HospedeDetalhePage({
   const [carregando, setCarregando] =
     useState(true);
 
-  const [erro, setErro] = useState("");
+  const [erro, setErro] =
+    useState("");
+
+  const [isAdmin, setIsAdmin] =
+    useState(false);
 
   const [
     observacaoCheckIn,
@@ -122,9 +127,17 @@ export default function HospedeDetalhePage({
       try {
         setErro("");
 
-        const dados = await buscarHospedePorId(
-          Number(id),
+        const usuario =
+          await buscarUsuarioAutenticado();
+
+        setIsAdmin(
+          usuario.perfil === "ADMIN",
         );
+
+        const dados =
+          await buscarHospedePorId(
+            Number(id),
+          );
 
         setHospede(dados);
 
@@ -396,7 +409,7 @@ export default function HospedeDetalhePage({
           href="/hospedes"
           className="text-sm font-medium text-primary"
         >
-          Voltar para hóspedes
+          ← Voltar para hóspedes
         </Link>
       </div>
     );
@@ -412,13 +425,26 @@ export default function HospedeDetalhePage({
           ← Voltar para hóspedes
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
-          {hospede.nomeCompleto}
-        </h1>
+        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              {hospede.nomeCompleto}
+            </h1>
 
-        <p className="mt-2 text-sm text-muted">
-          {hospede.viagemNome}
-        </p>
+            <p className="mt-2 text-sm text-muted">
+              {hospede.viagemNome}
+            </p>
+          </div>
+
+          {isAdmin && (
+            <Link
+              href={`/hospedes/${id}/editar`}
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+            >
+              Editar hóspede
+            </Link>
+          )}
+        </div>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2">
@@ -428,7 +454,8 @@ export default function HospedeDetalhePage({
           </p>
 
           <p className="mt-2 font-medium text-foreground">
-            {hospede.email}
+            {hospede.email ??
+              "Não informado"}
           </p>
         </Card>
 
@@ -438,7 +465,8 @@ export default function HospedeDetalhePage({
           </p>
 
           <p className="mt-2 font-medium text-foreground">
-            {hospede.telefone}
+            {hospede.telefone ??
+              "Não informado"}
           </p>
         </Card>
 
@@ -458,9 +486,13 @@ export default function HospedeDetalhePage({
           </p>
 
           <p className="mt-2 font-medium text-foreground">
-            {new Date(
-              `${hospede.dataNascimento}T00:00:00`,
-            ).toLocaleDateString("pt-BR")}
+            {hospede.dataNascimento
+              ? new Date(
+                  `${hospede.dataNascimento}T00:00:00`,
+                ).toLocaleDateString(
+                  "pt-BR",
+                )
+              : "Não informada"}
           </p>
         </Card>
 

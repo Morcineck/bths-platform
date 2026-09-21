@@ -3,6 +3,7 @@ import {
   inicializarCsrf,
 } from "@/features/auth/services/csrfService";
 import type {
+  AtualizarHospedeRequest,
   CadastrarHospedeRequest,
   Hospede,
 } from "../types/hospede";
@@ -73,6 +74,39 @@ export async function cadastrarHospede(
     throw new Error(
       erro?.mensagem ??
         "Não foi possível cadastrar o hóspede.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function atualizarHospede(
+  hospedeId: number,
+  dados: AtualizarHospedeRequest,
+): Promise<Hospede> {
+  await inicializarCsrf();
+
+  const csrfToken = buscarCsrfTokenDoCookie();
+
+  const response = await fetch(
+    `${API_URL}/api/hospedes/${hospedeId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": csrfToken,
+      },
+      credentials: "include",
+      body: JSON.stringify(dados),
+    },
+  );
+
+  if (!response.ok) {
+    const erro = await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível atualizar o hóspede.",
     );
   }
 

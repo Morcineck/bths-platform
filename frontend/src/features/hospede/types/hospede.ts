@@ -26,3 +26,17 @@ export type CadastrarHospedeRequest = {
   statusCheckIn: "PENDENTE";
   viagemId: number;
 };
+
+export type AtualizarHospedeRequest = {
+  nomeCompleto: string;
+  cpf: string;
+  telefone?: string;
+  email?: string;
+  dataNascimento?: string;
+  horarioPrevistoChegada?: string;
+  statusCheckIn:
+    | "PENDENTE"
+    | "REALIZADO"
+    | "NAO_COMPARECEU";
+  viagemId: number;
+};
