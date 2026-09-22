@@ -1,3 +1,5 @@
+import { authFetch } from "./authFetch";
+
 import {
   buscarCsrfTokenDoCookie,
   inicializarCsrf,
@@ -35,9 +37,9 @@ export async function login(
 }
 
 export async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
-  const response = await fetch(`${API_URL}/api/auth/me`, {
-    credentials: "include",
-  });
+  const response = await authFetch(
+    `${API_URL}/api/auth/me`,
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -46,4 +48,28 @@ export async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
   }
 
   return response.json();
+}
+
+export async function logout(): Promise<void> {
+  await inicializarCsrf();
+
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
+
+  const response = await fetch(
+    `${API_URL}/api/auth/logout`,
+    {
+      method: "POST",
+      headers: {
+        "X-XSRF-TOKEN": csrfToken,
+      },
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível encerrar a sessão.",
+    );
+  }
 }

@@ -1,3 +1,5 @@
+import { authFetch } from "@/features/auth/services/authFetch";
+
 import type { DashboardResponse } from "../types/dashboard";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -5,11 +7,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export async function buscarDashboard(
   viagemId: number,
 ): Promise<DashboardResponse> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/dashboard/viagens/${viagemId}`,
-    {
-      credentials: "include",
-    },
   );
 
   if (!response.ok) {

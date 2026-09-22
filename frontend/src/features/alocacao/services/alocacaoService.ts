@@ -1,3 +1,5 @@
+import { authFetch } from "@/features/auth/services/authFetch";
+
 import {
   buscarCsrfTokenDoCookie,
   inicializarCsrf,
@@ -15,9 +17,10 @@ export async function alocarHospedeEmQuarto(
 ): Promise<AlocacaoQuarto> {
   await inicializarCsrf();
 
-  const csrfToken = buscarCsrfTokenDoCookie();
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
 
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/alocacoes-quartos`,
     {
       method: "POST",
@@ -25,7 +28,6 @@ export async function alocarHospedeEmQuarto(
         "Content-Type": "application/json",
         "X-XSRF-TOKEN": csrfToken,
       },
-      credentials: "include",
       body: JSON.stringify(dados),
     },
   );
@@ -43,11 +45,8 @@ export async function buscarAlocacaoPorHospedeEViagem(
   hospedeId: number,
   viagemId: number,
 ): Promise<AlocacaoQuarto> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/alocacoes-quartos/hospede/${hospedeId}/viagem/${viagemId}`,
-    {
-      credentials: "include",
-    },
   );
 
   if (!response.ok) {
@@ -65,9 +64,10 @@ export async function trocarQuarto(
 ): Promise<AlocacaoQuarto> {
   await inicializarCsrf();
 
-  const csrfToken = buscarCsrfTokenDoCookie();
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
 
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/alocacoes-quartos/${alocacaoId}/quarto`,
     {
       method: "PUT",
@@ -75,7 +75,6 @@ export async function trocarQuarto(
         "Content-Type": "application/json",
         "X-XSRF-TOKEN": csrfToken,
       },
-      credentials: "include",
       body: JSON.stringify({
         novoQuartoId,
       }),
@@ -83,7 +82,8 @@ export async function trocarQuarto(
   );
 
   if (!response.ok) {
-    const erro = await response.json().catch(() => null);
+    const erro =
+      await response.json().catch(() => null);
 
     throw new Error(
       erro?.mensagem ??
