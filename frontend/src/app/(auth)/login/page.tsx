@@ -1,23 +1,39 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  FormEvent,
+  Suspense,
+  useState,
+} from "react";
+
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+
 import {
   buscarUsuarioAutenticado,
   login,
 } from "@/features/auth/services/authService";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const sessaoExpirada =
+    searchParams.get("motivo") ===
+    "sessao-expirada";
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
-  const [carregando, setCarregando] = useState(false);
+
+  const [carregando, setCarregando] =
+    useState(false);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -33,7 +49,8 @@ export default function LoginPage() {
         senha,
       });
 
-      const usuario = await buscarUsuarioAutenticado();
+      const usuario =
+        await buscarUsuarioAutenticado();
 
       if (usuario.perfil === "HOSPEDE") {
         router.replace("/app");
@@ -64,6 +81,14 @@ export default function LoginPage() {
         <p className="mt-2 text-sm leading-6 text-muted">
           Entre com suas credenciais para acessar a plataforma.
         </p>
+
+        {sessaoExpirada && (
+          <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3">
+            <p className="text-sm text-amber-300">
+              Sua sessão expirou. Faça login novamente.
+            </p>
+          </div>
+        )}
       </header>
 
       <form
@@ -86,7 +111,9 @@ export default function LoginPage() {
             autoComplete="email"
             required
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
           />
         </div>
 
@@ -106,7 +133,9 @@ export default function LoginPage() {
             autoComplete="current-password"
             required
             value={senha}
-            onChange={(event) => setSenha(event.target.value)}
+            onChange={(event) =>
+              setSenha(event.target.value)
+            }
           />
         </div>
 
@@ -123,9 +152,19 @@ export default function LoginPage() {
           type="submit"
           disabled={carregando}
         >
-          {carregando ? "Entrando..." : "Entrar"}
+          {carregando
+            ? "Entrando..."
+            : "Entrar"}
         </Button>
       </form>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

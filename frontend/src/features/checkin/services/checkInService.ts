@@ -1,3 +1,5 @@
+import { authFetch } from "@/features/auth/services/authFetch";
+
 import {
   buscarCsrfTokenDoCookie,
   inicializarCsrf,
@@ -18,11 +20,8 @@ type NaoComparecimentoRequest = {
 export async function consultarCheckIn(
   hospedeId: number,
 ): Promise<CheckInResponse> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes/${hospedeId}/check-in`,
-    {
-      credentials: "include",
-    },
   );
 
   if (!response.ok) {
@@ -40,9 +39,10 @@ export async function realizarCheckIn(
 ): Promise<CheckInResponse> {
   await inicializarCsrf();
 
-  const csrfToken = buscarCsrfTokenDoCookie();
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
 
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes/${hospedeId}/check-in`,
     {
       method: "POST",
@@ -50,7 +50,6 @@ export async function realizarCheckIn(
         "Content-Type": "application/json",
         "X-XSRF-TOKEN": csrfToken,
       },
-      credentials: "include",
       body: JSON.stringify(dados),
     },
   );
@@ -62,7 +61,6 @@ export async function realizarCheckIn(
   }
 
   return response.json();
-
 }
 
 export async function registrarNaoComparecimento(
@@ -71,9 +69,10 @@ export async function registrarNaoComparecimento(
 ): Promise<CheckInResponse> {
   await inicializarCsrf();
 
-  const csrfToken = buscarCsrfTokenDoCookie();
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
 
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes/${hospedeId}/nao-comparecimento`,
     {
       method: "POST",
@@ -81,13 +80,13 @@ export async function registrarNaoComparecimento(
         "Content-Type": "application/json",
         "X-XSRF-TOKEN": csrfToken,
       },
-      credentials: "include",
       body: JSON.stringify(dados),
     },
   );
 
   if (!response.ok) {
-    const erro = await response.json().catch(() => null);
+    const erro =
+      await response.json().catch(() => null);
 
     throw new Error(
       erro?.mensagem ??

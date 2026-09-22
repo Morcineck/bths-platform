@@ -58,6 +58,28 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            HttpServletResponse httpResponse
+    ) {
+
+        ResponseCookie cookie = ResponseCookie
+                .from("BTHS_TOKEN","")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        httpResponse.addHeader(
+                HttpHeaders.SET_COOKIE,
+                cookie.toString()
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/csrf")
     public ResponseEntity<CsrfToken> csrf(
             CsrfToken csrfToken

@@ -1,7 +1,10 @@
+import { authFetch } from "@/features/auth/services/authFetch";
+
 import {
   buscarCsrfTokenDoCookie,
   inicializarCsrf,
 } from "@/features/auth/services/csrfService";
+
 import type {
   AtualizarHospedeRequest,
   CadastrarHospedeRequest,
@@ -13,11 +16,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export async function listarHospedesPorViagem(
   viagemId: number,
 ): Promise<Hospede[]> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes/viagem/${viagemId}`,
-    {
-      credentials: "include",
-    },
   );
 
   if (!response.ok) {
@@ -32,11 +32,8 @@ export async function listarHospedesPorViagem(
 export async function buscarHospedePorId(
   id: number,
 ): Promise<Hospede> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes/${id}`,
-    {
-      credentials: "include",
-    },
   );
 
   if (!response.ok) {
@@ -53,9 +50,10 @@ export async function cadastrarHospede(
 ): Promise<Hospede> {
   await inicializarCsrf();
 
-  const csrfToken = buscarCsrfTokenDoCookie();
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
 
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes`,
     {
       method: "POST",
@@ -63,13 +61,13 @@ export async function cadastrarHospede(
         "Content-Type": "application/json",
         "X-XSRF-TOKEN": csrfToken,
       },
-      credentials: "include",
       body: JSON.stringify(dados),
     },
   );
 
   if (!response.ok) {
-    const erro = await response.json().catch(() => null);
+    const erro =
+      await response.json().catch(() => null);
 
     throw new Error(
       erro?.mensagem ??
@@ -86,9 +84,10 @@ export async function atualizarHospede(
 ): Promise<Hospede> {
   await inicializarCsrf();
 
-  const csrfToken = buscarCsrfTokenDoCookie();
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
 
-  const response = await fetch(
+  const response = await authFetch(
     `${API_URL}/api/hospedes/${hospedeId}`,
     {
       method: "PUT",
@@ -96,13 +95,13 @@ export async function atualizarHospede(
         "Content-Type": "application/json",
         "X-XSRF-TOKEN": csrfToken,
       },
-      credentials: "include",
       body: JSON.stringify(dados),
     },
   );
 
   if (!response.ok) {
-    const erro = await response.json().catch(() => null);
+    const erro =
+      await response.json().catch(() => null);
 
     throw new Error(
       erro?.mensagem ??
