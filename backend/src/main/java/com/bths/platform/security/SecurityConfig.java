@@ -68,6 +68,11 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         .requestMatchers(
+                                "/api/motoristas/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/hospedes"
                         )

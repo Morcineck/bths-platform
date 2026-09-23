@@ -9,6 +9,7 @@ import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
 import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoException;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
 import com.bths.platform.quarto.exception.QuartoIndisponivelException;
 import com.bths.platform.quarto.exception.QuartoLotadoException;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
@@ -344,6 +345,21 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MotoristaNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarMotoristaNaoEncontrato(
+            MotoristaNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(erro);
     }
 }
