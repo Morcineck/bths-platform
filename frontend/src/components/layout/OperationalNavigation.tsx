@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-export function OperationalNavigation() {
+type OperationalNavigationProps = {
+  perfil: "ADMIN" | "STAFF" | "HOSPEDE";
+};
+
+export function OperationalNavigation({
+  perfil,
+}: OperationalNavigationProps) {
   return (
     <>
       {/* Navegação mobile */}
@@ -54,12 +60,30 @@ export function OperationalNavigation() {
                 Dashboard
               </Link>
 
-            <Link
-              href="/hospedes"
-              className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
-            >
-              Hóspedes
-            </Link>
+              <Link
+                href="/hospedes"
+                className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
+              >
+                Hóspedes
+              </Link>
+
+              {perfil === "ADMIN" && (
+                <>
+                  <Link
+                    href="/motoristas"
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
+                  >
+                    Motoristas
+                  </Link>
+
+                  <Link
+                    href="/veiculos"
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
+                  >
+                    Veículos
+                  </Link>
+                </>
+              )}
 
               <button
                 type="button"

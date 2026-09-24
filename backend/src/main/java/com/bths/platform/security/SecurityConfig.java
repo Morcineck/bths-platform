@@ -64,8 +64,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/me")
                         .authenticated()
 
-                        .requestMatchers("/api/usuarios/**")
+                        .requestMatchers("/api/usuarios/**",
+                                "/api/motoristas/**",
+                                "/api/veiculos/**"
+                        )
                         .hasRole("ADMIN")
+
 
                         .requestMatchers(
                                 HttpMethod.POST,

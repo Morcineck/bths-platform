@@ -132,7 +132,9 @@ export default function DashboardLayout({
       )}
 
       <div className="flex min-h-[calc(100vh-73px)]">
-        <OperationalNavigation />
+        <OperationalNavigation
+          perfil={usuario.perfil}
+        />
 
         <main className="w-full min-w-0 px-6 py-8 pb-24 md:pb-8">
           <div className="mx-auto w-full max-w-6xl">
