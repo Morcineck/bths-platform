@@ -20,6 +20,8 @@ import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaExcep
 import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
 import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
+import com.bths.platform.veiculo.exception.VeiculoJaCadastradoException;
+import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -354,6 +356,38 @@ public class GlobalExceptionHandler {
     ) {
 
         Map<String, Object> erro = new HashMap<>();
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(VeiculoJaCadastradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarVeiculoJaCadastrado(
+            VeiculoJaCadastradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(VeiculoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarVeiculoNaoEncontrado(
+            VeiculoNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
         erro.put("erro", "Not Found");
         erro.put("mensagem", exception.getMessage());
         erro.put("status", HttpStatus.NOT_FOUND.value());
