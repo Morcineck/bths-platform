@@ -7,6 +7,7 @@ import com.bths.platform.motorista.MotoristaRepository;
 import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
 import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoPassageiroResponse;
 import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoResponse;
+import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoStatusRequest;
 import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoUpdateRequest;
 import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoComPassageirosException;
@@ -15,8 +16,10 @@ import com.bths.platform.operacaoTraslado.mapper.OperacaoTrasladoMapper;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.traslado.enums.Aeroporto;
+import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
 import com.bths.platform.traslado.exception.MotoristaInativoException;
+import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
 import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
 import com.bths.platform.traslado.exception.VeiculoInativoException;
 import com.bths.platform.veiculo.Veiculo;
@@ -28,6 +31,8 @@ import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -1461,6 +1466,158 @@ class OperacaoTrasladoServiceTest {
                 never()
         ).findByOperacaoTrasladoId(
                 anyLong()
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "AGUARDANDO, EM_ANDAMENTO",
+            "AGUARDANDO, CANCELADO",
+            "EM_ANDAMENTO, CONCLUIDO",
+            "EM_ANDAMENTO, CANCELADO"
+    })
+    void deveAtualizarStatusQuandoTransicaoForValida(
+            StatusTraslado statusAtual,
+            StatusTraslado novoStatus
+    ) {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+        operacao.setStatus(statusAtual);
+
+        OperacaoTrasladoStatusRequest request =
+                new OperacaoTrasladoStatusRequest();
+
+        request.setStatus(novoStatus);
+
+        OperacaoTrasladoResponse responseEsperado =
+                new OperacaoTrasladoResponse();
+
+        responseEsperado.setId(100L);
+        responseEsperado.setStatus(novoStatus);
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        when(
+                operacaoTrasladoRepository.save(operacao)
+        ).thenReturn(operacao);
+
+        when(
+                operacaoTrasladoMapper.paraResponse(operacao)
+        ).thenReturn(responseEsperado);
+
+        OperacaoTrasladoResponse response =
+                operacaoTrasladoService.atualizarStatus(
+                        100L,
+                        request
+                );
+
+        assertEquals(
+                novoStatus,
+                operacao.getStatus()
+        );
+
+        assertEquals(
+                novoStatus,
+                response.getStatus()
+        );
+
+        verify(
+                operacaoTrasladoRepository
+        ).save(operacao);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "AGUARDANDO, CONCLUIDO",
+            "EM_ANDAMENTO, AGUARDANDO",
+            "CONCLUIDO, EM_ANDAMENTO",
+            "CANCELADO, AGUARDANDO"
+    })
+    void deveBloquearTransicaoDeStatusInvalida(
+            StatusTraslado statusAtual,
+            StatusTraslado novoStatus
+    ) {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+        operacao.setStatus(statusAtual);
+
+        OperacaoTrasladoStatusRequest request =
+                new OperacaoTrasladoStatusRequest();
+
+        request.setStatus(novoStatus);
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        assertThrows(
+                TransicaoStatusTrasladoInvalidaException.class,
+                () ->
+                        operacaoTrasladoService.atualizarStatus(
+                                100L,
+                                request
+                        )
+        );
+
+        assertEquals(
+                statusAtual,
+                operacao.getStatus()
+        );
+
+        verify(
+                operacaoTrasladoRepository,
+                never()
+        ).save(any(OperacaoTraslado.class));
+
+        verifyNoInteractions(
+                operacaoTrasladoMapper
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoAoAtualizarStatusDeOperacaoInexistente() {
+
+        OperacaoTrasladoStatusRequest request =
+                new OperacaoTrasladoStatusRequest();
+
+        request.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                operacaoTrasladoRepository.findById(999L)
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                OperacaoTrasladoNaoEncontradaException.class,
+                () ->
+                        operacaoTrasladoService.atualizarStatus(
+                                999L,
+                                request
+                        )
+        );
+
+        verify(
+                operacaoTrasladoRepository,
+                never()
+        ).save(any(OperacaoTraslado.class));
+
+        verifyNoInteractions(
+                operacaoTrasladoMapper
         );
     }
 

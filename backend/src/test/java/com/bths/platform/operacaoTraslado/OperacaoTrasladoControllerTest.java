@@ -1,9 +1,6 @@
 package com.bths.platform.operacaoTraslado;
 
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoPassageiroResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoRequest;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoUpdateRequest;
+import com.bths.platform.operacaoTraslado.dto.*;
 import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoComPassageirosException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoNaoEncontradaException;
@@ -13,6 +10,7 @@ import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
 import com.bths.platform.traslado.exception.MotoristaInativoException;
+import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
 import com.bths.platform.traslado.exception.VeiculoInativoException;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
 import org.junit.jupiter.api.Test;
@@ -1439,5 +1437,183 @@ class OperacaoTrasladoControllerTest {
                 operacaoTrasladoService
         ).listarPassageiros(999L);
     }
+
+    @Test
+    void deveAtualizarStatusDaOperacaoERetornar200()
+            throws Exception {
+
+        OperacaoTrasladoResponse response =
+                new OperacaoTrasladoResponse();
+
+        response.setId(100L);
+        response.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                operacaoTrasladoService.atualizarStatus(
+                        eq(100L),
+                        any(OperacaoTrasladoStatusRequest.class)
+                )
+        ).thenReturn(response);
+
+        String json = """
+        {
+            "status": "EM_ANDAMENTO"
+        }
+        """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.id")
+                                .value(100)
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(
+                                        "EM_ANDAMENTO"
+                                )
+                );
+
+        verify(
+                operacaoTrasladoService
+        ).atualizarStatus(
+                eq(100L),
+                any(OperacaoTrasladoStatusRequest.class)
+        );
+    }
+
+    @Test
+    void deveRetornar400AoAtualizarStatusSemInformarStatus()
+            throws Exception {
+
+        String json = """
+        {}
+        """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                );
+
+        verify(
+                operacaoTrasladoService,
+                never()
+        ).atualizarStatus(
+                anyLong(),
+                any(OperacaoTrasladoStatusRequest.class)
+        );
+    }
+
+    @Test
+    void deveRetornar404AoAtualizarStatusDeOperacaoInexistente()
+            throws Exception {
+
+        when(
+                operacaoTrasladoService.atualizarStatus(
+                        eq(999L),
+                        any(OperacaoTrasladoStatusRequest.class)
+                )
+        ).thenThrow(
+                new OperacaoTrasladoNaoEncontradaException(
+                        "Operação de traslado não encontrada!"
+                )
+        );
+
+        String json = """
+        {
+            "status": "EM_ANDAMENTO"
+        }
+        """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/999/status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isNotFound()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(404)
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Operação de traslado não encontrada!"
+                                )
+                );
+    }
+
+    @Test
+    void deveRetornar409AoAtualizarStatusComTransicaoInvalida()
+            throws Exception {
+
+        when(
+                operacaoTrasladoService.atualizarStatus(
+                        eq(100L),
+                        any(OperacaoTrasladoStatusRequest.class)
+                )
+        ).thenThrow(
+                new TransicaoStatusTrasladoInvalidaException(
+                        "Não é possível alterar o status de AGUARDANDO para CONCLUIDO!"
+                )
+        );
+
+        String json = """
+        {
+            "status": "CONCLUIDO"
+        }
+        """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isConflict()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(409)
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Não é possível alterar o status de AGUARDANDO para CONCLUIDO!"
+                                )
+                );
+    }
+
+
 
 }

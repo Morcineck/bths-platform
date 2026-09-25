@@ -2,10 +2,7 @@ package com.bths.platform.operacaoTraslado;
 
 
 
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoPassageiroResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoRequest;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoUpdateRequest;
+import com.bths.platform.operacaoTraslado.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -148,4 +145,18 @@ public class OperacaoTrasladoController {
         );
     }
 
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OperacaoTrasladoResponse> atualizarStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody OperacaoTrasladoStatusRequest request
+    ) {
+
+        OperacaoTrasladoResponse response =
+                operacaoTrasladoService.atualizarStatus(
+                        id,
+                        request
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }

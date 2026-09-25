@@ -114,6 +114,15 @@ public class SecurityConfig {
                                 "STAFF"
                         )
 
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/traslados/operacoes/*/status"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
                         // Criação e alteração das operações:
                         // somente ADMIN.
                         .requestMatchers(
