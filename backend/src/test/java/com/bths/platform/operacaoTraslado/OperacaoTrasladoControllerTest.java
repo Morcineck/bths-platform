@@ -1614,6 +1614,116 @@ class OperacaoTrasladoControllerTest {
                 );
     }
 
+    @Test
+    void deveListarHistoricoStatusDaOperacaoERetornar200()
+            throws Exception {
 
+        HistoricoStatusOperacaoTrasladoResponse historico =
+                new HistoricoStatusOperacaoTrasladoResponse();
+
+        historico.setId(1L);
+        historico.setOperacaoTrasladoId(100L);
+        historico.setStatusAnterior(
+                StatusTraslado.AGUARDANDO
+        );
+        historico.setNovoStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+        historico.setMotivo(
+                "Alteração normal de status"
+        );
+        historico.setDataHora(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        29,
+                        13,
+                        30
+                )
+        );
+
+        when(
+                operacaoTrasladoService
+                        .listarHistoricoStatus(100L)
+        ).thenReturn(
+                List.of(historico)
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/traslados/operacoes/100/historico-status"
+                        )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$[0].id")
+                                .value(1)
+                )
+                .andExpect(
+                        jsonPath("$[0].operacaoTrasladoId")
+                                .value(100)
+                )
+                .andExpect(
+                        jsonPath("$[0].statusAnterior")
+                                .value("AGUARDANDO")
+                )
+                .andExpect(
+                        jsonPath("$[0].novoStatus")
+                                .value("EM_ANDAMENTO")
+                )
+                .andExpect(
+                        jsonPath("$[0].motivo")
+                                .value(
+                                        "Alteração normal de status"
+                                )
+                );
+
+        verify(
+                operacaoTrasladoService
+        ).listarHistoricoStatus(
+                100L
+        );
+    }
+
+    @Test
+    void deveRetornar404AoListarHistoricoDeOperacaoInexistente()
+            throws Exception {
+
+        when(
+                operacaoTrasladoService
+                        .listarHistoricoStatus(999L)
+        ).thenThrow(
+                new OperacaoTrasladoNaoEncontradaException(
+                        "Operação de traslado não encontrada!"
+                )
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/traslados/operacoes/999/historico-status"
+                        )
+                )
+                .andExpect(
+                        status().isNotFound()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(404)
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Operação de traslado não encontrada!"
+                                )
+                );
+
+        verify(
+                operacaoTrasladoService
+        ).listarHistoricoStatus(
+                999L
+        );
+    }
 
 }
