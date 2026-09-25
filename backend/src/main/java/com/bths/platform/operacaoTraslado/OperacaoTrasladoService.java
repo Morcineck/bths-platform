@@ -15,13 +15,16 @@ import com.bths.platform.operacaoTraslado.mapper.OperacaoTrasladoMapper;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.traslado.enums.Aeroporto;
+import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
 import com.bths.platform.traslado.exception.MotoristaInativoException;
+import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
 import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
 import com.bths.platform.traslado.exception.VeiculoInativoException;
 import com.bths.platform.veiculo.Veiculo;
 import com.bths.platform.veiculo.VeiculoRepository;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
+import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoStatusRequest;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
@@ -446,6 +449,39 @@ public class OperacaoTrasladoService {
                 );
     }
 
+    public OperacaoTrasladoResponse atualizarStatus(
+            Long operacaoId,
+            OperacaoTrasladoStatusRequest request
+    ) {
+
+        OperacaoTraslado operacao =
+                operacaoTrasladoRepository.findById(
+                        operacaoId
+                ).orElseThrow(() ->
+                        new OperacaoTrasladoNaoEncontradaException(
+                                "Operação de traslado não encontrada!"
+                        )
+                );
+
+        validarTransicaoStatus(
+                operacao.getStatus(),
+                request.getStatus()
+        );
+
+        operacao.setStatus(
+                request.getStatus()
+        );
+
+        OperacaoTraslado atualizada =
+                operacaoTrasladoRepository.save(
+                        operacao
+                );
+
+        return operacaoTrasladoMapper
+                .paraResponse(
+                        atualizada
+                );
+    }
     public OperacaoTrasladoResponse buscarPorId(
             Long id
     ) {
@@ -580,6 +616,33 @@ public class OperacaoTrasladoService {
                         "Não é possível alterar o aeroporto da operação porque existem traslados incompatíveis vinculados."
                 );
             }
+        }
+    }
+
+    private void validarTransicaoStatus(
+            StatusTraslado statusAtual,
+            StatusTraslado novoStatus
+    ) {
+
+        boolean transicaoValida =
+                switch (statusAtual) {
+
+                    case AGUARDANDO -> novoStatus == StatusTraslado.EM_ANDAMENTO
+                            || novoStatus == StatusTraslado.CANCELADO;
+
+                    case EM_ANDAMENTO -> novoStatus == StatusTraslado.CONCLUIDO
+                            || novoStatus == StatusTraslado.CANCELADO;
+
+                    case CONCLUIDO, CANCELADO -> false;
+                };
+        if (!transicaoValida) {
+            throw new TransicaoStatusTrasladoInvalidaException(
+                    "Não é possível alterar o status de "
+                    + statusAtual
+                    + " para "
+                    + novoStatus
+                    + " ! "
+            );
         }
     }
 
