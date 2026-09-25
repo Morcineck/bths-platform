@@ -5,13 +5,11 @@ import com.bths.platform.hospede.Hospede;
 import com.bths.platform.motorista.Motorista;
 import com.bths.platform.motorista.MotoristaRepository;
 import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoPassageiroResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoStatusRequest;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoUpdateRequest;
+import com.bths.platform.operacaoTraslado.dto.*;
 import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoComPassageirosException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoNaoEncontradaException;
+import com.bths.platform.operacaoTraslado.mapper.HistoricoStatusOperacaoTrasladoMapper;
 import com.bths.platform.operacaoTraslado.mapper.OperacaoTrasladoMapper;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
@@ -66,6 +64,14 @@ class OperacaoTrasladoServiceTest {
 
     private OperacaoTrasladoService operacaoTrasladoService;
 
+    @Mock
+    private HistoricoStatusOperacaoTrasladoRepository
+            historicoStatusOperacaoTrasladoRepository;
+
+    @Mock
+    private HistoricoStatusOperacaoTrasladoMapper
+            historicoStatusOperacaoTrasladoMapper;
+
     @BeforeEach
     void setUp() {
         operacaoTrasladoService =
@@ -75,7 +81,9 @@ class OperacaoTrasladoServiceTest {
                         viagemRepository,
                         motoristaRepository,
                         veiculoRepository,
-                        operacaoTrasladoMapper
+                        operacaoTrasladoMapper,
+                        historicoStatusOperacaoTrasladoRepository,
+                        historicoStatusOperacaoTrasladoMapper
                 );
     }
 
@@ -1620,5 +1628,164 @@ class OperacaoTrasladoServiceTest {
                 operacaoTrasladoMapper
         );
     }
+
+    @Test
+    void deveRegistrarHistoricoAoAtualizarStatus() {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+        operacao.setStatus(
+                StatusTraslado.AGUARDANDO
+        );
+
+        OperacaoTrasladoStatusRequest request =
+                new OperacaoTrasladoStatusRequest();
+
+        request.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        OperacaoTrasladoResponse responseEsperado =
+                new OperacaoTrasladoResponse();
+
+        responseEsperado.setId(100L);
+        responseEsperado.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        when(
+                operacaoTrasladoRepository.save(operacao)
+        ).thenReturn(operacao);
+
+        when(
+                operacaoTrasladoMapper.paraResponse(operacao)
+        ).thenReturn(responseEsperado);
+
+        operacaoTrasladoService.atualizarStatus(
+                100L,
+                request
+        );
+
+        verify(
+                historicoStatusOperacaoTrasladoRepository
+        ).save(
+                argThat(
+                        historico ->
+                                historico.getOperacaoTraslado()
+                                        .equals(operacao)
+                                        &&
+                                        historico.getStatusAnterior()
+                                                == StatusTraslado.AGUARDANDO
+                                        &&
+                                        historico.getNovoStatus()
+                                                == StatusTraslado.EM_ANDAMENTO
+                                        &&
+                                        historico.getMotivo()
+                                                .equals(
+                                                        "Alteração normal de status"
+                                                )
+                                        &&
+                                        historico.getDataHora()
+                                                != null
+                )
+        );
+    }
+
+    @Test
+    void deveListarHistoricoDeStatusDaOperacao() {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+
+        HistoricoStatusOperacaoTraslado historico =
+                new HistoricoStatusOperacaoTraslado();
+
+        historico.setId(1L);
+        historico.setOperacaoTraslado(
+                operacao
+        );
+        historico.setStatusAnterior(
+                StatusTraslado.AGUARDANDO
+        );
+        historico.setNovoStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+        historico.setMotivo(
+                "Alteração normal de status"
+        );
+
+        HistoricoStatusOperacaoTrasladoResponse responseEsperado =
+                new HistoricoStatusOperacaoTrasladoResponse();
+
+        responseEsperado.setId(1L);
+        responseEsperado.setOperacaoTrasladoId(100L);
+        responseEsperado.setStatusAnterior(
+                StatusTraslado.AGUARDANDO
+        );
+        responseEsperado.setNovoStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        when(
+                historicoStatusOperacaoTrasladoRepository
+                        .findByOperacaoTrasladoId(100L)
+        ).thenReturn(
+                List.of(historico)
+        );
+
+        when(
+                historicoStatusOperacaoTrasladoMapper
+                        .paraResponse(historico)
+        ).thenReturn(
+                responseEsperado
+        );
+
+        List<HistoricoStatusOperacaoTrasladoResponse> response =
+                operacaoTrasladoService
+                        .listarHistoricoStatus(
+                                100L
+                        );
+
+        assertEquals(
+                1,
+                response.size()
+        );
+
+        assertEquals(
+                StatusTraslado.AGUARDANDO,
+                response.get(0)
+                        .getStatusAnterior()
+        );
+
+        assertEquals(
+                StatusTraslado.EM_ANDAMENTO,
+                response.get(0)
+                        .getNovoStatus()
+        );
+
+        verify(
+                historicoStatusOperacaoTrasladoRepository
+        ).findByOperacaoTrasladoId(
+                100L
+        );
+    }
+
+
 
 }

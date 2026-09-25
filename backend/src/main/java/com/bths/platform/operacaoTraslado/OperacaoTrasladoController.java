@@ -159,4 +159,17 @@ public class OperacaoTrasladoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{id}/historico-status")
+    public ResponseEntity<List<HistoricoStatusOperacaoTrasladoResponse>>
+    listarHistoricoStatus(
+            @PathVariable Long id
+    ) {
+
+        List<HistoricoStatusOperacaoTrasladoResponse> response =
+                operacaoTrasladoService
+                        .listarHistoricoStatus(id);
+
+        return ResponseEntity.ok(response);
+    }
 }

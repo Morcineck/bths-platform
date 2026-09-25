@@ -4,13 +4,11 @@ import com.bths.platform.alocacao.exception.ViagemIncompativelException;
 import com.bths.platform.motorista.Motorista;
 import com.bths.platform.motorista.MotoristaRepository;
 import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoPassageiroResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoRequest;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoResponse;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoUpdateRequest;
+import com.bths.platform.operacaoTraslado.dto.*;
 import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoComPassageirosException;
 import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoNaoEncontradaException;
+import com.bths.platform.operacaoTraslado.mapper.HistoricoStatusOperacaoTrasladoMapper;
 import com.bths.platform.operacaoTraslado.mapper.OperacaoTrasladoMapper;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
@@ -24,12 +22,12 @@ import com.bths.platform.traslado.exception.VeiculoInativoException;
 import com.bths.platform.veiculo.Veiculo;
 import com.bths.platform.veiculo.VeiculoRepository;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
-import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoStatusRequest;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -41,6 +39,8 @@ public class OperacaoTrasladoService {
     private final MotoristaRepository motoristaRepository;
     private final VeiculoRepository veiculoRepository;
     private final OperacaoTrasladoMapper operacaoTrasladoMapper;
+    private final HistoricoStatusOperacaoTrasladoRepository historicoStatusOperacaoTrasladoRepository;
+    private final HistoricoStatusOperacaoTrasladoMapper historicoStatusOperacaoTrasladoMapper;
 
     public OperacaoTrasladoService(
             OperacaoTrasladoRepository operacaoTrasladoRepository,
@@ -48,7 +48,9 @@ public class OperacaoTrasladoService {
             ViagemRepository viagemRepository,
             MotoristaRepository motoristaRepository,
             VeiculoRepository veiculoRepository,
-            OperacaoTrasladoMapper operacaoTrasladoMapper
+            OperacaoTrasladoMapper operacaoTrasladoMapper,
+            HistoricoStatusOperacaoTrasladoRepository historicoStatusOperacaoTrasladoRepository,
+            HistoricoStatusOperacaoTrasladoMapper historicoStatusOperacaoTrasladoMapper
     ) {
 
         this.operacaoTrasladoRepository =
@@ -68,6 +70,12 @@ public class OperacaoTrasladoService {
 
         this.operacaoTrasladoMapper =
                 operacaoTrasladoMapper;
+
+        this.historicoStatusOperacaoTrasladoRepository =
+                historicoStatusOperacaoTrasladoRepository;
+
+        this.historicoStatusOperacaoTrasladoMapper =
+                historicoStatusOperacaoTrasladoMapper;
     }
 
     public OperacaoTrasladoResponse criarOperacao(
@@ -468,6 +476,16 @@ public class OperacaoTrasladoService {
                 request.getStatus()
         );
 
+        StatusTraslado statusAnterior =
+                operacao.getStatus();
+
+        registarHistoricoStatus(
+                operacao,
+                statusAnterior,
+                request.getStatus(),
+                "Alteração normal de status"
+        );
+
         operacao.setStatus(
                 request.getStatus()
         );
@@ -482,6 +500,31 @@ public class OperacaoTrasladoService {
                         atualizada
                 );
     }
+
+    public List<HistoricoStatusOperacaoTrasladoResponse> listarHistoricoStatus(
+            Long operacaoId
+    ) {
+
+        OperacaoTraslado operacao =
+                operacaoTrasladoRepository.findById(
+                        operacaoId
+                ).orElseThrow(() ->
+                        new OperacaoTrasladoNaoEncontradaException(
+                                "Operação de traslado não encontrada!"
+                        )
+                );
+
+        return historicoStatusOperacaoTrasladoRepository
+                .findByOperacaoTrasladoId(
+                        operacao.getId()
+                )
+                .stream()
+                .map(
+                        historicoStatusOperacaoTrasladoMapper::paraResponse
+                )
+                .toList();
+    }
+
     public OperacaoTrasladoResponse buscarPorId(
             Long id
     ) {
@@ -598,7 +641,7 @@ public class OperacaoTrasladoService {
 
             if (
                     traslado.getTipo()
-                    != novoTipo
+                            != novoTipo
             ) {
 
                 throw new ViagemIncompativelException(
@@ -608,9 +651,9 @@ public class OperacaoTrasladoService {
 
             if (
                     novoTipo != TipoTraslado.OUTRO
-                    &&
+                            &&
                             traslado.getAeroporto()
-                    != novoAeroporto
+                                    != novoAeroporto
             ) {
                 throw new ViagemIncompativelException(
                         "Não é possível alterar o aeroporto da operação porque existem traslados incompatíveis vinculados."
@@ -638,10 +681,10 @@ public class OperacaoTrasladoService {
         if (!transicaoValida) {
             throw new TransicaoStatusTrasladoInvalidaException(
                     "Não é possível alterar o status de "
-                    + statusAtual
-                    + " para "
-                    + novoStatus
-                    + " ! "
+                            + statusAtual
+                            + " para "
+                            + novoStatus
+                            + " ! "
             );
         }
     }
@@ -741,5 +784,39 @@ public class OperacaoTrasladoService {
 
             case VCP -> "Aeroporto de Viracopos";
         };
+    }
+
+    private void registarHistoricoStatus(
+            OperacaoTraslado operacao,
+            StatusTraslado statusAnterior,
+            StatusTraslado novoStatus,
+            String motivo
+    ) {
+
+        HistoricoStatusOperacaoTraslado historico =
+                new HistoricoStatusOperacaoTraslado();
+
+        historico.setOperacaoTraslado(
+                operacao
+        );
+
+        historico.setStatusAnterior(
+                statusAnterior
+        );
+
+        historico.setNovoStatus(
+                novoStatus
+        );
+
+        historico.setMotivo(
+                motivo
+        );
+
+        historico.setDataHora(
+                LocalDateTime.now()
+        );
+
+        historicoStatusOperacaoTrasladoRepository
+                .save(historico);
     }
 }
