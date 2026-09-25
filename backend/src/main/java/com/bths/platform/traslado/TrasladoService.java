@@ -371,7 +371,7 @@ public class TrasladoService {
         HistoricoStatusTraslado historico = new HistoricoStatusTraslado();
 
         historico.setTraslado(traslado);
-        historico.setStatusAterior(statusAnterior);
+        historico.setStatusAnterior(statusAnterior);
         historico.setNovoStatus(novoStatus);
         historico.setMotivo(motivo);
         historico.setDataHora(LocalDateTime.now());

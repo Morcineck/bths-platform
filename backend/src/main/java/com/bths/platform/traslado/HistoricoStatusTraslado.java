@@ -19,7 +19,7 @@ public class HistoricoStatusTraslado {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "traslado_anterior", nullable = false)
-    private StatusTraslado statusAterior;
+    private StatusTraslado statusAnterior;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "novo_status", nullable = false)
@@ -47,12 +47,12 @@ public class HistoricoStatusTraslado {
         this.traslado = traslado;
     }
 
-    public StatusTraslado getStatusAterior() {
-        return statusAterior;
+    public StatusTraslado getStatusAnterior() {
+        return statusAnterior;
     }
 
-    public void setStatusAterior(StatusTraslado statusAterior) {
-        this.statusAterior = statusAterior;
+    public void setStatusAnterior(StatusTraslado statusAnterior) {
+        this.statusAnterior = statusAnterior;
     }
 
     public StatusTraslado getNovoStatus() {
