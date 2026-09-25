@@ -134,7 +134,7 @@ export default function DashboardPage() {
                 key={viagem.id}
                 value={viagem.id}
               >
-                {viagem.nome} — {viagem.status}
+                {viagem.nome}
               </option>
             ))}
           </select>

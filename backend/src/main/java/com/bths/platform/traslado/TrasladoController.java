@@ -114,4 +114,16 @@ public class TrasladoController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{id}/operacao")
+    public ResponseEntity<TrasladoResponse> associarOperacao(
+            @PathVariable Long id,
+            @Valid @RequestBody TrasladoOperacaoRequest request
+    ) {
+
+        TrasladoResponse response =
+                trasladoService.associarOperacao(id, request);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

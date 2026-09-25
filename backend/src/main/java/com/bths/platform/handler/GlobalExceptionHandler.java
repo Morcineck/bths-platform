@@ -10,14 +10,14 @@ import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoExceptio
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
+import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
+import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoComPassageirosException;
+import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoNaoEncontradaException;
 import com.bths.platform.quarto.exception.QuartoIndisponivelException;
 import com.bths.platform.quarto.exception.QuartoLotadoException;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.security.exception.CredenciaisInvalidasException;
-import com.bths.platform.traslado.exception.AeroportoObrigatorioException;
-import com.bths.platform.traslado.exception.MotivoCorrecaoObrigatorioException;
-import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
-import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
+import com.bths.platform.traslado.exception.*;
 import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.veiculo.exception.VeiculoJaCadastradoException;
@@ -396,4 +396,103 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(erro);
     }
+
+    @ExceptionHandler(MotoristaInativoException.class)
+    public ResponseEntity<Map<String, Object>> tratarMotoristaInativo(
+            MotoristaInativoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(VeiculoInativoException.class)
+    public ResponseEntity<Map<String, Object>> tratarVeiculoInativo(
+            VeiculoInativoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(OperacaoTrasladoNaoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> tratarOperacaoTrasladoNaoEncontrada(
+            OperacaoTrasladoNaoEncontradaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(CapacidadeVeiculoExcedidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarCapacidadeVeiculoExcedida(
+            CapacidadeVeiculoExcedidaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(
+            OperacaoTrasladoComPassageirosException.class
+    )
+
+    public ResponseEntity<Map<String, Object>>
+    tratarOperacaoTrasladoComPassageiros(
+            OperacaoTrasladoComPassageirosException exception
+    ) {
+
+        Map<String, Object> erro =
+                new HashMap<>();
+
+        erro.put(
+                "erro",
+                "Conflict"
+        );
+
+        erro.put(
+                "mensagem",
+                exception.getMessage()
+        );
+
+        erro.put(
+                "status",
+                HttpStatus.CONFLICT.value()
+        );
+
+        return ResponseEntity
+                .status(
+                        HttpStatus.CONFLICT
+                )
+                .body(erro);
+    }
+
 }

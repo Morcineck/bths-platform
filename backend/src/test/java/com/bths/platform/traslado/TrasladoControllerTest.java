@@ -8,14 +8,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class TrasladoControllerTest {
@@ -234,5 +240,95 @@ class TrasladoControllerTest {
 
         verify(trasladoService)
                 .listarHistoricoStatusTraslado(1L);
+    }
+
+    @Test
+    void deveAssociarOperacaoAoTrasladoComSucesso() {
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(10L);
+        request.setVeiculoId(20L);
+
+        TrasladoResponse responseEsperado =
+                new TrasladoResponse();
+
+        responseEsperado.setId(1L);
+        responseEsperado.setMotoristaId(10L);
+        responseEsperado.setMotoristaNome(
+                "João da Silva"
+        );
+        responseEsperado.setVeiculoId(20L);
+        responseEsperado.setVeiculoModelo(
+                "Renault Duster"
+        );
+        responseEsperado.setVeiculoPlaca(
+                "ABC1D23"
+        );
+        responseEsperado.setVeiculoCapacidadePassageiros(4);
+
+        when(
+                trasladoService.associarOperacao(
+                        1L,
+                        request
+                )
+        ).thenReturn(responseEsperado);
+
+        ResponseEntity<TrasladoResponse> response =
+                trasladoController.associarOperacao(
+                        1L,
+                        request
+                );
+
+        assertNotNull(response);
+        assertEquals(
+                HttpStatus.OK,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                responseEsperado,
+                response.getBody()
+        );
+
+        assertNotNull(response.getBody());
+
+        assertEquals(
+                10L,
+                response.getBody().getMotoristaId()
+        );
+
+        assertEquals(
+                "João da Silva",
+                response.getBody().getMotoristaNome()
+        );
+
+        assertEquals(
+                20L,
+                response.getBody().getVeiculoId()
+        );
+
+        assertEquals(
+                "Renault Duster",
+                response.getBody().getVeiculoModelo()
+        );
+
+        assertEquals(
+                "ABC1D23",
+                response.getBody().getVeiculoPlaca()
+        );
+
+        assertEquals(
+                4,
+                response.getBody()
+                        .getVeiculoCapacidadePassageiros()
+        );
+
+        verify(trasladoService)
+                .associarOperacao(
+                        1L,
+                        request
+                );
     }
 }

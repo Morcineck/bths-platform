@@ -1,9 +1,12 @@
 package com.bths.platform.traslado;
 
 import com.bths.platform.hospede.Hospede;
+import com.bths.platform.motorista.Motorista;
+import com.bths.platform.operacaoTraslado.OperacaoTraslado;
 import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
+import com.bths.platform.veiculo.Veiculo;
 import com.bths.platform.viagem.Viagem;
 import jakarta.persistence.*;
 
@@ -24,6 +27,14 @@ public class Traslado {
     @ManyToOne(optional = false)
     @JoinColumn(name = "viagem_id", nullable = false)
     private Viagem viagem;
+
+    @ManyToOne
+    @JoinColumn(name = "motorista_id")
+    private Motorista motorista;
+
+    @ManyToOne
+    @JoinColumn(name = "veiculo_id")
+    private Veiculo veiculo;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -53,6 +64,10 @@ public class Traslado {
 
     @Column(columnDefinition = "TEXT")
     private String observacao;
+
+    @ManyToOne
+    @JoinColumn(name = "operacao_traslado_id")
+    private OperacaoTraslado operacaoTraslado;
 
     public Long getId() {
         return id;
@@ -148,5 +163,29 @@ public class Traslado {
 
     public void setObservacao(String observacao) {
         this.observacao = observacao;
+    }
+
+    public Motorista getMotorista() {
+        return motorista;
+    }
+
+    public void setMotorista(Motorista motorista) {
+        this.motorista = motorista;
+    }
+
+    public Veiculo getVeiculo() {
+        return veiculo;
+    }
+
+    public void setVeiculo(Veiculo veiculo) {
+        this.veiculo = veiculo;
+    }
+
+    public OperacaoTraslado getOperacaoTraslado() {
+        return operacaoTraslado;
+    }
+
+    public void setOperacaoTraslado(OperacaoTraslado operacaoTraslado) {
+        this.operacaoTraslado = operacaoTraslado;
     }
 }

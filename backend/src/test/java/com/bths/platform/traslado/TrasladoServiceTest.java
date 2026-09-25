@@ -4,16 +4,19 @@ import com.bths.platform.alocacao.exception.ViagemIncompativelException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.motorista.Motorista;
+import com.bths.platform.motorista.MotoristaRepository;
+import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
 import com.bths.platform.traslado.dto.*;
 import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
-import com.bths.platform.traslado.exception.AeroportoObrigatorioException;
-import com.bths.platform.traslado.exception.MotivoCorrecaoObrigatorioException;
-import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
-import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
+import com.bths.platform.traslado.exception.*;
 import com.bths.platform.traslado.mapper.HistoricoStatusTrasladoMapper;
 import com.bths.platform.traslado.mapper.TrasladoMapper;
+import com.bths.platform.veiculo.Veiculo;
+import com.bths.platform.veiculo.VeiculoRepository;
+import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
@@ -55,6 +58,12 @@ class TrasladoServiceTest {
 
     private TrasladoService trasladoService;
 
+    @Mock
+    private MotoristaRepository motoristaRepository;
+
+    @Mock
+    private VeiculoRepository veiculoRepository;
+
     @BeforeEach
     void setUp() {
 
@@ -64,7 +73,9 @@ class TrasladoServiceTest {
                 viagemRepository,
                 trasladoMapper,
                 historicoStatusTrasladoRepository,
-                historicoStatusTrasladoMapper
+                historicoStatusTrasladoMapper,
+                motoristaRepository,
+                veiculoRepository
         );
     }
 
@@ -1255,4 +1266,320 @@ class TrasladoServiceTest {
 
         verifyNoInteractions(historicoStatusTrasladoMapper);
     }
+
+    @Test
+    void deveAssociarMotoristaEVeiculoAoTrasladoComSucesso() {
+
+        Traslado traslado = new Traslado();
+        traslado.setId(1L);
+
+        Motorista motorista = new Motorista();
+        motorista.setId(10L);
+        motorista.setNomeCompleto("João da Silva");
+        motorista.setAtivo(true);
+
+        Veiculo veiculo = new Veiculo();
+        veiculo.setId(20L);
+        veiculo.setModelo("Renault Duster");
+        veiculo.setPlaca("ABC1D23");
+        veiculo.setCapacidadePassageiros(4);
+        veiculo.setAtivo(true);
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(10L);
+        request.setVeiculoId(20L);
+
+        TrasladoResponse responseEsperado =
+                new TrasladoResponse();
+
+        responseEsperado.setId(1L);
+        responseEsperado.setMotoristaId(10L);
+        responseEsperado.setMotoristaNome(
+                "João da Silva"
+        );
+        responseEsperado.setVeiculoId(20L);
+        responseEsperado.setVeiculoModelo(
+                "Renault Duster"
+        );
+        responseEsperado.setVeiculoPlaca(
+                "ABC1D23"
+        );
+
+        when(trasladoRepository.findById(1L))
+                .thenReturn(Optional.of(traslado));
+
+        when(motoristaRepository.findById(10L))
+                .thenReturn(Optional.of(motorista));
+
+        when(veiculoRepository.findById(20L))
+                .thenReturn(Optional.of(veiculo));
+
+        when(trasladoRepository.save(traslado))
+                .thenReturn(traslado);
+
+        when(trasladoMapper.paraResponse(traslado))
+                .thenReturn(responseEsperado);
+
+        TrasladoResponse response =
+                trasladoService.associarOperacao(
+                        1L,
+                        request
+                );
+
+        assertNotNull(response);
+
+        assertEquals(
+                10L,
+                response.getMotoristaId()
+        );
+
+        assertEquals(
+                20L,
+                response.getVeiculoId()
+        );
+
+        assertEquals(
+                motorista,
+                traslado.getMotorista()
+        );
+
+        assertEquals(
+                veiculo,
+                traslado.getVeiculo()
+        );
+
+        verify(trasladoRepository)
+                .findById(1L);
+
+        verify(motoristaRepository)
+                .findById(10L);
+
+        verify(veiculoRepository)
+                .findById(20L);
+
+        verify(trasladoRepository)
+                .save(traslado);
+
+        verify(trasladoMapper)
+                .paraResponse(traslado);
+    }
+
+    @Test
+    void deveLancarExcecaoAoAssociarOperacaoEmTrasladoInexistente() {
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(10L);
+        request.setVeiculoId(20L);
+
+        when(trasladoRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                TrasladoNaoEncontradoException.class,
+                () -> trasladoService.associarOperacao(
+                        999L,
+                        request
+                )
+        );
+
+        verify(trasladoRepository)
+                .findById(999L);
+
+        verifyNoInteractions(
+                motoristaRepository,
+                veiculoRepository,
+                trasladoMapper
+        );
+
+        verify(trasladoRepository, never())
+                .save(any(Traslado.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoMotoristaNaoExistirAoAssociarOperacao() {
+
+        Traslado traslado = new Traslado();
+        traslado.setId(1L);
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(999L);
+        request.setVeiculoId(20L);
+
+        when(trasladoRepository.findById(1L))
+                .thenReturn(Optional.of(traslado));
+
+        when(motoristaRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                MotoristaNaoEncontradoException.class,
+                () -> trasladoService.associarOperacao(
+                        1L,
+                        request
+                )
+        );
+
+        verify(trasladoRepository)
+                .findById(1L);
+
+        verify(motoristaRepository)
+                .findById(999L);
+
+        verifyNoInteractions(
+                veiculoRepository,
+                trasladoMapper
+        );
+
+        verify(trasladoRepository, never())
+                .save(any(Traslado.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoVeiculoNaoExistirAoAssociarOperacao() {
+
+        Traslado traslado = new Traslado();
+        traslado.setId(1L);
+
+        Motorista motorista = new Motorista();
+        motorista.setId(10L);
+        motorista.setAtivo(true);
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(10L);
+        request.setVeiculoId(999L);
+
+        when(trasladoRepository.findById(1L))
+                .thenReturn(Optional.of(traslado));
+
+        when(motoristaRepository.findById(10L))
+                .thenReturn(Optional.of(motorista));
+
+        when(veiculoRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                VeiculoNaoEncontradoException.class,
+                () -> trasladoService.associarOperacao(
+                        1L,
+                        request
+                )
+        );
+
+        verify(trasladoRepository)
+                .findById(1L);
+
+        verify(motoristaRepository)
+                .findById(10L);
+
+        verify(veiculoRepository)
+                .findById(999L);
+
+        verify(trasladoRepository, never())
+                .save(any(Traslado.class));
+
+        verifyNoInteractions(trasladoMapper);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoMotoristaEstiverInativoAoAssociarOperacao() {
+
+        Traslado traslado = new Traslado();
+        traslado.setId(1L);
+
+        Motorista motorista = new Motorista();
+        motorista.setId(10L);
+        motorista.setAtivo(false);
+
+        Veiculo veiculo = new Veiculo();
+        veiculo.setId(20L);
+        veiculo.setAtivo(true);
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(10L);
+        request.setVeiculoId(20L);
+
+        when(trasladoRepository.findById(1L))
+                .thenReturn(Optional.of(traslado));
+
+        when(motoristaRepository.findById(10L))
+                .thenReturn(Optional.of(motorista));
+
+        when(veiculoRepository.findById(20L))
+                .thenReturn(Optional.of(veiculo));
+
+        assertThrows(
+                MotoristaInativoException.class,
+                () -> trasladoService.associarOperacao(
+                        1L,
+                        request
+                )
+        );
+
+        assertNull(traslado.getMotorista());
+        assertNull(traslado.getVeiculo());
+
+        verify(trasladoRepository, never())
+                .save(any(Traslado.class));
+
+        verifyNoInteractions(trasladoMapper);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoVeiculoEstiverInativoAoAssociarOperacao() {
+
+        Traslado traslado = new Traslado();
+        traslado.setId(1L);
+
+        Motorista motorista = new Motorista();
+        motorista.setId(10L);
+        motorista.setAtivo(true);
+
+        Veiculo veiculo = new Veiculo();
+        veiculo.setId(20L);
+        veiculo.setAtivo(false);
+
+        TrasladoOperacaoRequest request =
+                new TrasladoOperacaoRequest();
+
+        request.setMotoristaId(10L);
+        request.setVeiculoId(20L);
+
+        when(trasladoRepository.findById(1L))
+                .thenReturn(Optional.of(traslado));
+
+        when(motoristaRepository.findById(10L))
+                .thenReturn(Optional.of(motorista));
+
+        when(veiculoRepository.findById(20L))
+                .thenReturn(Optional.of(veiculo));
+
+        assertThrows(
+                VeiculoInativoException.class,
+                () -> trasladoService.associarOperacao(
+                        1L,
+                        request
+                )
+        );
+
+        assertNull(traslado.getMotorista());
+        assertNull(traslado.getVeiculo());
+
+        verify(trasladoRepository, never())
+                .save(any(Traslado.class));
+
+        verifyNoInteractions(trasladoMapper);
+    }
+
+
+
 }

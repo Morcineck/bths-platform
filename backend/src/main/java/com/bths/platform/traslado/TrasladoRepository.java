@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface TrasladoRepository  extends JpaRepository<Traslado, Long> {
+public interface TrasladoRepository extends JpaRepository<Traslado, Long> {
 
     List<Traslado> findByViagemId(Long viagemId);
 
@@ -20,14 +20,22 @@ public interface TrasladoRepository  extends JpaRepository<Traslado, Long> {
             StatusTraslado status
     );
 
+    long countByOperacaoTrasladoId(
+            long operacaoTrasladoId
+    );
+
+    List<Traslado> findByOperacaoTrasladoId(
+            long operacaoTrasladoId
+    );
+
     @Query("""
-        SELECT t
-        FROM Traslado t
-        WHERE t.viagem.id = :viagemId
-        AND t.status = :status
-        AND t.dataHoraPrevista >= :agora
-        ORDER BY t.dataHoraPrevista ASC
-        """)
+            SELECT t
+            FROM Traslado t
+            WHERE t.viagem.id = :viagemId
+            AND t.status = :status
+            AND t.dataHoraPrevista >= :agora
+            ORDER BY t.dataHoraPrevista ASC
+            """)
     List<Traslado> buscarProximosTraslados(
             @Param("viagemId") Long viagemId,
             @Param("status") StatusTraslado status,
