@@ -42,7 +42,11 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.spa())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
+                )
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -50,26 +54,36 @@ public class SecurityConfig {
                         )
                 )
 
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(
+                                        jwtAuthenticationEntryPoint
+                                )
+                                .accessDeniedHandler(
+                                        jwtAccessDeniedHandler
+                                )
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login",
+
+                        .requestMatchers(
+                                "/api/auth/login",
                                 "/api/auth/logout",
-                                "/api/auth/csrf")
+                                "/api/auth/csrf"
+                        )
                         .permitAll()
 
-                        .requestMatchers("/api/auth/me")
+                        .requestMatchers(
+                                "/api/auth/me"
+                        )
                         .authenticated()
 
-                        .requestMatchers("/api/usuarios/**",
+                        .requestMatchers(
+                                "/api/usuarios/**",
                                 "/api/motoristas/**",
                                 "/api/veiculos/**"
                         )
                         .hasRole("ADMIN")
-
 
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -84,6 +98,30 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/traslados/*/operacao"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Consulta das operações de traslado:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/traslados/operacoes/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação e alteração das operações:
+                        // somente ADMIN.
+                        .requestMatchers(
+                                "/api/traslados/operacoes/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
                                 "/api/viagens/**",
                                 "/api/hospedes/**",
                                 "/api/quartos/**",
@@ -91,9 +129,11 @@ public class SecurityConfig {
                                 "/api/traslados/**",
                                 "/api/check-in/qr/**",
                                 "/api/dashboard/**"
-
                         )
-                        .hasAnyRole("ADMIN", "STAFF")
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
 
                         .anyRequest()
                         .authenticated()
@@ -114,7 +154,9 @@ public class SecurityConfig {
                 new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:3000")
+                List.of(
+                        "http://localhost:3000"
+                )
         );
 
         configuration.setAllowedMethods(
@@ -129,10 +171,16 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedHeaders(
-                List.of("Content-Type", "Authorization", "X-XSRF-TOKEN")
+                List.of(
+                        "Content-Type",
+                        "Authorization",
+                        "X-XSRF-TOKEN"
+                )
         );
 
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(
+                true
+        );
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

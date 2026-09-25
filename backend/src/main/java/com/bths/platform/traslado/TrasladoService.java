@@ -4,16 +4,19 @@ import com.bths.platform.alocacao.exception.ViagemIncompativelException;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.motorista.Motorista;
+import com.bths.platform.motorista.MotoristaRepository;
+import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
 import com.bths.platform.traslado.dto.*;
 import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
-import com.bths.platform.traslado.exception.AeroportoObrigatorioException;
-import com.bths.platform.traslado.exception.MotivoCorrecaoObrigatorioException;
-import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
-import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
+import com.bths.platform.traslado.exception.*;
 import com.bths.platform.traslado.mapper.HistoricoStatusTrasladoMapper;
 import com.bths.platform.traslado.mapper.TrasladoMapper;
+import com.bths.platform.veiculo.Veiculo;
+import com.bths.platform.veiculo.VeiculoRepository;
+import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
@@ -32,6 +35,8 @@ public class TrasladoService {
     private final TrasladoMapper trasladoMapper;
     private final HistoricoStatusTrasladoRepository historicoStatusTrasladoRepository;
     private final HistoricoStatusTrasladoMapper historicoStatusTrasladoMapper;
+    private final VeiculoRepository veiculoRepository;
+    private final MotoristaRepository motoristaRepository;
 
     public TrasladoService(
             TrasladoRepository trasladoRepository,
@@ -39,7 +44,9 @@ public class TrasladoService {
             ViagemRepository viagemRepository,
             TrasladoMapper trasladoMapper,
             HistoricoStatusTrasladoRepository historicoStatusTrasladoRepository,
-            HistoricoStatusTrasladoMapper historicoStatusTrasladoMapper
+            HistoricoStatusTrasladoMapper historicoStatusTrasladoMapper,
+            MotoristaRepository motoristaRepository,
+            VeiculoRepository veiculoRepository
     ) {
 
         this.trasladoRepository = trasladoRepository;
@@ -48,6 +55,8 @@ public class TrasladoService {
         this.trasladoMapper = trasladoMapper;
         this.historicoStatusTrasladoRepository = historicoStatusTrasladoRepository;
         this.historicoStatusTrasladoMapper = historicoStatusTrasladoMapper;
+        this.motoristaRepository = motoristaRepository;
+        this.veiculoRepository = veiculoRepository;
     }
 
     public TrasladoResponse cadastrarTraslado(TrasladoRequest request) {
@@ -150,8 +159,15 @@ public class TrasladoService {
                         "Traslado não encontrado!"
                 ));
 
-        validarAeroporto(request.getTipo()
-                , request.getAeroporto());
+        validarAeroporto(
+                request.getTipo()
+                , request.getAeroporto()
+        );
+
+        validarCompatibilidadeComOperacaoVinculada(
+                traslado,
+                request
+        );
 
         traslado.setTipo(request.getTipo());
         traslado.setAeroporto(request.getAeroporto());
@@ -162,10 +178,45 @@ public class TrasladoService {
         traslado.setLocalDestino(request.getLocalDestino());
         traslado.setObservacao(request.getObservacoes());
 
-        Traslado atualizado = trasladoRepository.save(traslado);
+        Traslado atualizado =
+                trasladoRepository.save(traslado);
 
         return trasladoMapper.paraResponse(atualizado);
 
+    }
+
+    public void validarCompatibilidadeComOperacaoVinculada(
+            Traslado traslado,
+            TrasladoUpdateRequest request
+    ) {
+
+        if (traslado.getOperacaoTraslado() == null) {
+            return;
+        }
+
+        if (
+                traslado.getOperacaoTraslado()
+                        .getTipo()
+                        != request.getTipo()
+        ) {
+
+            throw new ViagemIncompativelException(
+                    "Não é possível alterar o tipo do traslado porque ele está vinculado a uma operação compartilhada incompatível."
+            );
+        }
+        if (
+                request.getTipo()
+                        != TipoTraslado.OUTRO
+                        &&
+                        traslado.getOperacaoTraslado()
+                                .getAeroporto()
+                                != request.getAeroporto()
+        ) {
+
+            throw new ViagemIncompativelException(
+                    "Não é possível alterar o aeroporto porque ele está vinculado a uma operação compartilhada incompatível."
+            );
+        }
     }
 
     @Transactional
@@ -326,5 +377,56 @@ public class TrasladoService {
         historico.setDataHora(LocalDateTime.now());
 
         historicoStatusTrasladoRepository.save(historico);
+    }
+
+    public TrasladoResponse associarOperacao(
+            Long id,
+            TrasladoOperacaoRequest request
+    ) {
+
+        Traslado traslado =
+                trasladoRepository.findById(id)
+                        .orElseThrow(() -> new TrasladoNaoEncontradoException(
+                                        "Tralado nao encontrado!"
+                                )
+                        );
+
+        Motorista motorista =
+                motoristaRepository.findById(
+                        request.getMotoristaId()
+                ).orElseThrow(() ->
+                        new MotoristaNaoEncontradoException(
+                                "Motorista não encontrado!"
+                        )
+                );
+
+        Veiculo veiculo =
+                veiculoRepository.findById(
+                        request.getVeiculoId()
+                ).orElseThrow(() ->
+                        new VeiculoNaoEncontradoException(
+                                "Veículo não encontrado!"
+                        )
+                );
+
+        if (!motorista.isAtivo()) {
+            throw new MotoristaInativoException(
+                    "Não é possível associar motorista inativo!"
+            );
+        }
+
+        if (!veiculo.isAtivo()) {
+            throw new VeiculoInativoException(
+                    "Não é possível associar veiculo inativo!"
+            );
+        }
+
+        traslado.setMotorista(motorista);
+        traslado.setVeiculo(veiculo);
+
+        Traslado atualizado =
+                trasladoRepository.save(traslado);
+
+        return trasladoMapper.paraResponse(atualizado);
     }
 }

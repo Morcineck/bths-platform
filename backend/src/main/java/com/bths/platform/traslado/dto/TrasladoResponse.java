@@ -13,9 +13,18 @@ public class TrasladoResponse {
     private Long hospedeId;
     private String hospedeNome;
 
-
     private Long viagemId;
     private String viagemNome;
+
+    private Long operacaoTrasladoId;
+
+    private Long motoristaId;
+    private String motoristaNome;
+
+    private Long veiculoId;
+    private String veiculoModelo;
+    private String veiculoPlaca;
+    private Integer veiculoCapacidadePassageiros;
 
     private TipoTraslado tipo;
     private Aeroporto aeroporto;
@@ -25,7 +34,6 @@ public class TrasladoResponse {
 
     private String numeroVoo;
     private String companhiaAerea;
-
 
     private String localOrigem;
     private String localDestino;
@@ -72,6 +80,67 @@ public class TrasladoResponse {
         this.viagemNome = viagemNome;
     }
 
+    public Long getOperacaoTrasladoId() {
+        return operacaoTrasladoId;
+    }
+
+    public void setOperacaoTrasladoId(
+            Long operacaoTrasladoId
+    ) {
+        this.operacaoTrasladoId = operacaoTrasladoId;
+    }
+
+    public Long getMotoristaId() {
+        return motoristaId;
+    }
+
+    public void setMotoristaId(Long motoristaId) {
+        this.motoristaId = motoristaId;
+    }
+
+    public String getMotoristaNome() {
+        return motoristaNome;
+    }
+
+    public void setMotoristaNome(String motoristaNome) {
+        this.motoristaNome = motoristaNome;
+    }
+
+    public Long getVeiculoId() {
+        return veiculoId;
+    }
+
+    public void setVeiculoId(Long veiculoId) {
+        this.veiculoId = veiculoId;
+    }
+
+    public String getVeiculoModelo() {
+        return veiculoModelo;
+    }
+
+    public void setVeiculoModelo(String veiculoModelo) {
+        this.veiculoModelo = veiculoModelo;
+    }
+
+    public String getVeiculoPlaca() {
+        return veiculoPlaca;
+    }
+
+    public void setVeiculoPlaca(String veiculoPlaca) {
+        this.veiculoPlaca = veiculoPlaca;
+    }
+
+    public Integer getVeiculoCapacidadePassageiros() {
+        return veiculoCapacidadePassageiros;
+    }
+
+    public void setVeiculoCapacidadePassageiros(
+            Integer veiculoCapacidadePassageiros
+    ) {
+        this.veiculoCapacidadePassageiros =
+                veiculoCapacidadePassageiros;
+    }
+
     public TipoTraslado getTipo() {
         return tipo;
     }
@@ -100,7 +169,9 @@ public class TrasladoResponse {
         return dataHoraPrevista;
     }
 
-    public void setDataHoraPrevista(LocalDateTime dataHoraPrevista) {
+    public void setDataHoraPrevista(
+            LocalDateTime dataHoraPrevista
+    ) {
         this.dataHoraPrevista = dataHoraPrevista;
     }
 
@@ -116,7 +187,9 @@ public class TrasladoResponse {
         return companhiaAerea;
     }
 
-    public void setCompanhiaAerea(String companhiaAerea) {
+    public void setCompanhiaAerea(
+            String companhiaAerea
+    ) {
         this.companhiaAerea = companhiaAerea;
     }
 
@@ -124,7 +197,9 @@ public class TrasladoResponse {
         return localOrigem;
     }
 
-    public void setLocalOrigem(String localOrigem) {
+    public void setLocalOrigem(
+            String localOrigem
+    ) {
         this.localOrigem = localOrigem;
     }
 
@@ -132,7 +207,9 @@ public class TrasladoResponse {
         return localDestino;
     }
 
-    public void setLocalDestino(String localDestino) {
+    public void setLocalDestino(
+            String localDestino
+    ) {
         this.localDestino = localDestino;
     }
 
@@ -140,7 +217,9 @@ public class TrasladoResponse {
         return observacoes;
     }
 
-    public void setObservacoes(String observacoes) {
+    public void setObservacoes(
+            String observacoes
+    ) {
         this.observacoes = observacoes;
     }
 }

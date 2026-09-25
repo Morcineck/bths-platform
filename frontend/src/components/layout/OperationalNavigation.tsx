@@ -85,6 +85,13 @@ export function OperationalNavigation({
                 </>
               )}
 
+              <Link
+                href="/traslados"
+                className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
+              >
+                Traslados
+              </Link>
+
               <button
                 type="button"
                 disabled
@@ -101,13 +108,6 @@ export function OperationalNavigation({
                 Quartos
               </button>
 
-              <button
-                type="button"
-                disabled
-                className="block w-full rounded-xl px-4 py-3 text-left text-sm text-muted opacity-50"
-              >
-                Traslados
-              </button>
             </nav>
           </div>
         </div>
