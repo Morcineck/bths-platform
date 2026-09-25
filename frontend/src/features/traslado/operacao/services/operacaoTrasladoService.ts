@@ -9,6 +9,7 @@ import type {
   OperacaoTraslado,
   OperacaoTrasladoPassageiro,
   OperacaoTrasladoRequest,
+  StatusTraslado,
 } from "@/features/traslado/operacao/types/operacaoTraslado";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -230,6 +231,42 @@ export async function listarPassageirosDaOperacao(
     throw new Error(
       erro?.mensagem ??
         "Não foi possível carregar os passageiros da operação.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function atualizarStatusOperacao(
+  operacaoId: number,
+  status: StatusTraslado,
+): Promise<OperacaoTraslado> {
+  await inicializarCsrf();
+
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
+
+  const response = await authFetch(
+    `${API_URL}/api/traslados/operacoes/${operacaoId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": csrfToken,
+      },
+      body: JSON.stringify({
+        status,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível atualizar o status da operação.",
     );
   }
 

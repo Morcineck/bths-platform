@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
 
 import {
+  atualizarStatusOperacao,
   excluirOperacaoTraslado,
   listarOperacoesPorViagem,
   listarPassageirosDaOperacao,
@@ -15,6 +16,7 @@ import {
 import type {
   OperacaoTraslado,
   OperacaoTrasladoPassageiro,
+  StatusTraslado,
 } from "@/features/traslado/operacao/types/operacaoTraslado";
 
 import {
@@ -72,6 +74,11 @@ export default function TrasladosPage() {
   const [
     excluindoId,
     setExcluindoId,
+  ] = useState<number | null>(null);
+
+  const [
+    atualizandoStatusId,
+    setAtualizandoStatusId,
   ] = useState<number | null>(null);
 
   const [
@@ -156,6 +163,63 @@ export default function TrasladosPage() {
 
     carregarOperacoes();
   }, [viagemSelecionadaId]);
+
+  async function handleAtualizarStatus(
+    operacaoId: number,
+    novoStatus: StatusTraslado,
+  ) {
+    if (novoStatus === "CANCELADO") {
+      const confirmar = window.confirm(
+        "Deseja realmente cancelar esta operação de traslado?",
+      );
+
+      if (!confirmar) {
+        return;
+      }
+    }
+
+    try {
+      setAtualizandoStatusId(
+        operacaoId,
+      );
+
+      setErro("");
+      setMensagemOperacao("");
+
+      const operacaoAtualizada =
+        await atualizarStatusOperacao(
+          operacaoId,
+          novoStatus,
+        );
+
+      setOperacoes((atuais) =>
+        atuais.map((operacao) =>
+          operacao.id === operacaoId
+            ? operacaoAtualizada
+            : operacao,
+        ),
+      );
+
+      const mensagem =
+        novoStatus === "EM_ANDAMENTO"
+          ? "Operação iniciada com sucesso."
+          : novoStatus === "CONCLUIDO"
+            ? "Operação concluída com sucesso."
+            : "Operação cancelada com sucesso.";
+
+      setMensagemOperacao(
+        mensagem,
+      );
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar o status da operação.",
+      );
+    } finally {
+      setAtualizandoStatusId(null);
+    }
+  }
 
   async function handleExcluirOperacao(
     operacaoId: number,
@@ -477,6 +541,10 @@ export default function TrasladosPage() {
                   carregandoPassageirosId ===
                   operacao.id;
 
+                const atualizandoStatus =
+                  atualizandoStatusId ===
+                  operacao.id;
+
                 return (
                   <Card
                     key={operacao.id}
@@ -514,6 +582,20 @@ export default function TrasladosPage() {
                                 ? "vaga"
                                 : "vagas"
                             }`}
+                      </span>
+
+                      <span
+                        className="inline-flex w-fit rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground"
+                      >
+                        {operacao.status === "AGUARDANDO"
+                          ? "Aguardando"
+                          : operacao.status ===
+                              "EM_ANDAMENTO"
+                            ? "Em andamento"
+                            : operacao.status ===
+                                "CONCLUIDO"
+                              ? "Concluída"
+                              : "Cancelada"}
                       </span>
                     </div>
 
@@ -658,6 +740,82 @@ export default function TrasladosPage() {
                     </div>
 
                     <div className="flex flex-col justify-end gap-3 border-t border-border pt-4 sm:flex-row">
+                      {operacao.status ===
+                        "AGUARDANDO" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAtualizarStatus(
+                                operacao.id,
+                                "EM_ANDAMENTO",
+                              )
+                            }
+                            disabled={
+                              atualizandoStatus
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {atualizandoStatus
+                              ? "Atualizando..."
+                              : "Iniciar operação"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAtualizarStatus(
+                                operacao.id,
+                                "CANCELADO",
+                              )
+                            }
+                            disabled={
+                              atualizandoStatus
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl border border-red-500/40 px-4 text-sm font-medium text-red-400 transition-colors hover:border-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Cancelar operação
+                          </button>
+                        </>
+                      )}
+                      {operacao.status ===
+                        "EM_ANDAMENTO" && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAtualizarStatus(
+                                operacao.id,
+                                "CONCLUIDO",
+                              )
+                            }
+                            disabled={
+                              atualizandoStatus
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {atualizandoStatus
+                              ? "Atualizando..."
+                              : "Concluir operação"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAtualizarStatus(
+                                operacao.id,
+                                "CANCELADO",
+                              )
+                            }
+                            disabled={
+                              atualizandoStatus
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl border border-red-500/40 px-4 text-sm font-medium text-red-400 transition-colors hover:border-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Cancelar operação
+                          </button>
+                        </>
+                      )}
                       <Link
                         href={`/traslados/${operacao.id}/editar`}
                         className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
