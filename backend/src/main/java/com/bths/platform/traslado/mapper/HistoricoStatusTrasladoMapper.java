@@ -16,7 +16,7 @@ public class HistoricoStatusTrasladoMapper {
 
         response.setId(historico.getId());
         response.setTrasladoId(historico.getTraslado().getId());
-        response.setStatusAnterior(historico.getStatusAterior());
+        response.setStatusAnterior(historico.getStatusAnterior());
         response.setNovoStatus(historico.getNovoStatus());
         response.setMotivo(historico.getMotivo());
         response.setDataHora(historico.getDataHora());

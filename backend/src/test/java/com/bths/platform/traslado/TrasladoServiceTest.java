@@ -644,7 +644,7 @@ class TrasladoServiceTest {
 
         assertEquals(
                 StatusTraslado.AGUARDANDO,
-                historicoSalvo.getStatusAterior()
+                historicoSalvo.getStatusAnterior()
         );
 
         assertEquals(
@@ -708,7 +708,7 @@ class TrasladoServiceTest {
 
         assertEquals(
                 StatusTraslado.EM_ANDAMENTO,
-                historicoSalvo.getStatusAterior()
+                historicoSalvo.getStatusAnterior()
         );
 
         assertEquals(
@@ -769,7 +769,7 @@ class TrasladoServiceTest {
 
         assertEquals(
                 StatusTraslado.AGUARDANDO,
-                historicoSalvo.getStatusAterior()
+                historicoSalvo.getStatusAnterior()
         );
 
         assertEquals(
@@ -830,7 +830,7 @@ class TrasladoServiceTest {
 
         assertEquals(
                 StatusTraslado.EM_ANDAMENTO,
-                historicoSalvo.getStatusAterior()
+                historicoSalvo.getStatusAnterior()
         );
 
         assertEquals(
@@ -984,7 +984,7 @@ class TrasladoServiceTest {
 
         assertEquals(
                 StatusTraslado.CONCLUIDO,
-                historicoSalvo.getStatusAterior()
+                historicoSalvo.getStatusAnterior()
         );
 
         assertEquals(
@@ -1059,7 +1059,7 @@ class TrasladoServiceTest {
 
         assertEquals(
                 StatusTraslado.CANCELADO,
-                historicoSalvo.getStatusAterior()
+                historicoSalvo.getStatusAnterior()
         );
 
         assertEquals(
@@ -1196,7 +1196,7 @@ class TrasladoServiceTest {
                 new HistoricoStatusTraslado();
         historico1.setId(1L);
         historico1.setTraslado(traslado);
-        historico1.setStatusAterior(StatusTraslado.AGUARDANDO);
+        historico1.setStatusAnterior(StatusTraslado.AGUARDANDO);
         historico1.setNovoStatus(StatusTraslado.EM_ANDAMENTO);
         historico1.setMotivo("Alteração normal de status");
 
@@ -1204,7 +1204,7 @@ class TrasladoServiceTest {
                 new HistoricoStatusTraslado();
         historico2.setId(2L);
         historico2.setTraslado(traslado);
-        historico2.setStatusAterior(StatusTraslado.EM_ANDAMENTO);
+        historico2.setStatusAnterior(StatusTraslado.EM_ANDAMENTO);
         historico2.setNovoStatus(StatusTraslado.CONCLUIDO);
         historico2.setMotivo("Alteração normal de status");
 
