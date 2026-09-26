@@ -387,7 +387,7 @@ public class TrasladoService {
         Traslado traslado =
                 trasladoRepository.findById(id)
                         .orElseThrow(() -> new TrasladoNaoEncontradoException(
-                                        "Tralado nao encontrado!"
+                                        "Traslado não encontrado!"
                                 )
                         );
 
@@ -417,7 +417,7 @@ public class TrasladoService {
 
         if (!veiculo.isAtivo()) {
             throw new VeiculoInativoException(
-                    "Não é possível associar veiculo inativo!"
+                    "Não é possível associar veículo inativo!"
             );
         }
 
