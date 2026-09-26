@@ -19,11 +19,10 @@ public class HospedeMapper {
         response.setEmail(hospede.getEmail());
         response.setDataNascimento(hospede.getDataNascimento());
         response.setHorarioPrevistoChegada(hospede.getHorarioPrevistoChegada());
-
         response.setStatusCheckIn(hospede.getStatusCheckIn());
-
         response.setViagemId(hospede.getViagem().getId());
         response.setViagemNome(hospede.getViagem().getNome());
+        response.setCodigoCheckIn(hospede.getCodigoCheckIn());
 
         return response;
     }

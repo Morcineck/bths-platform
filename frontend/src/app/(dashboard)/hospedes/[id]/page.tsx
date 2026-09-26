@@ -1126,6 +1126,33 @@ export default function HospedeDetalhePage({
 
         <Card>
           <p className="text-sm text-muted">
+            Código de check-in
+          </p>
+
+          <p className="mt-2 break-all font-medium text-foreground">
+            {hospede.codigoCheckIn}
+          </p>
+        </Card>
+
+        <Card>
+          <p className="text-sm text-muted">
+            QR Code
+          </p>
+
+          <div className="mt-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`${process.env.NEXT_PUBLIC_API_URL}/api/check-in/qr/${encodeURIComponent(
+                hospede.codigoCheckIn,
+              )}/imagem`}
+              alt={`QR Code de check-in de ${hospede.nomeCompleto}`}
+              className="h-48 w-48 rounded-xl bg-white p-3"
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <p className="text-sm text-muted">
             Chegada prevista
           </p>
 
