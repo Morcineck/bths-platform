@@ -65,3 +65,12 @@ export type OperacaoTrasladoPassageiro = {
   hospedeId: number;
   hospedeNome: string;
 };
+
+export type HistoricoStatusOperacaoTraslado = {
+  id: number;
+  operacaoTrasladoId: number;
+  statusAnterior: StatusTraslado;
+  novoStatus: StatusTraslado;
+  motivo: string;
+  dataHora: string;
+};
