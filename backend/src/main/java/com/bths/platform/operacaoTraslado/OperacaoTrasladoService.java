@@ -19,12 +19,14 @@ import com.bths.platform.traslado.exception.MotoristaInativoException;
 import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
 import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
 import com.bths.platform.traslado.exception.VeiculoInativoException;
+import com.bths.platform.traslado.exception.MotivoCorrecaoObrigatorioException;
 import com.bths.platform.veiculo.Veiculo;
 import com.bths.platform.veiculo.VeiculoRepository;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -457,6 +459,7 @@ public class OperacaoTrasladoService {
                 );
     }
 
+    @Transactional
     public OperacaoTrasladoResponse atualizarStatus(
             Long operacaoId,
             OperacaoTrasladoStatusRequest request
@@ -479,7 +482,7 @@ public class OperacaoTrasladoService {
         StatusTraslado statusAnterior =
                 operacao.getStatus();
 
-        registarHistoricoStatus(
+        registrarHistoricoStatus(
                 operacao,
                 statusAnterior,
                 request.getStatus(),
@@ -786,7 +789,7 @@ public class OperacaoTrasladoService {
         };
     }
 
-    private void registarHistoricoStatus(
+    private void registrarHistoricoStatus(
             OperacaoTraslado operacao,
             StatusTraslado statusAnterior,
             StatusTraslado novoStatus,
@@ -818,5 +821,93 @@ public class OperacaoTrasladoService {
 
         historicoStatusOperacaoTrasladoRepository
                 .save(historico);
+    }
+
+    @Transactional
+    public OperacaoTrasladoResponse corrigirStatus(
+            Long operacaoId,
+            OperacaoTrasladoCorrecaoStatusRequest request
+    ) {
+
+        OperacaoTraslado operacao =
+                operacaoTrasladoRepository.findById(
+                        operacaoId
+                ).orElseThrow(() ->
+                        new OperacaoTrasladoNaoEncontradaException(
+                                "Operação de traslado não encontrada!"
+                        )
+                );
+
+        validarCorrecaoStatus(
+                operacao.getStatus(),
+                request.getStatus(),
+                request.getMotivo()
+        );
+
+        StatusTraslado statusAnterior =
+                operacao.getStatus();
+
+        registrarHistoricoStatus(
+                operacao,
+                statusAnterior,
+                request.getStatus(),
+                request.getMotivo()
+        );
+
+        operacao.setStatus(
+                request.getStatus()
+        );
+
+        OperacaoTraslado atualizado =
+                operacaoTrasladoRepository.save(operacao);
+
+
+        return operacaoTrasladoMapper.paraResponse(
+                atualizado
+        );
+    }
+
+    private void validarCorrecaoStatus(
+            StatusTraslado statusAtual,
+            StatusTraslado novoStatus,
+            String motivo
+    ) {
+
+        if (
+                motivo == null
+                        || motivo.isBlank()
+        ) {
+
+            throw new MotivoCorrecaoObrigatorioException(
+                    "O motivo da correção é obrigatório!"
+            );
+        }
+
+        boolean correcaoValida =
+                (
+                        statusAtual ==
+                                StatusTraslado.CONCLUIDO
+                                &&
+                                novoStatus ==
+                                        StatusTraslado.EM_ANDAMENTO
+                )
+                        ||
+                        (
+                                statusAtual ==
+                                        StatusTraslado.CANCELADO
+                                        &&
+                                        novoStatus ==
+                                                StatusTraslado.AGUARDANDO
+                        );
+
+        if (!correcaoValida) {
+            throw new TransicaoStatusTrasladoInvalidaException(
+                    "Não é possível corrigir o status de "
+                    + statusAtual
+                    + " para "
+                    + novoStatus
+                    + " ! "
+            );
+        }
     }
 }

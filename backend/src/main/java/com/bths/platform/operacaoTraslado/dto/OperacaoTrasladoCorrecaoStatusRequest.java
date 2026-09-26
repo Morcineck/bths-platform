@@ -1,0 +1,30 @@
+package com.bths.platform.operacaoTraslado.dto;
+
+import com.bths.platform.traslado.enums.StatusTraslado;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public class OperacaoTrasladoCorrecaoStatusRequest {
+
+    @NotNull(message = "O status é obrigatório!")
+    private StatusTraslado status;
+
+    @NotBlank(message = "O motivo da correção é obrigatório!")
+    private String motivo;
+
+    public StatusTraslado getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusTraslado status) {
+        this.status = status;
+    }
+
+    public String getMotivo() {
+        return motivo;
+    }
+
+    public void setMotivo(String motivo) {
+        this.motivo = motivo;
+    }
+}

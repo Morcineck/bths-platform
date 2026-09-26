@@ -1,5 +1,6 @@
 package com.bths.platform.operacaoTraslado;
 
+import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoCorrecaoStatusRequest;
 import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoResponse;
 import com.bths.platform.operacaoTraslado.dto.OperacaoTrasladoStatusRequest;
 import com.bths.platform.security.JwtService;
@@ -212,4 +213,132 @@ class OperacaoTrasladoAuthorizationTest {
                         status().isForbidden()
                 );
     }
+
+    @Test
+    void devePermitirAdminCorrigirStatusDaOperacao()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(admin);
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(true);
+
+        OperacaoTrasladoResponse response =
+                new OperacaoTrasladoResponse();
+
+        response.setId(100L);
+        response.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                operacaoTrasladoService.corrigirStatus(
+                        eq(100L),
+                        any(
+                                OperacaoTrasladoCorrecaoStatusRequest.class
+                        )
+                )
+        ).thenReturn(response);
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/corrigir-status"
+                        )
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                    {
+                                      "status": "EM_ANDAMENTO",
+                                      "motivo": "Operação concluída por engano"
+                                    }
+                                    """)
+                )
+                .andExpect(
+                        status().isOk()
+                );
+    }
+
+    @Test
+    void deveBloquearStaffAoCorrigirStatusDaOperacao()
+            throws Exception {
+
+        UserDetails staff = User
+                .withUsername("staff@beattrips.com")
+                .password("senha")
+                .roles("STAFF")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                "staff@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "staff@beattrips.com"
+                )
+        ).thenReturn(staff);
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(true);
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/corrigir-status"
+                        )
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content("""
+                                    {
+                                      "status": "EM_ANDAMENTO",
+                                      "motivo": "Tentativa de correção"
+                                    }
+                                    """)
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
 }

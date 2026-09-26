@@ -1726,4 +1726,187 @@ class OperacaoTrasladoControllerTest {
         );
     }
 
+    @Test
+    void deveCorrigirStatusDaOperacaoERetornar200()
+            throws Exception {
+
+        OperacaoTrasladoResponse response =
+                new OperacaoTrasladoResponse();
+
+        response.setId(100L);
+        response.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                operacaoTrasladoService.corrigirStatus(
+                        eq(100L),
+                        any(OperacaoTrasladoCorrecaoStatusRequest.class)
+                )
+        ).thenReturn(response);
+
+        String json = """
+            {
+              "status": "EM_ANDAMENTO",
+              "motivo": "Operação concluída por engano"
+            }
+            """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/corrigir-status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.id")
+                                .value(100)
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(
+                                        "EM_ANDAMENTO"
+                                )
+                );
+
+        verify(
+                operacaoTrasladoService
+        ).corrigirStatus(
+                eq(100L),
+                any(OperacaoTrasladoCorrecaoStatusRequest.class)
+        );
+    }
+
+    @Test
+    void deveRetornar400AoCorrigirStatusSemMotivo()
+            throws Exception {
+
+        String json = """
+            {
+              "status": "EM_ANDAMENTO",
+              "motivo": ""
+            }
+            """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/corrigir-status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                );
+
+        verify(
+                operacaoTrasladoService,
+                never()
+        ).corrigirStatus(
+                anyLong(),
+                any(OperacaoTrasladoCorrecaoStatusRequest.class)
+        );
+    }
+
+    @Test
+    void deveRetornar409AoCorrigirStatusComTransicaoInvalida()
+            throws Exception {
+
+        when(
+                operacaoTrasladoService.corrigirStatus(
+                        eq(100L),
+                        any(OperacaoTrasladoCorrecaoStatusRequest.class)
+                )
+        ).thenThrow(
+                new TransicaoStatusTrasladoInvalidaException(
+                        "Não é possível corrigir o status de CONCLUIDO para AGUARDANDO!"
+                )
+        );
+
+        String json = """
+            {
+              "status": "AGUARDANDO",
+              "motivo": "Tentativa de correção inválida"
+            }
+            """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/100/corrigir-status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isConflict()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(409)
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Não é possível corrigir o status de CONCLUIDO para AGUARDANDO!"
+                                )
+                );
+    }
+
+    @Test
+    void deveRetornar404AoCorrigirStatusDeOperacaoInexistente()
+            throws Exception {
+
+        when(
+                operacaoTrasladoService.corrigirStatus(
+                        eq(999L),
+                        any(OperacaoTrasladoCorrecaoStatusRequest.class)
+                )
+        ).thenThrow(
+                new OperacaoTrasladoNaoEncontradaException(
+                        "Operação de traslado não encontrada!"
+                )
+        );
+
+        String json = """
+            {
+              "status": "EM_ANDAMENTO",
+              "motivo": "Correção operacional"
+            }
+            """;
+
+        mockMvc.perform(
+                        patch(
+                                "/api/traslados/operacoes/999/corrigir-status"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(json)
+                )
+                .andExpect(
+                        status().isNotFound()
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(404)
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Operação de traslado não encontrada!"
+                                )
+                );
+    }
+
+
 }

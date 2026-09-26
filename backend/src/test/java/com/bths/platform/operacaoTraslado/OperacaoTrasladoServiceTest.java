@@ -16,10 +16,7 @@ import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.traslado.enums.Aeroporto;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.traslado.enums.TipoTraslado;
-import com.bths.platform.traslado.exception.MotoristaInativoException;
-import com.bths.platform.traslado.exception.TransicaoStatusTrasladoInvalidaException;
-import com.bths.platform.traslado.exception.TrasladoNaoEncontradoException;
-import com.bths.platform.traslado.exception.VeiculoInativoException;
+import com.bths.platform.traslado.exception.*;
 import com.bths.platform.veiculo.Veiculo;
 import com.bths.platform.veiculo.VeiculoRepository;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
@@ -1783,6 +1780,245 @@ class OperacaoTrasladoServiceTest {
                 historicoStatusOperacaoTrasladoRepository
         ).findByOperacaoTrasladoId(
                 100L
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "CONCLUIDO, EM_ANDAMENTO",
+            "CANCELADO, AGUARDANDO"
+    })
+    void deveCorrigirStatusQuandoCorrecaoForValida(
+            StatusTraslado statusAtual,
+            StatusTraslado novoStatus
+    ) {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+        operacao.setStatus(statusAtual);
+
+        OperacaoTrasladoCorrecaoStatusRequest request =
+                new OperacaoTrasladoCorrecaoStatusRequest();
+
+        request.setStatus(novoStatus);
+        request.setMotivo(
+                "Correção operacional"
+        );
+
+        OperacaoTrasladoResponse responseEsperado =
+                new OperacaoTrasladoResponse();
+
+        responseEsperado.setId(100L);
+        responseEsperado.setStatus(novoStatus);
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        when(
+                operacaoTrasladoRepository.save(operacao)
+        ).thenReturn(operacao);
+
+        when(
+                operacaoTrasladoMapper.paraResponse(operacao)
+        ).thenReturn(responseEsperado);
+
+        OperacaoTrasladoResponse response =
+                operacaoTrasladoService.corrigirStatus(
+                        100L,
+                        request
+                );
+
+        assertEquals(
+                novoStatus,
+                operacao.getStatus()
+        );
+
+        assertEquals(
+                novoStatus,
+                response.getStatus()
+        );
+
+        verify(
+                historicoStatusOperacaoTrasladoRepository
+        ).save(
+                argThat(
+                        historico ->
+                                historico.getStatusAnterior()
+                                        == statusAtual
+                                        &&
+                                        historico.getNovoStatus()
+                                                == novoStatus
+                                        &&
+                                        historico.getMotivo()
+                                                .equals(
+                                                        "Correção operacional"
+                                                )
+                                        &&
+                                        historico.getDataHora()
+                                                != null
+                )
+        );
+
+        verify(
+                operacaoTrasladoRepository
+        ).save(operacao);
+    }
+
+    @Test
+    void deveBloquearCorrecaoSemMotivo() {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+        operacao.setStatus(
+                StatusTraslado.CONCLUIDO
+        );
+
+        OperacaoTrasladoCorrecaoStatusRequest request =
+                new OperacaoTrasladoCorrecaoStatusRequest();
+
+        request.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        request.setMotivo(" ");
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        assertThrows(
+                MotivoCorrecaoObrigatorioException.class,
+                () ->
+                        operacaoTrasladoService.corrigirStatus(
+                                100L,
+                                request
+                        )
+        );
+
+        assertEquals(
+                StatusTraslado.CONCLUIDO,
+                operacao.getStatus()
+        );
+
+        verify(
+                historicoStatusOperacaoTrasladoRepository,
+                never()
+        ).save(
+                any(HistoricoStatusOperacaoTraslado.class)
+        );
+
+        verify(
+                operacaoTrasladoRepository,
+                never()
+        ).save(
+                any(OperacaoTraslado.class)
+        );
+    }
+
+    @Test
+    void deveBloquearCorrecaoDeStatusInvalida() {
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setId(100L);
+        operacao.setStatus(
+                StatusTraslado.CONCLUIDO
+        );
+
+        OperacaoTrasladoCorrecaoStatusRequest request =
+                new OperacaoTrasladoCorrecaoStatusRequest();
+
+        request.setStatus(
+                StatusTraslado.AGUARDANDO
+        );
+
+        request.setMotivo(
+                "Tentativa de correção inválida"
+        );
+
+        when(
+                operacaoTrasladoRepository.findById(100L)
+        ).thenReturn(
+                Optional.of(operacao)
+        );
+
+        assertThrows(
+                TransicaoStatusTrasladoInvalidaException.class,
+                () ->
+                        operacaoTrasladoService.corrigirStatus(
+                                100L,
+                                request
+                        )
+        );
+
+        assertEquals(
+                StatusTraslado.CONCLUIDO,
+                operacao.getStatus()
+        );
+
+        verify(
+                historicoStatusOperacaoTrasladoRepository,
+                never()
+        ).save(
+                any(HistoricoStatusOperacaoTraslado.class)
+        );
+
+        verify(
+                operacaoTrasladoRepository,
+                never()
+        ).save(
+                any(OperacaoTraslado.class)
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoAoCorrigirStatusDeOperacaoInexistente() {
+
+        OperacaoTrasladoCorrecaoStatusRequest request =
+                new OperacaoTrasladoCorrecaoStatusRequest();
+
+        request.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        request.setMotivo(
+                "Correção operacional"
+        );
+
+        when(
+                operacaoTrasladoRepository.findById(999L)
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                OperacaoTrasladoNaoEncontradaException.class,
+                () ->
+                        operacaoTrasladoService.corrigirStatus(
+                                999L,
+                                request
+                        )
+        );
+
+        verifyNoInteractions(
+                historicoStatusOperacaoTrasladoRepository
+        );
+
+        verify(
+                operacaoTrasladoRepository,
+                never()
+        ).save(
+                any(OperacaoTraslado.class)
         );
     }
 
