@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
+import Link from "next/link";
 
 import {
   listarAlocacoesPorQuarto,
@@ -495,9 +496,12 @@ return (
                                 key={alocacao.id}
                                 className="rounded-xl border border-border bg-background/40 px-4 py-3"
                               >
-                                <p className="font-medium text-foreground">
+                                <Link
+                                  href={`/hospedes/${alocacao.hospedeId}`}
+                                  className="font-medium text-foreground transition-colors hover:text-primary"
+                                >
                                   {alocacao.hospedeNome}
-                                </p>
+                                </Link>
 
                                 <p className="mt-1 text-xs text-muted">
                                   Hóspede #
