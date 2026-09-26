@@ -14,3 +14,15 @@ export type CheckInResponse = {
   quartoId: number | null;
   quartoNome: string | null;
 };
+
+export type QrCodeCheckInResponse = {
+  hospedeId: number;
+  hospedeNome: string;
+  statusCheckIn: StatusCheckIn;
+
+  viagemId: number;
+  viagemNome: string;
+
+  quartoId: number | null;
+  quartoNome: string | null;
+};
