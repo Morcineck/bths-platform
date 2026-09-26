@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 
 import {
   atualizarStatusOperacao,
+  corrigirStatusOperacao,
   excluirOperacaoTraslado,
   listarOperacoesPorViagem,
   listarPassageirosDaOperacao,
@@ -26,6 +27,14 @@ import {
 import type {
   Viagem,
 } from "@/features/viagem/types/viagem";
+
+import {
+  buscarUsuarioAutenticado,
+} from "@/features/auth/services/authService";
+
+import type {
+  PerfilUsuario,
+} from "@/features/auth/types/auth";
 
 export default function TrasladosPage() {
   const [viagens, setViagens] =
@@ -82,12 +91,52 @@ export default function TrasladosPage() {
   ] = useState<number | null>(null);
 
   const [
+    perfilUsuario,
+    setPerfilUsuario,
+  ] = useState<PerfilUsuario | null>(null);
+
+  const [
+    corrigindoStatusId,
+    setCorrigindoStatusId,
+  ] = useState<number | null>(null);
+
+  const [
+    motivoCorrecao,
+    setMotivoCorrecao,
+  ] = useState("");
+
+  const [
+    enviandoCorrecaoId,
+    setEnviandoCorrecaoId,
+  ] = useState<number | null>(null);
+
+  const [
     mensagemOperacao,
     setMensagemOperacao,
   ] = useState("");
 
   const [erro, setErro] =
     useState("");
+
+  const isAdmin =
+    perfilUsuario === "ADMIN";
+
+  useEffect(() => {
+    async function carregarPerfilUsuario() {
+      try {
+        const usuario =
+          await buscarUsuarioAutenticado();
+
+        setPerfilUsuario(
+          usuario.perfil,
+        );
+      } catch {
+        setPerfilUsuario(null);
+      }
+    }
+
+    carregarPerfilUsuario();
+  }, []);
 
   useEffect(() => {
     async function carregarViagens() {
@@ -163,6 +212,65 @@ export default function TrasladosPage() {
 
     carregarOperacoes();
   }, [viagemSelecionadaId]);
+
+  async function handleCorrigirStatus(
+    operacao: OperacaoTraslado,
+  ) {
+    const motivo =
+      motivoCorrecao.trim();
+
+    if (!motivo) {
+      setErro(
+        "Informe o motivo da correção.",
+      );
+
+      return;
+    }
+
+    const novoStatus =
+      operacao.status === "CONCLUIDO"
+        ? "EM_ANDAMENTO"
+        : "AGUARDANDO";
+
+    try {
+      setEnviandoCorrecaoId(
+        operacao.id,
+      );
+
+      setErro("");
+      setMensagemOperacao("");
+
+      const operacaoAtualizada =
+        await corrigirStatusOperacao(
+          operacao.id,
+          novoStatus,
+          motivo,
+        );
+
+      setOperacoes((atuais) =>
+        atuais.map((item) =>
+          item.id === operacao.id
+            ? operacaoAtualizada
+            : item,
+        ),
+      );
+
+      setCorrigindoStatusId(null);
+      setMotivoCorrecao("");
+
+      setMensagemOperacao(
+        "Status da operação corrigido com sucesso.",
+      );
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível corrigir o status da operação.",
+      );
+    } finally {
+      setEnviandoCorrecaoId(null);
+    }
+  }
 
   async function handleAtualizarStatus(
     operacaoId: number,
@@ -739,6 +847,86 @@ export default function TrasladosPage() {
                       )}
                     </div>
 
+                    {corrigindoStatusId ===
+                      operacao.id && (
+                      <div className="space-y-4 rounded-xl border border-border bg-background/40 p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            Corrigir status
+                          </p>
+
+                          <p className="mt-1 text-sm text-muted">
+                            {operacao.status === "CONCLUIDO"
+                              ? "A operação voltará para Em andamento."
+                              : "A operação voltará para Aguardando."}
+                          </p>
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor={`motivo-correcao-${operacao.id}`}
+                            className="mb-2 block text-sm font-medium text-foreground"
+                          >
+                            Motivo da correção
+                          </label>
+
+                          <textarea
+                            id={`motivo-correcao-${operacao.id}`}
+                            value={motivoCorrecao}
+                            onChange={(event) =>
+                              setMotivoCorrecao(
+                                event.target.value,
+                              )
+                            }
+                            rows={3}
+                            placeholder="Explique por que o status precisa ser corrigido."
+                            className="w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCorrigirStatus(
+                                operacao,
+                              )
+                            }
+                            disabled={
+                              enviandoCorrecaoId ===
+                                operacao.id ||
+                              !motivoCorrecao.trim()
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {enviandoCorrecaoId ===
+                            operacao.id
+                              ? "Corrigindo..."
+                              : "Confirmar correção"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCorrigindoStatusId(
+                                null,
+                              );
+
+                              setMotivoCorrecao("");
+                              setErro("");
+                            }}
+                            disabled={
+                              enviandoCorrecaoId ===
+                              operacao.id
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex flex-col justify-end gap-3 border-t border-border pt-4 sm:flex-row">
                       {operacao.status ===
                         "AGUARDANDO" && (
@@ -778,6 +966,7 @@ export default function TrasladosPage() {
                           </button>
                         </>
                       )}
+
                       {operacao.status ===
                         "EM_ANDAMENTO" && (
                         <>
@@ -816,6 +1005,30 @@ export default function TrasladosPage() {
                           </button>
                         </>
                       )}
+
+                      {isAdmin &&
+                        (operacao.status === "CONCLUIDO" ||
+                          operacao.status === "CANCELADO") && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCorrigindoStatusId(
+                                operacao.id,
+                              );
+
+                              setMotivoCorrecao("");
+                              setErro("");
+                              setMensagemOperacao("");
+                            }}
+                            disabled={
+                              enviandoCorrecaoId ===
+                              operacao.id
+                            }
+                            className="inline-flex h-10 items-center justify-center rounded-xl border border-primary px-4 text-sm font-medium text-primary transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Corrigir status
+                          </button>
+                        )}
                       <Link
                         href={`/traslados/${operacao.id}/editar`}
                         className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"

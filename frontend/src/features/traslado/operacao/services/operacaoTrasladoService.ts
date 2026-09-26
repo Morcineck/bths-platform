@@ -272,3 +272,41 @@ export async function atualizarStatusOperacao(
 
   return response.json();
 }
+
+export async function corrigirStatusOperacao(
+  operacaoId: number,
+  status: StatusTraslado,
+  motivo: string,
+): Promise<OperacaoTraslado> {
+  await inicializarCsrf();
+
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
+
+  const response = await authFetch(
+    `${API_URL}/api/traslados/operacoes/${operacaoId}/corrigir-status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": csrfToken,
+      },
+      body: JSON.stringify({
+        status,
+        motivo,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível corrigir o status da operação.",
+    );
+  }
+
+  return response.json();
+}
