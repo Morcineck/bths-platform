@@ -1,5 +1,6 @@
 package com.bths.platform.quarto;
 
+import com.bths.platform.quarto.dto.QuartoOcupacaoResponse;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoResponse;
@@ -390,4 +391,156 @@ class QuartoControllerTest {
         verify(quartoService, never())
                 .cadastrarQuarto(any());
     }
+
+    @Test
+    void deveListarOcupacaoDosQuartosPorViagemERetornar200()
+            throws Exception {
+
+        QuartoOcupacaoResponse quarto1 =
+                new QuartoOcupacaoResponse();
+
+        quarto1.setQuartoId(1L);
+        quarto1.setNome("Suíte 01");
+        quarto1.setTipo(TipoQuarto.SUITE);
+        quarto1.setStatus(StatusQuarto.DISPONIVEL);
+        quarto1.setCapacidade(2);
+        quarto1.setOcupacao(2L);
+        quarto1.setVagasDisponiveis(0L);
+
+        QuartoOcupacaoResponse quarto2 =
+                new QuartoOcupacaoResponse();
+
+        quarto2.setQuartoId(2L);
+        quarto2.setNome("Alojamento 01");
+        quarto2.setTipo(TipoQuarto.ALOJAMENTO);
+        quarto2.setStatus(StatusQuarto.DISPONIVEL);
+        quarto2.setCapacidade(18);
+        quarto2.setOcupacao(13L);
+        quarto2.setVagasDisponiveis(5L);
+
+        when(
+                quartoService
+                        .listarOcupacaoQuartosPorViagem(1L)
+        ).thenReturn(
+                List.of(
+                        quarto1,
+                        quarto2
+                )
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/quartos/viagem/1/ocupacao"
+                        )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.length()")
+                                .value(2)
+                )
+                .andExpect(
+                        jsonPath("$[0].quartoId")
+                                .value(1)
+                )
+                .andExpect(
+                        jsonPath("$[0].nome")
+                                .value("Suíte 01")
+                )
+                .andExpect(
+                        jsonPath("$[0].tipo")
+                                .value("SUITE")
+                )
+                .andExpect(
+                        jsonPath("$[0].status")
+                                .value("DISPONIVEL")
+                )
+                .andExpect(
+                        jsonPath("$[0].capacidade")
+                                .value(2)
+                )
+                .andExpect(
+                        jsonPath("$[0].ocupacao")
+                                .value(2)
+                )
+                .andExpect(
+                        jsonPath("$[0].vagasDisponiveis")
+                                .value(0)
+                )
+                .andExpect(
+                        jsonPath("$[1].quartoId")
+                                .value(2)
+                )
+                .andExpect(
+                        jsonPath("$[1].nome")
+                                .value("Alojamento 01")
+                )
+                .andExpect(
+                        jsonPath("$[1].tipo")
+                                .value("ALOJAMENTO")
+                )
+                .andExpect(
+                        jsonPath("$[1].capacidade")
+                                .value(18)
+                )
+                .andExpect(
+                        jsonPath("$[1].ocupacao")
+                                .value(13)
+                )
+                .andExpect(
+                        jsonPath("$[1].vagasDisponiveis")
+                                .value(5)
+                );
+
+        verify(
+                quartoService
+        ).listarOcupacaoQuartosPorViagem(
+                1L
+        );
+    }
+
+    @Test
+    void deveRetornar404AoListarOcupacaoDeViagemInexistente()
+            throws Exception {
+
+        when(
+                quartoService
+                        .listarOcupacaoQuartosPorViagem(999L)
+        ).thenThrow(
+                new ViagemNaoEncontradaException(
+                        "Viagem não encontrada!"
+                )
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/quartos/viagem/999/ocupacao"
+                        )
+                )
+                .andExpect(
+                        status().isNotFound()
+                )
+                .andExpect(
+                        jsonPath("$.erro")
+                                .value("Not Found")
+                )
+                .andExpect(
+                        jsonPath("$.mensagem")
+                                .value(
+                                        "Viagem não encontrada!"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(404)
+                );
+
+        verify(
+                quartoService
+        ).listarOcupacaoQuartosPorViagem(
+                999L
+        );
+    }
+
 }

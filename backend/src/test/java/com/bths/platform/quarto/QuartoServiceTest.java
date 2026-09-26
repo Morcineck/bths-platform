@@ -1,5 +1,6 @@
 package com.bths.platform.quarto;
 
+import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoRequest;
@@ -36,6 +37,9 @@ class QuartoServiceTest {
     @Mock
     private QuartoMapper quartoMapper;
 
+    @Mock
+    private AlocacaoQuartoRepository alocacaoQuartoRepository;
+
     private QuartoService quartoService;
 
     @BeforeEach
@@ -44,7 +48,8 @@ class QuartoServiceTest {
         quartoService = new QuartoService(
                 quartoRepository,
                 viagemRepository,
-                quartoMapper
+                quartoMapper,
+                alocacaoQuartoRepository
         );
     }
 
@@ -487,4 +492,171 @@ class QuartoServiceTest {
         verify(quartoRepository, never())
                 .delete(any(Quarto.class));
     }
+
+    @Test
+    void deveListarOcupacaoDosQuartosPorViagem() {
+
+        Long viagemId = 1L;
+
+        Viagem viagem = new Viagem();
+        viagem.setId(viagemId);
+        viagem.setNome("Tomorrowland Brasil 2027");
+
+        Quarto quarto1 = new Quarto();
+        quarto1.setId(1L);
+        quarto1.setNome("Suíte 01");
+        quarto1.setTipo(TipoQuarto.SUITE);
+        quarto1.setCapacidade(2);
+        quarto1.setStatus(StatusQuarto.DISPONIVEL);
+        quarto1.setViagem(viagem);
+
+        Quarto quarto2 = new Quarto();
+        quarto2.setId(2L);
+        quarto2.setNome("Alojamento 01");
+        quarto2.setTipo(TipoQuarto.ALOJAMENTO);
+        quarto2.setCapacidade(18);
+        quarto2.setStatus(StatusQuarto.DISPONIVEL);
+        quarto2.setViagem(viagem);
+
+        when(
+                viagemRepository.findById(
+                        viagemId
+                )
+        ).thenReturn(
+                Optional.of(viagem)
+        );
+
+        when(
+                quartoRepository.findByViagemId(
+                        viagemId
+                )
+        ).thenReturn(
+                List.of(
+                        quarto1,
+                        quarto2
+                )
+        );
+
+        when(
+                alocacaoQuartoRepository.countByQuartoId(1L)
+        ).thenReturn(2L);
+
+        when(
+                alocacaoQuartoRepository.countByQuartoId(2L)
+        ).thenReturn(13L);
+
+        var resultado =
+                quartoService.listarOcupacaoQuartosPorViagem(
+                        viagemId
+                );
+
+        assertEquals(
+                2,
+                resultado.size()
+        );
+
+        assertEquals(
+                "Suíte 01",
+                resultado.get(0).getNome()
+        );
+
+        assertEquals(
+                2,
+                resultado.get(0).getCapacidade()
+        );
+
+        assertEquals(
+                2L,
+                resultado.get(0).getOcupacao()
+        );
+
+        assertEquals(
+                0L,
+                resultado.get(0).getVagasDisponiveis()
+        );
+
+        assertEquals(
+                "Alojamento 01",
+                resultado.get(1).getNome()
+        );
+
+        assertEquals(
+                18,
+                resultado.get(1).getCapacidade()
+        );
+
+        assertEquals(
+                13L,
+                resultado.get(1).getOcupacao()
+        );
+
+        assertEquals(
+                5L,
+                resultado.get(1).getVagasDisponiveis()
+        );
+
+        verify(
+                viagemRepository
+        ).findById(
+                viagemId
+        );
+
+        verify(
+                quartoRepository
+        ).findByViagemId(
+                viagemId
+        );
+
+        verify(
+                alocacaoQuartoRepository
+        ).countByQuartoId(
+                1L
+        );
+
+        verify(
+                alocacaoQuartoRepository
+        ).countByQuartoId(
+                2L
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoAoListarOcupacaoDeViagemInexistente() {
+
+        Long viagemId = 999L;
+
+        when(
+                viagemRepository.findById(
+                        viagemId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                ViagemNaoEncontradaException.class,
+                () ->
+                        quartoService.listarOcupacaoQuartosPorViagem(
+                                viagemId
+                        )
+        );
+
+        verify(
+                viagemRepository
+        ).findById(
+                viagemId
+        );
+
+        verify(
+                quartoRepository,
+                never()
+        ).findByViagemId(
+                anyLong()
+        );
+
+        verifyNoInteractions(
+                alocacaoQuartoRepository
+        );
+    }
+
 }

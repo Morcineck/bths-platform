@@ -1,5 +1,7 @@
 package com.bths.platform.quarto;
 
+import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.quarto.dto.QuartoOcupacaoResponse;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoRequest;
@@ -17,15 +19,18 @@ public class QuartoService {
     private final QuartoRepository quartoRepository;
     private final ViagemRepository viagemRepository;
     private final QuartoMapper quartoMapper;
+    private final AlocacaoQuartoRepository alocacaoQuartoRepository;
 
     public QuartoService(
             QuartoRepository quartoRepository,
             ViagemRepository viagemRepository,
-            QuartoMapper quartoMapper
+            QuartoMapper quartoMapper,
+            AlocacaoQuartoRepository alocacaoQuartoRepository
     ) {
         this.quartoRepository = quartoRepository;
         this.viagemRepository = viagemRepository;
         this.quartoMapper = quartoMapper;
+        this.alocacaoQuartoRepository = alocacaoQuartoRepository;
     }
 
     public QuartoResponse cadastrarQuarto(QuartoRequest request) {
@@ -98,6 +103,67 @@ public class QuartoService {
                 );
 
         quartoRepository.delete(quarto);
+    }
+
+    public List<QuartoOcupacaoResponse> listarOcupacaoQuartosPorViagem(
+            Long viagemId
+    ) {
+
+        viagemRepository.findById(
+                viagemId
+        ).orElseThrow(() -> new ViagemNaoEncontradaException(
+                        "Viagem não encontrada!"
+                )
+        );
+
+        return quartoRepository
+                .findByViagemId(
+                        viagemId
+                )
+                .stream()
+                .map(
+                        quarto -> {
+                            long ocupacao =
+                                    alocacaoQuartoRepository
+                                            .countByQuartoId(
+                                                    quarto.getId()
+                                            );
+
+                            long vagasDisponiveis =
+                                    quarto.getCapacidade()
+                                            - ocupacao;
+
+                            QuartoOcupacaoResponse response =
+                                    new QuartoOcupacaoResponse();
+
+                            response.setNome(
+                                    quarto.getNome()
+                            );
+
+                            response.setTipo(
+                                    quarto.getTipo()
+                            );
+
+                            response.setStatus(
+                                    quarto.getStatus()
+                            );
+
+                            response.setCapacidade(
+                                    quarto.getCapacidade()
+                            );
+
+                            response.setOcupacao(
+                                    ocupacao
+                            );
+
+                            response.setVagasDisponiveis(
+                                    vagasDisponiveis
+                            );
+
+                            return response;
+                        }
+                )
+                .toList();
     }
 
     public List<QuartoResponse> listarQuartosPorViagem(

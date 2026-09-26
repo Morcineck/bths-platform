@@ -1,5 +1,6 @@
 package com.bths.platform.quarto;
 
+import com.bths.platform.quarto.dto.QuartoOcupacaoResponse;
 import com.bths.platform.quarto.dto.QuartoRequest;
 import com.bths.platform.quarto.dto.QuartoResponse;
 import jakarta.validation.Valid;
@@ -76,6 +77,19 @@ public class QuartoController {
 
         return ResponseEntity.ok(
                 quartoService.listarQuartosPorViagem(viagemId)
+        );
+    }
+
+    @GetMapping("/viagem/{viagemId}/ocupacao")
+    public ResponseEntity<List<QuartoOcupacaoResponse>> listarOcupacaoQuartoPorViagem(
+            @PathVariable Long viagemId
+    ) {
+
+        return ResponseEntity.ok(
+                quartoService
+                        .listarOcupacaoQuartosPorViagem(
+                                viagemId
+                        )
         );
     }
 
