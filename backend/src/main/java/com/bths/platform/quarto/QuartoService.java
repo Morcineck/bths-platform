@@ -136,6 +136,10 @@ public class QuartoService {
                             QuartoOcupacaoResponse response =
                                     new QuartoOcupacaoResponse();
 
+                            response.setQuartoId(
+                                    quarto.getId()
+                            );
+
                             response.setNome(
                                     quarto.getNome()
                             );
