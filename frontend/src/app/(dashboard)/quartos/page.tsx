@@ -6,6 +6,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
 
 import {
+  listarAlocacoesPorQuarto,
+} from "@/features/alocacao/services/alocacaoService";
+
+import type {
+  AlocacaoQuarto,
+} from "@/features/alocacao/types/alocacao";
+
+import {
   listarOcupacaoQuartosPorViagem,
 } from "@/features/quarto/services/quartoService";
 
@@ -39,6 +47,13 @@ export default function QuartosPage() {
     ] = useState<QuartoOcupacao[]>([]);
 
     const [
+      alocacoesPorQuarto,
+      setAlocacoesPorQuarto,
+    ] = useState<
+      Record<number, AlocacaoQuarto[]>
+    >({});
+
+    const [
       carregandoViagens,
       setCarregandoViagens,
     ] = useState(true);
@@ -47,6 +62,16 @@ export default function QuartosPage() {
       carregandoQuartos,
       setCarregandoQuartos,
     ] = useState(false);
+
+    const [
+      quartoExpandidoId,
+      setQuartoExpandidoId,
+    ] = useState<number | null>(null);
+
+    const [
+      carregandoAlocacoesId,
+      setCarregandoAlocacoesId,
+    ] = useState<number | null>(null);
 
     const [
       erro,
@@ -124,6 +149,65 @@ useEffect(() => {
 
   carregarQuartos();
 }, [viagemSelecionadaId]);
+
+async function handleVerHospedes(
+  quartoId: number,
+) {
+  if (
+    quartoExpandidoId === quartoId
+  ) {
+    setQuartoExpandidoId(null);
+
+    return;
+  }
+
+  if (
+    alocacoesPorQuarto[
+      quartoId
+    ]
+  ) {
+    setQuartoExpandidoId(
+      quartoId,
+    );
+
+    return;
+  }
+
+  try {
+    setCarregandoAlocacoesId(
+      quartoId,
+    );
+
+    setErro("");
+
+    const alocacoes =
+      await listarAlocacoesPorQuarto(
+        quartoId,
+      );
+
+    setAlocacoesPorQuarto(
+      (atuais) => ({
+        ...atuais,
+        [quartoId]:
+          alocacoes,
+      }),
+    );
+
+    setQuartoExpandidoId(
+      quartoId,
+    );
+  } catch (error) {
+    setErro(
+      error instanceof Error
+        ? error.message
+        : "Não foi possível carregar os hóspedes do quarto.",
+    );
+  } finally {
+    setCarregandoAlocacoesId(
+      null,
+    );
+  }
+}
 
 if (carregandoViagens) {
   return (
@@ -264,6 +348,19 @@ return (
                 quarto.ocupacao >=
                   quarto.capacidade;
 
+              const alocacoes =
+                alocacoesPorQuarto[
+                  quarto.quartoId
+                ] ?? [];
+
+              const expandido =
+                quartoExpandidoId ===
+                quarto.quartoId;
+
+              const carregandoAlocacoes =
+                carregandoAlocacoesId ===
+                quarto.quartoId;
+
               return (
                 <Card
                   key={quarto.quartoId}
@@ -311,12 +408,20 @@ return (
                         </p>
                       </div>
 
-                      <p className="text-sm font-medium text-muted">
-                        {quarto.vagasDisponiveis}{" "}
-                        {quarto.vagasDisponiveis ===
-                        1
-                          ? "vaga disponível"
-                          : "vagas disponíveis"}
+                      <p
+                        className={`text-sm font-medium ${
+                          quarto.status === "INDISPONIVEL"
+                            ? "text-red-400"
+                            : "text-muted"
+                        }`}
+                      >
+                        {quarto.status === "INDISPONIVEL"
+                          ? "Indisponível"
+                          : `${quarto.vagasDisponiveis} ${
+                              quarto.vagasDisponiveis === 1
+                                ? "vaga disponível"
+                                : "vagas disponíveis"
+                            }`}
                       </p>
                     </div>
 
@@ -333,6 +438,75 @@ return (
                             )}%`,
                           }}
                         />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-border pt-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-muted">
+                          Hóspedes
+                        </p>
+
+                        <p className="mt-1 text-sm font-medium text-foreground">
+                          {quarto.ocupacao === 0
+                            ? "Nenhum hóspede alocado."
+                            : `${quarto.ocupacao} ${
+                                quarto.ocupacao === 1
+                                  ? "hóspede alocado"
+                                  : "hóspedes alocados"
+                              }`}
+                        </p>
+                      </div>
+
+                      {quarto.ocupacao > 0 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleVerHospedes(
+                              quarto.quartoId,
+                            )
+                          }
+                          disabled={
+                            carregandoAlocacoes
+                          }
+                          className="text-sm font-medium text-primary transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {carregandoAlocacoes
+                            ? "Carregando..."
+                            : expandido
+                              ? "Ocultar hóspedes"
+                              : "Ver hóspedes"}
+                        </button>
+                      )}
+                    </div>
+
+                    {expandido && (
+                      <div className="mt-4 space-y-2">
+                        {alocacoes.length === 0 ? (
+                          <p className="text-sm text-muted">
+                            Nenhum hóspede alocado neste quarto.
+                          </p>
+                        ) : (
+                          alocacoes.map(
+                            (alocacao) => (
+                              <div
+                                key={alocacao.id}
+                                className="rounded-xl border border-border bg-background/40 px-4 py-3"
+                              >
+                                <p className="font-medium text-foreground">
+                                  {alocacao.hospedeNome}
+                                </p>
+
+                                <p className="mt-1 text-xs text-muted">
+                                  Hóspede #
+                                  {alocacao.hospedeId}
+                                </p>
+                              </div>
+                            ),
+                          )
+                        )}
                       </div>
                     )}
                   </div>
