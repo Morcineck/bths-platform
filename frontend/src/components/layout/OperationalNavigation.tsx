@@ -26,13 +26,12 @@ export function OperationalNavigation({
             <span>Hóspedes</span>
           </Link>
 
-          <button
-            type="button"
-            disabled
-            className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs text-muted opacity-50"
+          <Link
+            href="/check-in"
+            className="flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
           >
             <span>QR</span>
-          </button>
+          </Link>
 
           <button
             type="button"
@@ -92,13 +91,12 @@ export function OperationalNavigation({
                 Traslados
               </Link>
 
-              <button
-                type="button"
-                disabled
-                className="block w-full rounded-xl px-4 py-3 text-left text-sm text-muted opacity-50"
+              <Link
+                href="/check-in"
+                className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
               >
                 Check-in
-              </button>
+              </Link>
 
               <Link
                 href="/quartos"

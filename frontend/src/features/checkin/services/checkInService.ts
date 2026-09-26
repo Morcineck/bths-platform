@@ -5,7 +5,10 @@ import {
   inicializarCsrf,
 } from "@/features/auth/services/csrfService";
 
-import type { CheckInResponse } from "../types/checkin";
+import type {
+  CheckInResponse,
+  QrCodeCheckInResponse,
+} from "../types/checkin";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -16,6 +19,26 @@ type CheckInRequest = {
 type NaoComparecimentoRequest = {
   motivo: string;
 };
+
+export async function identificarHospedePorQr(
+  codigo: string,
+): Promise<QrCodeCheckInResponse> {
+  const response = await authFetch(
+    `${API_URL}/api/check-in/qr/${encodeURIComponent(codigo)}`,
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível identificar o hóspede pelo QR Code.",
+    );
+  }
+
+  return response.json();
+}
 
 export async function consultarCheckIn(
   hospedeId: number,
