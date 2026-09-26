@@ -172,4 +172,20 @@ public class OperacaoTrasladoController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/{id}/corrigir-status")
+    public ResponseEntity<OperacaoTrasladoResponse> corrigirStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody OperacaoTrasladoCorrecaoStatusRequest request
+
+    )  {
+
+        OperacaoTrasladoResponse response =
+                operacaoTrasladoService.corrigirStatus(
+                        id,
+                        request
+                );
+
+        return ResponseEntity.ok(response);
+    }
 }
