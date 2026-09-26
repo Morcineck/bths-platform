@@ -58,6 +58,26 @@ export async function buscarAlocacaoPorHospedeEViagem(
   return response.json();
 }
 
+export async function listarAlocacoesPorQuarto(
+  quartoId: number,
+): Promise<AlocacaoQuarto[]> {
+  const response = await authFetch(
+    `${API_URL}/api/alocacoes-quartos/quarto/${quartoId}`,
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível carregar os hóspedes do quarto.",
+    );
+  }
+
+  return response.json();
+}
+
 export async function trocarQuarto(
   alocacaoId: number,
   novoQuartoId: number,
