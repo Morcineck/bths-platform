@@ -16,3 +16,13 @@ export type Quarto = {
   viagemId: number;
   viagemNome: string;
 };
+
+export type QuartoOcupacao = {
+  quartoId: number;
+  nome: string;
+  tipo: TipoQuarto;
+  status: StatusQuarto;
+  capacidade: number;
+  ocupacao: number;
+  vagasDisponiveis: number;
+};
