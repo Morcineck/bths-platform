@@ -10,11 +10,13 @@ import {
   atualizarStatusOperacao,
   corrigirStatusOperacao,
   excluirOperacaoTraslado,
+  listarHistoricoStatusOperacao,
   listarOperacoesPorViagem,
   listarPassageirosDaOperacao,
 } from "@/features/traslado/operacao/services/operacaoTrasladoService";
 
 import type {
+  HistoricoStatusOperacaoTraslado,
   OperacaoTraslado,
   OperacaoTrasladoPassageiro,
   StatusTraslado,
@@ -61,8 +63,23 @@ export default function TrasladosPage() {
   >({});
 
   const [
+    historicoPorOperacao,
+    setHistoricoPorOperacao,
+  ] = useState<
+    Record<
+      number,
+      HistoricoStatusOperacaoTraslado[]
+    >
+  >({});
+
+  const [
     operacaoExpandidaId,
     setOperacaoExpandidaId,
+  ] = useState<number | null>(null);
+
+  const [
+    historicoExpandidoId,
+    setHistoricoExpandidoId,
   ] = useState<number | null>(null);
 
   const [
@@ -78,6 +95,11 @@ export default function TrasladosPage() {
   const [
     carregandoPassageirosId,
     setCarregandoPassageirosId,
+  ] = useState<number | null>(null);
+
+  const [
+    carregandoHistoricoId,
+    setCarregandoHistoricoId,
   ] = useState<number | null>(null);
 
   const [
@@ -392,6 +414,65 @@ export default function TrasladosPage() {
     }
   }
 
+  async function handleVerHistorico(
+    operacaoId: number,
+  ) {
+    if (
+      historicoExpandidoId === operacaoId
+    ) {
+      setHistoricoExpandidoId(null);
+
+      return;
+    }
+
+    if (
+      historicoPorOperacao[
+        operacaoId
+      ]
+    ) {
+      setHistoricoExpandidoId(
+        operacaoId,
+      );
+
+      return;
+    }
+
+    try {
+      setCarregandoHistoricoId(
+        operacaoId,
+      );
+
+      setErro("");
+
+      const historico =
+        await listarHistoricoStatusOperacao(
+          operacaoId,
+        );
+
+      setHistoricoPorOperacao(
+        (atuais) => ({
+          ...atuais,
+          [operacaoId]:
+            historico,
+        }),
+      );
+
+      setHistoricoExpandidoId(
+        operacaoId,
+      );
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível carregar o histórico da operação.",
+      );
+    } finally {
+      setCarregandoHistoricoId(
+        null,
+      );
+    }
+  }
+
   async function handleVerPassageiros(
     operacaoId: number,
   ) {
@@ -649,6 +730,19 @@ export default function TrasladosPage() {
                   carregandoPassageirosId ===
                   operacao.id;
 
+                const listaHistorico =
+                  historicoPorOperacao[
+                    operacao.id
+                  ] ?? [];
+
+                const historicoExpandido =
+                  historicoExpandidoId ===
+                  operacao.id;
+
+                const carregandoHistorico =
+                  carregandoHistoricoId ===
+                  operacao.id;
+
                 const atualizandoStatus =
                   atualizandoStatusId ===
                   operacao.id;
@@ -838,6 +932,106 @@ export default function TrasladosPage() {
                                     {
                                       passageiro.hospedeId
                                     }
+                                  </p>
+                                </div>
+                              ),
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border-t border-border pt-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm text-muted">
+                            Histórico de status
+                          </p>
+
+                          <p className="mt-1 text-sm font-medium text-foreground">
+                            Acompanhe as alterações realizadas nesta operação.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleVerHistorico(
+                              operacao.id,
+                            )
+                          }
+                          disabled={
+                            carregandoHistorico
+                          }
+                          className="text-sm font-medium text-primary transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {carregandoHistorico
+                            ? "Carregando..."
+                            : historicoExpandido
+                              ? "Ocultar histórico"
+                              : "Ver histórico"}
+                        </button>
+                      </div>
+
+                      {historicoExpandido && (
+                        <div className="mt-4 space-y-3">
+                          {listaHistorico.length === 0 ? (
+                            <p className="text-sm text-muted">
+                              Nenhuma alteração de status registrada.
+                            </p>
+                          ) : (
+                            [...listaHistorico]
+                              .sort(
+                                (a, b) =>
+                                  new Date(
+                                    b.dataHora,
+                                  ).getTime() -
+                                  new Date(
+                                    a.dataHora,
+                                  ).getTime(),
+                              )
+                              .map(
+                                (historico) => (
+                                <div
+                                  key={historico.id}
+                                  className="rounded-xl border border-border bg-background/40 p-4"
+                                >
+                                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <p className="text-sm font-medium text-foreground">
+                                      {historico.statusAnterior === "AGUARDANDO"
+                                        ? "Aguardando"
+                                        : historico.statusAnterior === "EM_ANDAMENTO"
+                                          ? "Em andamento"
+                                          : historico.statusAnterior === "CONCLUIDO"
+                                            ? "Concluída"
+                                            : "Cancelada"}
+
+                                      {" -> "}
+
+                                      {historico.novoStatus === "AGUARDANDO"
+                                        ? "Aguardando"
+                                        : historico.novoStatus === "EM_ANDAMENTO"
+                                          ? "Em andamento"
+                                          : historico.novoStatus === "CONCLUIDO"
+                                            ? "Concluída"
+                                            : "Cancelada"}
+                                    </p>
+
+                                    <p className="text-xs text-muted">
+                                      {new Date(
+                                        historico.dataHora,
+                                      ).toLocaleString(
+                                        "pt-BR",
+                                      )}
+                                    </p>
+                                  </div>
+
+                                  <p className="mt-3 text-sm text-muted">
+                                    Motivo
+                                  </p>
+
+                                  <p className="mt-1 text-sm font-medium text-foreground">
+                                    {historico.motivo}
                                   </p>
                                 </div>
                               ),

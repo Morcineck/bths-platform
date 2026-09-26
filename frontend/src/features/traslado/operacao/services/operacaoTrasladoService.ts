@@ -6,6 +6,7 @@ import {
 } from "@/features/auth/services/csrfService";
 
 import type {
+  HistoricoStatusOperacaoTraslado,
   OperacaoTraslado,
   OperacaoTrasladoPassageiro,
   OperacaoTrasladoRequest,
@@ -305,6 +306,26 @@ export async function corrigirStatusOperacao(
     throw new Error(
       erro?.mensagem ??
         "Não foi possível corrigir o status da operação.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function listarHistoricoStatusOperacao(
+  operacaoId: number,
+): Promise<HistoricoStatusOperacaoTraslado[]> {
+  const response = await authFetch(
+    `${API_URL}/api/traslados/operacoes/${operacaoId}/historico-status`,
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível carregar o histórico de status da operação.",
     );
   }
 
