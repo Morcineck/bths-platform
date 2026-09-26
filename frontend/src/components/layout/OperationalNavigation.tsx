@@ -100,13 +100,12 @@ export function OperationalNavigation({
                 Check-in
               </button>
 
-              <button
-                type="button"
-                disabled
-                className="block w-full rounded-xl px-4 py-3 text-left text-sm text-muted opacity-50"
+              <Link
+                href="/quartos"
+                className="block rounded-xl px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-background hover:text-foreground"
               >
                 Quartos
-              </button>
+              </Link>
 
             </nav>
           </div>
