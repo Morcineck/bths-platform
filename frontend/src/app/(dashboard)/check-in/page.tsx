@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+
+import {
+  useRef,
+  useState,
+} from "react";
+
+import { Html5Qrcode } from "html5-qrcode";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card } from "@/components/ui/Card";
@@ -50,6 +56,37 @@ export default function CheckInPage() {
       sucesso,
       setSucesso,
     ] = useState("");
+
+    const [
+      cameraAtiva,
+      setCameraAtiva,
+    ] = useState(false);
+
+    const [
+      erroCamera,
+      setErroCamera,
+    ] = useState("");
+
+    const scannerRef =
+      useRef<Html5Qrcode | null>(null);
+
+
+async function handleFecharCamera() {
+  if (!scannerRef.current) {
+    setCameraAtiva(false);
+    return;
+  }
+
+  try {
+    await scannerRef.current.stop();
+  } catch {
+    // Scanner já pode estar parado.
+  } finally {
+    scannerRef.current.clear();
+    scannerRef.current = null;
+    setCameraAtiva(false);
+  }
+}
 
 async function handleIdentificarHospede() {
   const codigoInformado =
@@ -146,6 +183,109 @@ async function handleRealizarCheckIn() {
   }
 }
 
+async function handleAbrirCamera() {
+  try {
+    setErroCamera("");
+    setErro("");
+    setSucesso("");
+
+    const cameras =
+      await Html5Qrcode.getCameras();
+
+    if (cameras.length === 0) {
+      setErroCamera(
+        "Nenhuma câmera foi encontrada neste dispositivo.",
+      );
+
+      return;
+    }
+
+    setCameraAtiva(true);
+
+    await new Promise<void>(
+      (resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            resolve();
+          });
+        });
+      },
+    );
+
+    const scanner =
+      new Html5Qrcode(
+        "reader-check-in",
+      );
+
+    scannerRef.current =
+      scanner;
+
+    const cameraId =
+      cameras[0].id;
+
+    await scanner.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: {
+          width: 250,
+          height: 250,
+        },
+      },
+      async (
+        decodedText,
+      ) => {
+        setCodigo(
+          decodedText,
+        );
+
+        await handleFecharCamera();
+
+        try {
+          setIdentificando(true);
+          setErro("");
+          setSucesso("");
+          setHospedeIdentificado(null);
+
+          const hospede =
+            await identificarHospedePorQr(
+              decodedText,
+            );
+
+          setHospedeIdentificado(
+            hospede,
+          );
+        } catch (error) {
+          setErro(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível identificar o hóspede.",
+          );
+        } finally {
+          setIdentificando(false);
+        }
+      },
+      () => {
+        // Ignora leituras intermediárias sem QR válido.
+      },
+    );
+  } catch (error) {
+    console.error(
+      "Erro ao acessar câmera:",
+      error,
+    );
+
+    setErroCamera(
+      "Não foi possível acessar a câmera. Verifique se ela está disponível e não está sendo usada por outro aplicativo.",
+    );
+
+    setCameraAtiva(false);
+
+    scannerRef.current =
+      null;
+  }
+}
+
 return (
   <div className="space-y-8">
     <PageHeader
@@ -199,10 +339,47 @@ return (
               : "Localizar hóspede"}
           </button>
         </div>
+      </div>
 
-        <p className="mt-2 text-xs text-muted">
-          A leitura pela câmera será adicionada ao fluxo em uma etapa posterior.
-        </p>
+      <div className="border-t border-border pt-5">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          {!cameraAtiva ? (
+            <button
+              type="button"
+              onClick={
+                handleAbrirCamera
+              }
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition-opacity hover:opacity-80"
+            >
+              Ler QR Code
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={
+                handleFecharCamera
+              }
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-red-500/40 px-5 text-sm font-medium text-red-400 transition-colors hover:border-red-400 hover:text-red-300"
+            >
+              Fechar câmera
+            </button>
+          )}
+        </div>
+
+        {erroCamera && (
+          <p className="mt-3 text-sm text-red-400">
+            {erroCamera}
+          </p>
+        )}
+
+        {cameraAtiva && (
+          <div className="mt-5 overflow-hidden rounded-xl border border-border bg-background/40 p-3">
+            <div
+              id="reader-check-in"
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
     </Card>
 
@@ -370,6 +547,6 @@ return (
         )}
       </Card>
     )}
-  </div>
-);
-}
+    </div>
+    );
+    }
