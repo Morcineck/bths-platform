@@ -68,6 +68,7 @@ class HospedeServiceTest {
         hospede.setViagem(viagem);
 
         Hospede hospedeSalvo = new Hospede();
+        hospedeSalvo.setCodigoCheckIn("codigo-teste-123");
         hospedeSalvo.setId(1L);
         hospedeSalvo.setNomeCompleto("Maria Oliveira");
         hospedeSalvo.setCpf("98765432100");
@@ -75,6 +76,7 @@ class HospedeServiceTest {
         hospedeSalvo.setViagem(viagem);
 
         HospedeResponse responseEsperado = new HospedeResponse();
+        responseEsperado.setCodigoCheckIn("codigo-teste-123");
         responseEsperado.setId(1L);
         responseEsperado.setNomeCompleto("Maria Oliveira");
         responseEsperado.setCpf("98765432100");
@@ -99,6 +101,7 @@ class HospedeServiceTest {
         HospedeResponse resultado =
                 hospedeService.cadastrarHospede(request);
 
+        assertEquals("codigo-teste-123", resultado.getCodigoCheckIn());
         assertEquals(1L, resultado.getId());
         assertEquals("Maria Oliveira", resultado.getNomeCompleto());
         assertEquals("98765432100", resultado.getCpf());

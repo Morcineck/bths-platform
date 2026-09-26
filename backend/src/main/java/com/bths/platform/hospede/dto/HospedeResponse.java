@@ -18,6 +18,7 @@ public class HospedeResponse {
 
     private Long viagemId;
     private String viagemNome;
+    private String codigoCheckIn;
 
 
     public HospedeResponse() {
@@ -102,5 +103,13 @@ public class HospedeResponse {
 
     public void setViagemNome(String viagemNome) {
         this.viagemNome = viagemNome;
+    }
+
+    public String getCodigoCheckIn() {
+        return codigoCheckIn;
+    }
+
+    public void setCodigoCheckIn(String codigoCheckIn) {
+        this.codigoCheckIn = codigoCheckIn;
     }
 }

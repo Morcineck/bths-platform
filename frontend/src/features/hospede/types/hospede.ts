@@ -12,6 +12,7 @@ export type Hospede = {
   dataNascimento: string;
   horarioPrevistoChegada: string;
   statusCheckIn: StatusCheckIn;
+  codigoCheckIn: string;
   viagemId: number;
   viagemNome: string;
 };
