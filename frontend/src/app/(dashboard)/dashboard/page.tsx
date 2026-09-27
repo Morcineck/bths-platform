@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { QuickActions } from "@/features/dashboard/components/QuickActions";
@@ -234,39 +235,57 @@ export default function DashboardPage() {
           </h2>
 
           <p className="mt-1 text-sm text-muted">
-            Situações que merecem acompanhamento da equipe.
+            Situações operacionais que precisam de acompanhamento.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <p className="text-sm font-medium text-foreground">
-              Check-ins pendentes
-            </p>
+        {dashboard.atencao.hospedesSemQuarto > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="border-red-500/30 bg-red-500/5">
+              <p className="text-sm font-medium text-red-400">
+                Hóspedes sem quarto
+              </p>
 
-            <p className="mt-2 text-3xl font-semibold text-foreground">
-              {dashboard.hospedes.pendentes}
+              <p className="mt-2 text-3xl font-semibold text-foreground">
+                {dashboard.atencao.hospedesSemQuarto}
+              </p>
+
+              <p className="mt-2 text-sm text-muted">
+                Hóspedes pendentes de check-in ainda não possuem quarto alocado.
+              </p>
+
+              <div className="mt-4 space-y-2">
+                {dashboard.atencao.hospedesSemQuartoDetalhes.map(
+                  (hospede) => (
+                    <Link
+                      key={hospede.hospedeId}
+                      href={`/hospedes/${hospede.hospedeId}`}
+                      className="flex items-center justify-between rounded-xl border border-border bg-background/40 px-4 py-3 transition-colors hover:border-primary"
+                    >
+                      <span className="font-medium text-foreground">
+                        {hospede.hospedeNome}
+                      </span>
+
+                      <span className="text-sm font-medium text-primary">
+                        Abrir
+                      </span>
+                    </Link>
+                  ),
+                )}
+              </div>
+            </Card>
+          </div>
+        ) : (
+          <Card>
+            <p className="font-medium text-foreground">
+              Nenhuma pendência operacional identificada.
             </p>
 
             <p className="mt-2 text-sm text-muted">
-              Hóspedes ainda aguardando check-in.
+              Todos os hóspedes pendentes de check-in possuem quarto alocado.
             </p>
           </Card>
-
-          <Card>
-            <p className="text-sm font-medium text-foreground">
-              Capacidade disponível
-            </p>
-
-            <p className="mt-2 text-3xl font-semibold text-foreground">
-              {dashboard.hospedagem.disponiveis}
-            </p>
-
-            <p className="mt-2 text-sm text-muted">
-              Vagas ainda disponíveis na hospedagem.
-            </p>
-          </Card>
-        </div>
+        )}
       </section>
 
       <QuickActions />

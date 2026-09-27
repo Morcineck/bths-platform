@@ -36,5 +36,16 @@ export type DashboardResponse = {
   viagemId: number;
   hospedes: DashboardHospedes;
   hospedagem: DashboardHospedagem;
+  atencao: DashboardAtencao;
   traslados: DashboardTraslados;
+};
+
+export type DashboardAtencao = {
+  hospedesSemQuarto: number;
+  hospedesSemQuartoDetalhes: DashboardHospedeSemQuarto[];
+};
+
+export type DashboardHospedeSemQuarto = {
+  hospedeId: number;
+  hospedeNome: string;
 };
