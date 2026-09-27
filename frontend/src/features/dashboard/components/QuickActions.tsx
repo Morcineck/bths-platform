@@ -3,7 +3,7 @@ import Link from "next/link";
 type QuickAction = {
   titulo: string;
   descricao: string;
-  href?: string;
+  href: string;
 };
 
 const acoes: QuickAction[] = [
@@ -14,15 +14,18 @@ const acoes: QuickAction[] = [
   },
   {
     titulo: "Check-in",
-    descricao: "Acompanhar e executar check-ins.",
+    descricao: "Identificar hóspedes e realizar check-ins.",
+    href: "/check-in",
   },
   {
     titulo: "Quartos",
     descricao: "Consultar ocupação e alocações.",
+    href: "/quartos",
   },
   {
     titulo: "Traslados",
     descricao: "Acompanhar a operação de transporte.",
+    href: "/traslados",
   },
 ];
 
@@ -40,38 +43,21 @@ export function QuickActions() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {acoes.map((acao) =>
-          acao.href ? (
-            <Link
-              key={acao.titulo}
-              href={acao.href}
-              className="rounded-2xl border border-border bg-surface p-5 text-left transition-colors hover:border-primary"
-            >
-              <p className="font-semibold text-foreground">
-                {acao.titulo}
-              </p>
+        {acoes.map((acao) => (
+          <Link
+            key={acao.titulo}
+            href={acao.href}
+            className="rounded-2xl border border-border bg-surface p-5 text-left transition-colors hover:border-primary"
+          >
+            <p className="font-semibold text-foreground">
+              {acao.titulo}
+            </p>
 
-              <p className="mt-2 text-sm leading-6 text-muted">
-                {acao.descricao}
-              </p>
-            </Link>
-          ) : (
-            <button
-              key={acao.titulo}
-              type="button"
-              disabled
-              className="rounded-2xl border border-border bg-surface p-5 text-left opacity-50"
-            >
-              <p className="font-semibold text-foreground">
-                {acao.titulo}
-              </p>
-
-              <p className="mt-2 text-sm leading-6 text-muted">
-                {acao.descricao}
-              </p>
-            </button>
-          ),
-        )}
+            <p className="mt-2 text-sm leading-6 text-muted">
+              {acao.descricao}
+            </p>
+          </Link>
+        ))}
       </div>
     </section>
   );
