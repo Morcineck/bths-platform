@@ -34,6 +34,24 @@ public interface HospedeRepository extends JpaRepository<Hospede, Long> {
     );
 
     @Query("""
+        SELECT h
+        FROM Hospede h
+        WHERE h.viagem.id = :viagemId
+        AND h.statusCheckIn = :statusCheckIn
+        AND NOT EXISTS (
+            SELECT 1
+            FROM AlocacaoQuarto a
+            WHERE a.hospede.id = h.id
+            AND a.viagem.id = :viagemId
+        )
+        ORDER BY h.nomeCompleto
+        """)
+    List<Hospede> buscarSemQuartoPorViagemEStatusCheckIn(
+            @Param("viagemId") Long viagemId,
+            @Param("statusCheckIn") StatusCheckIn statusCheckIn
+    );
+
+    @Query("""
             SELECT h
             FROM Hospede h
             WHERE h.codigoCheckIn = :codigoCheckIn
@@ -42,5 +60,21 @@ public interface HospedeRepository extends JpaRepository<Hospede, Long> {
             @Param("codigoCheckIn") String codigoCheckIn
     );
 
+    @Query("""
+            SELECT COUNT(h)
+            FROM Hospede h
+            WHERE h.viagem.id = :viagemId
+            AND h.statusCheckIn = :statusCheckIn
+            AND NOT EXISTS (
+                SELECT 1
+                FROM AlocacaoQuarto a
+                WHERE a.hospede.id = h.id
+                AND a.viagem.id = :viagemId
+            )
+            """)
+    long contarSemQuartoPorViagemEStatusCheckIn(
+            @Param("viagemId") Long viagemId,
+            @Param("statusCheckIn") StatusCheckIn statusCheckIn
+    );
 
 }

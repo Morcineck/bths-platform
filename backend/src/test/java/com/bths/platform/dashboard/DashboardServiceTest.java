@@ -65,6 +65,15 @@ class DashboardServiceTest {
 
         Long viagemId = 1L;
 
+        Hospede hospedeSemQuarto =
+                new Hospede();
+
+        hospedeSemQuarto.setId(10L);
+
+        hospedeSemQuarto.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
         when(viagemRepository.existsById(viagemId))
                 .thenReturn(true);
 
@@ -80,6 +89,26 @@ class DashboardServiceTest {
                 viagemId,
                 StatusCheckIn.PENDENTE
         )).thenReturn(2L);
+
+        when(
+                hospedeRepository
+                        .contarSemQuartoPorViagemEStatusCheckIn(
+                                viagemId,
+                                StatusCheckIn.PENDENTE
+                        )
+        ).thenReturn(2L);
+
+        when(
+                hospedeRepository
+                        .buscarSemQuartoPorViagemEStatusCheckIn(
+                                viagemId,
+                                StatusCheckIn.PENDENTE
+                        )
+        ).thenReturn(
+                List.of(
+                        hospedeSemQuarto
+                )
+        );
 
         when(quartoRepository.somarCapacidadePorViagemExcluindoStatus(
                 viagemId,
@@ -112,29 +141,127 @@ class DashboardServiceTest {
         )).thenReturn(List.of());
 
         DashboardResponse response =
-                dashboardService.buscarDashboard(viagemId);
+                dashboardService.buscarDashboard(
+                        viagemId
+                );
 
         assertNotNull(response);
-        assertEquals(viagemId, response.getViagemId());
 
-        assertNotNull(response.getHospedes());
-        assertEquals(4L, response.getHospedes().getTotal());
-        assertEquals(2L, response.getHospedes().getPresentes());
-        assertEquals(2L, response.getHospedes().getPendentes());
-        assertEquals(50.0, response.getHospedes().getTaxaCheckIn());
+        assertEquals(
+                viagemId,
+                response.getViagemId()
+        );
 
-        assertNotNull(response.getHospedagem());
-        assertEquals(7L, response.getHospedagem().getVagasTotais());
-        assertEquals(2L, response.getHospedagem().getOcupadas());
-        assertEquals(5L, response.getHospedagem().getDisponiveis());
+        assertNotNull(
+                response.getHospedes()
+        );
 
-        assertNotNull(response.getTraslados());
-        assertEquals(6L, response.getTraslados().getAguardando());
-        assertEquals(1L, response.getTraslados().getEmAndamento());
-        assertEquals(1L, response.getTraslados().getConcluidos());
-        assertTrue(response.getTraslados().getProximos().isEmpty());
+        assertEquals(
+                4L,
+                response.getHospedes().getTotal()
+        );
 
-        verify(viagemRepository).existsById(viagemId);
+        assertEquals(
+                2L,
+                response.getHospedes().getPresentes()
+        );
+
+        assertEquals(
+                2L,
+                response.getHospedes().getPendentes()
+        );
+
+        assertEquals(
+                50.0,
+                response.getHospedes().getTaxaCheckIn()
+        );
+
+        assertNotNull(
+                response.getHospedagem()
+        );
+
+        assertEquals(
+                7L,
+                response.getHospedagem().getVagasTotais()
+        );
+
+        assertEquals(
+                2L,
+                response.getHospedagem().getOcupadas()
+        );
+
+        assertEquals(
+                5L,
+                response.getHospedagem().getDisponiveis()
+        );
+
+        assertNotNull(
+                response.getAtencao()
+        );
+
+        assertEquals(
+                2L,
+                response.getAtencao()
+                        .getHospedesSemQuarto()
+        );
+
+        assertNotNull(
+                response.getAtencao()
+                        .getHospedesSemQuartoDetalhes()
+        );
+
+        assertEquals(
+                1,
+                response.getAtencao()
+                        .getHospedesSemQuartoDetalhes()
+                        .size()
+        );
+
+        var detalhe =
+                response.getAtencao()
+                        .getHospedesSemQuartoDetalhes()
+                        .get(0);
+
+        assertEquals(
+                10L,
+                detalhe.getHospedeId()
+        );
+
+        assertEquals(
+                "Lucas Cesar",
+                detalhe.getHospedeNome()
+        );
+
+        assertNotNull(
+                response.getTraslados()
+        );
+
+        assertEquals(
+                6L,
+                response.getTraslados().getAguardando()
+        );
+
+        assertEquals(
+                1L,
+                response.getTraslados().getEmAndamento()
+        );
+
+        assertEquals(
+                1L,
+                response.getTraslados().getConcluidos()
+        );
+
+        assertTrue(
+                response.getTraslados()
+                        .getProximos()
+                        .isEmpty()
+        );
+
+        verify(
+                viagemRepository
+        ).existsById(
+                viagemId
+        );
     }
 
     @Test
@@ -181,6 +308,14 @@ class DashboardServiceTest {
                 StatusCheckIn.PENDENTE
         )).thenReturn(0L);
 
+        when(
+                hospedeRepository
+                        .contarSemQuartoPorViagemEStatusCheckIn(
+                                viagemId,
+                                StatusCheckIn.PENDENTE
+                        )
+        ).thenReturn(0L);
+
         when(quartoRepository.somarCapacidadePorViagemExcluindoStatus(
                 viagemId,
                 StatusQuarto.INDISPONIVEL
@@ -206,6 +341,14 @@ class DashboardServiceTest {
         assertEquals(0L, response.getHospedes().getPresentes());
         assertEquals(0L, response.getHospedes().getPendentes());
         assertEquals(0.0, response.getHospedes().getTaxaCheckIn());
+
+        assertNotNull(response.getAtencao());
+
+        assertEquals(
+                0L,
+                response.getAtencao()
+                        .getHospedesSemQuarto()
+        );
     }
 
     @Test

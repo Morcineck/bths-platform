@@ -6,6 +6,7 @@ public class DashboardResponse {
     private DashboardHospedesResponse hospedes;
     private DashboardHospedagemResponse hospedagem;
     private DashboardTrasladosResponse traslados;
+    private DashboardAtencaoResponse atencao;
 
     public long getViagemId() {
         return viagemId;
@@ -37,5 +38,13 @@ public class DashboardResponse {
 
     public void setTraslados(DashboardTrasladosResponse traslados) {
         this.traslados = traslados;
+    }
+
+    public DashboardAtencaoResponse getAtencao() {
+        return atencao;
+    }
+
+    public void setAtencao(DashboardAtencaoResponse atencao) {
+        this.atencao = atencao;
     }
 }

@@ -2,7 +2,7 @@ package com.bths.platform.dashboard;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.dashboard.dto.*;
-import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
+import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.quarto.QuartoRepository;
@@ -11,6 +11,7 @@ import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.traslado.enums.StatusTraslado;
 import com.bths.platform.viagem.ViagemRepository;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +57,10 @@ public class DashboardService {
 
         response.setHospedagem(
                 montarResumoHospedagem(viagemId)
+        );
+
+        response.setAtencao(
+                montarAtencaoNecessaria(viagemId)
         );
 
         response.setTraslados(
@@ -128,6 +133,60 @@ public class DashboardService {
         return response;
     }
 
+    private DashboardAtencaoResponse montarAtencaoNecessaria(
+            Long viagemId
+    ) {
+
+        long hospedesSemQuarto =
+                hospedeRepository
+                        .contarSemQuartoPorViagemEStatusCheckIn(
+                                viagemId,
+                                StatusCheckIn.PENDENTE
+                        );
+
+        List<Hospede> hospedesSemQuartoDetalhes =
+                hospedeRepository
+                        .buscarSemQuartoPorViagemEStatusCheckIn(
+                                viagemId,
+                                StatusCheckIn.PENDENTE
+                        );
+
+        List<DashboardHospedeSemQuartoResponse> detalhes =
+                hospedesSemQuartoDetalhes
+                        .stream()
+                        .map(
+                                hospede -> {
+
+                                    DashboardHospedeSemQuartoResponse detalhe =
+                                            new DashboardHospedeSemQuartoResponse();
+
+                                    detalhe.setHospedeId(
+                                            hospede.getId()
+                                    );
+
+                                    detalhe.setHospedeNome(
+                                            hospede.getNomeCompleto()
+                                    );
+
+                                    return detalhe;
+                                }
+                        )
+                        .toList();
+
+        DashboardAtencaoResponse response =
+                new DashboardAtencaoResponse();
+
+        response.setHospedesSemQuarto(
+                hospedesSemQuarto
+        );
+
+        response.setHospedesSemQuartoDetalhes(
+                detalhes
+        );
+
+        return response;
+    }
+
     private DashboardTrasladosResponse montarResumoTraslado(Long viagemId) {
 
         long aguardando = trasladoRepository.countByViagemIdAndStatus(
@@ -192,8 +251,6 @@ public class DashboardService {
 
         return response;
     }
-
-
 
 }
 
