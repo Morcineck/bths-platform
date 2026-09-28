@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/hospedes")
@@ -75,6 +76,21 @@ public class HospedeController {
         return ResponseEntity.ok(
                 hospedeService.listarHospedesPorViagem(viagemId)
         );
+    }
+
+    @PatchMapping("/{hospedeId}/usuario/{usuarioId}")
+    public ResponseEntity<HospedeResponse> vincularUsuarioAoHospede(
+            @PathVariable Long hospedeId,
+            @PathVariable UUID usuarioId
+    ) {
+
+        HospedeResponse response =
+                hospedeService.vincularUsuarioAoHospede(
+                        hospedeId,
+                        usuarioId
+                );
+
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -2,7 +2,12 @@ package com.bths.platform.hospede;
 
 import com.bths.platform.hospede.dto.HospedeRequest;
 import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
 import com.bths.platform.hospede.mapper.HospedeMapper;
+import com.bths.platform.usuario.Usuario;
+import com.bths.platform.usuario.UsuarioRepository;
+import com.bths.platform.usuario.enums.PerfilUsuario;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
 import org.springframework.stereotype.Service;
@@ -19,17 +24,18 @@ public class HospedeService {
     private final HospedeRepository hospedeRepository;
     private final ViagemRepository viagemRepository;
     private final HospedeMapper hospedeMapper;
+    private final UsuarioRepository usuarioRepository;
 
     public HospedeService(
             HospedeRepository hospedeRepository,
             ViagemRepository viagemRepository,
-            HospedeMapper hospedeMapper
+            HospedeMapper hospedeMapper,
+            UsuarioRepository usuarioRepository
     ) {
         this.hospedeRepository = hospedeRepository;
         this.viagemRepository = viagemRepository;
         this.hospedeMapper = hospedeMapper;
-
-
+        this.usuarioRepository = usuarioRepository;
 
     }
 
@@ -145,6 +151,89 @@ public class HospedeService {
                 .stream()
                 .map(hospedeMapper::paraResponse)
                 .toList();
+    }
+
+    public HospedeResponse vincularUsuarioAoHospede(
+            Long hospedeId,
+            UUID usuarioId
+    ) {
+
+        Hospede hospede =
+                hospedeRepository
+                        .findById(hospedeId)
+                        .orElseThrow(() -> new HospedeNaoEncontradoException(
+                                        "Hóspede não encontrado!"
+                                )
+                        );
+        if (hospede.getUsuario() != null) {
+            throw new HospedeJaVinculadoException(
+                    "Esse hóspede já possui uma conta BTHS vinculada."
+            );
+        }
+
+        Usuario usuario =
+                usuarioRepository
+                        .findById(usuarioId)
+                        .orElseThrow(() ->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (
+                usuario.getPerfil()
+                        != PerfilUsuario.HOSPEDE
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Somente usuários com perfil HOSPEDE podem ser vinculados a um hóspede."
+            );
+        }
+
+        hospede.setUsuario(
+                usuario
+        );
+
+        Hospede atualizado =
+                hospedeRepository.save(
+                        hospede
+                );
+
+        return hospedeMapper.paraResponse(atualizado);
+    }
+
+    public List<HospedeResponse> buscarHospedesDoUsuario(
+            String email
+    ) {
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(email)
+                        .orElseThrow(()->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (
+                usuario.getPerfil()
+                        != PerfilUsuario.HOSPEDE
+        ) {
+            throw new IllegalArgumentException(
+                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
+            );
+        }
+
+        return hospedeRepository
+                .findByUsuarioId(
+                        usuario.getId()
+                )
+                .stream()
+                .map(
+                        hospedeMapper::paraResponse
+                )
+                .toList();
+
     }
 
 }

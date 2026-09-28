@@ -1,7 +1,12 @@
 package com.bths.platform.hospede;
 
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
+import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.usuario.Usuario;
+import com.bths.platform.usuario.UsuarioRepository;
+import com.bths.platform.usuario.enums.PerfilUsuario;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.hospede.dto.HospedeRequest;
 import com.bths.platform.hospede.dto.HospedeResponse;
@@ -17,9 +22,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,13 +41,17 @@ class HospedeServiceTest {
 
     private HospedeService hospedeService;
 
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
     @BeforeEach
     void setUp() {
 
         hospedeService = new HospedeService(
                 hospedeRepository,
                 viagemRepository,
-                hospedeMapper
+                hospedeMapper,
+                usuarioRepository
         );
     }
 
@@ -564,4 +573,615 @@ class HospedeServiceTest {
         verify(hospedeRepository, never())
                 .delete(any(Hospede.class));
     }
+
+    @Test
+    void deveVincularUsuarioHospedeComSucesso() {
+
+        Long hospedeId = 1L;
+        UUID usuarioId = UUID.randomUUID();
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(hospedeId);
+        hospede.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(usuarioId);
+        usuario.setNome(
+                "Lucas Cesar"
+        );
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+        usuario.setAtivo(true);
+
+        Hospede hospedeAtualizado =
+                new Hospede();
+
+        hospedeAtualizado.setId(
+                hospedeId
+        );
+        hospedeAtualizado.setNomeCompleto(
+                "Lucas Cesar"
+        );
+        hospedeAtualizado.setUsuario(
+                usuario
+        );
+
+        HospedeResponse responseEsperado =
+                new HospedeResponse();
+
+        responseEsperado.setId(
+                hospedeId
+        );
+        responseEsperado.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
+        when(
+                hospedeRepository
+                        .findById(hospedeId)
+        ).thenReturn(
+                Optional.of(hospede)
+        );
+
+        when(
+                usuarioRepository
+                        .findById(usuarioId)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.save(
+                        hospede
+                )
+        ).thenReturn(
+                hospedeAtualizado
+        );
+
+        when(
+                hospedeMapper.paraResponse(
+                        hospedeAtualizado
+                )
+        ).thenReturn(
+                responseEsperado
+        );
+
+        HospedeResponse resultado =
+                hospedeService
+                        .vincularUsuarioAoHospede(
+                                hospedeId,
+                                usuarioId
+                        );
+
+        assertNotNull(
+                resultado
+        );
+
+        assertEquals(
+                hospedeId,
+                resultado.getId()
+        );
+
+        assertEquals(
+                usuario,
+                hospede.getUsuario()
+        );
+
+        verify(
+                hospedeRepository
+        ).findById(
+                hospedeId
+        );
+
+        verify(
+                usuarioRepository
+        ).findById(
+                usuarioId
+        );
+
+        verify(
+                hospedeRepository
+        ).save(
+                hospede
+        );
+
+        verify(
+                hospedeMapper
+        ).paraResponse(
+                hospedeAtualizado
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoHospedeNaoExistirAoVincularUsuario() {
+
+        Long hospedeId = 999L;
+        UUID usuarioId = UUID.randomUUID();
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                HospedeNaoEncontradoException.class,
+                () ->
+                        hospedeService
+                                .vincularUsuarioAoHospede(
+                                        hospedeId,
+                                        usuarioId
+                                )
+        );
+
+        verify(
+                hospedeRepository
+        ).findById(
+                hospedeId
+        );
+
+        verifyNoInteractions(
+                usuarioRepository
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoUsuarioNaoExistirAoVincularHospede() {
+
+        Long hospedeId = 1L;
+        UUID usuarioId = UUID.randomUUID();
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        when(
+                usuarioRepository.findById(
+                        usuarioId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                UsuarioNaoEncontradoException.class,
+                () ->
+                        hospedeService
+                                .vincularUsuarioAoHospede(
+                                        hospedeId,
+                                        usuarioId
+                                )
+        );
+
+        verify(
+                hospedeRepository
+        ).findById(
+                hospedeId
+        );
+
+        verify(
+                usuarioRepository
+        ).findById(
+                usuarioId
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+    }
+
+    @Test
+    void deveBloquearVinculoQuandoUsuarioNaoForHospede() {
+
+        Long hospedeId = 1L;
+        UUID usuarioId = UUID.randomUUID();
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.ADMIN
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        when(
+                usuarioRepository.findById(
+                        usuarioId
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        hospedeService
+                                .vincularUsuarioAoHospede(
+                                        hospedeId,
+                                        usuarioId
+                                )
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+    }
+
+    @Test
+    void deveBloquearNovoVinculoQuandoHospedeJaPossuirUsuario() {
+
+        Long hospedeId = 1L;
+        UUID usuarioAtualId =
+                UUID.randomUUID();
+
+        UUID novoUsuarioId =
+                UUID.randomUUID();
+
+        Usuario usuarioAtual =
+                new Usuario();
+
+        usuarioAtual.setId(
+                usuarioAtualId
+        );
+
+        usuarioAtual.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        hospede.setUsuario(
+                usuarioAtual
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        assertThrows(
+                HospedeJaVinculadoException.class,
+                () ->
+                        hospedeService
+                                .vincularUsuarioAoHospede(
+                                        hospedeId,
+                                        novoUsuarioId
+                                )
+        );
+
+        verifyNoInteractions(
+                usuarioRepository
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+    }
+
+    @Test
+    void deveBuscarApenasHospedesDoUsuarioAutenticado() {
+
+        UUID usuarioId = UUID.randomUUID();
+        String email = "hospede@beattrips.com";
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Hospede hospede2027 =
+                new Hospede();
+
+        hospede2027.setId(10L);
+        hospede2027.setNomeCompleto(
+                "Lucas Cesar"
+        );
+        hospede2027.setUsuario(
+                usuario
+        );
+
+        Hospede hospede2028 =
+                new Hospede();
+
+        hospede2028.setId(20L);
+        hospede2028.setNomeCompleto(
+                "Lucas Cesar"
+        );
+        hospede2028.setUsuario(
+                usuario
+        );
+
+        HospedeResponse response2027 =
+                new HospedeResponse();
+
+        response2027.setId(10L);
+        response2027.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
+        HospedeResponse response2028 =
+                new HospedeResponse();
+
+        response2028.setId(20L);
+        response2028.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(
+                        hospede2027,
+                        hospede2028
+                )
+        );
+
+        when(
+                hospedeMapper.paraResponse(
+                        hospede2027
+                )
+        ).thenReturn(
+                response2027
+        );
+
+        when(
+                hospedeMapper.paraResponse(
+                        hospede2028
+                )
+        ).thenReturn(
+                response2028
+        );
+
+        List<HospedeResponse> resultado =
+                hospedeService
+                        .buscarHospedesDoUsuario(
+                                email
+                        );
+
+        assertEquals(
+                2,
+                resultado.size()
+        );
+
+        assertEquals(
+                10L,
+                resultado.get(0)
+                        .getId()
+        );
+
+        assertEquals(
+                20L,
+                resultado.get(1)
+                        .getId()
+        );
+
+        verify(
+                usuarioRepository
+        ).findByEmail(
+                email
+        );
+
+        verify(
+                hospedeRepository
+        ).findByUsuarioId(
+                usuarioId
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoUsuarioAutenticadoNaoExistir() {
+
+        String email =
+                "inexistente@beattrips.com";
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                UsuarioNaoEncontradoException.class,
+                () ->
+                        hospedeService
+                                .buscarHospedesDoUsuario(
+                                        email
+                                )
+        );
+
+        verifyNoInteractions(
+                hospedeRepository
+        );
+    }
+
+    @Test
+    void deveBloquearConsultaQuandoUsuarioNaoForHospede() {
+
+        String email =
+                "admin@beattrips.com";
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.ADMIN
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        hospedeService
+                                .buscarHospedesDoUsuario(
+                                        email
+                                )
+        );
+
+        verifyNoInteractions(
+                hospedeRepository
+        );
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoUsuarioNaoPossuirHospedeVinculado() {
+
+        UUID usuarioId = UUID.randomUUID();
+        String email = "hospede@beattrips.com";
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of()
+        );
+
+        List<HospedeResponse> resultado =
+                hospedeService
+                        .buscarHospedesDoUsuario(
+                                email
+                        );
+
+        assertNotNull(
+                resultado
+        );
+
+        assertTrue(
+                resultado.isEmpty()
+        );
+
+        verify(
+                usuarioRepository
+        ).findByEmail(
+                email
+        );
+
+        verify(
+                hospedeRepository
+        ).findByUsuarioId(
+                usuarioId
+        );
+    }
+
+
+
 }
