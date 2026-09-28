@@ -30,11 +30,14 @@ import type {
 } from "@/features/checkin/types/checkin";
 
 import {
+  buscarAcessoBths,
   buscarHospedePorId,
+  criarAcessoBths,
 } from "@/features/hospede/services/hospedeService";
 
 import type {
   Hospede,
+  HospedeAcessoBths,
 } from "@/features/hospede/types/hospede";
 
 import {
@@ -260,6 +263,36 @@ export default function HospedeDetalhePage({
     setEditandoOperacaoCompartilhadaId,
   ] = useState<number | null>(null);
 
+  const [
+    acessoBths,
+    setAcessoBths,
+  ] = useState<HospedeAcessoBths | null>(null);
+
+  const [
+    emailAcessoBths,
+    setEmailAcessoBths,
+  ] = useState("");
+
+  const [
+    senhaTemporariaBths,
+    setSenhaTemporariaBths,
+  ] = useState("");
+
+  const [
+    criandoAcessoBths,
+    setCriandoAcessoBths,
+  ] = useState(false);
+
+  const [
+    erroAcessoBths,
+    setErroAcessoBths,
+  ] = useState("");
+
+  const [
+    sucessoAcessoBths,
+    setSucessoAcessoBths,
+  ] = useState("");
+
   useEffect(() => {
     async function carregarHospede() {
       try {
@@ -304,6 +337,28 @@ export default function HospedeDetalhePage({
           );
 
         setHospede(dados);
+
+        if (
+          usuario.perfil === "ADMIN"
+        ) {
+          const dadosAcessoBths =
+            await buscarAcessoBths(
+              Number(id),
+            );
+
+          setAcessoBths(
+            dadosAcessoBths,
+          );
+
+          if (
+            !dadosAcessoBths.vinculado &&
+            dados.email
+          ) {
+            setEmailAcessoBths(
+              dados.email,
+            );
+          }
+        }
 
         const dadosCheckIn =
           await consultarCheckIn(
@@ -759,6 +814,8 @@ export default function HospedeDetalhePage({
     }
   }
 
+
+
   async function handleVincularOperacaoCompartilhada(
     trasladoId: number,
   ) {
@@ -995,6 +1052,59 @@ export default function HospedeDetalhePage({
     );
   }
 
+  async function handleCriarAcessoBths() {
+    if (!emailAcessoBths.trim()) {
+      setErroAcessoBths(
+        "Informe o e-mail para criar o acesso BTHS.",
+      );
+      return;
+    }
+
+    if (!senhaTemporariaBths.trim()) {
+      setErroAcessoBths(
+        "Informe a senha temporária.",
+      );
+      return;
+    }
+
+    try {
+      setCriandoAcessoBths(true);
+      setErroAcessoBths("");
+      setSucessoAcessoBths("");
+
+      const novoAcesso =
+        await criarAcessoBths(
+          Number(id),
+          {
+            email:
+              emailAcessoBths.trim(),
+            senhaTemporaria:
+              senhaTemporariaBths,
+          },
+        );
+
+      setAcessoBths(
+        novoAcesso,
+      );
+
+      setSenhaTemporariaBths("");
+
+      setSucessoAcessoBths(
+        "Acesso BTHS criado e vinculado com sucesso.",
+      );
+    } catch (error) {
+      setSucessoAcessoBths("");
+
+      setErroAcessoBths(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível criar o acesso BTHS.",
+      );
+    } finally {
+      setCriandoAcessoBths(false);
+    }
+  }
+
   if (carregando) {
     return (
       <p className="text-sm text-muted">
@@ -1167,6 +1277,144 @@ export default function HospedeDetalhePage({
           </p>
         </Card>
       </section>
+
+      {isAdmin && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Acesso BTHS
+            </h2>
+
+            <p className="mt-1 text-sm text-muted">
+              Situação da conta utilizada pelo hóspede para acessar o aplicativo.
+            </p>
+          </div>
+
+          <Card className="space-y-5">
+            {acessoBths?.vinculado ? (
+              <>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-sm text-muted">
+                      Conta vinculada
+                    </p>
+
+                    <p className="mt-1 font-medium text-foreground">
+                      {acessoBths.email}
+                    </p>
+                  </div>
+
+                  <span
+                    className={
+                      acessoBths.ativo
+                        ? "inline-flex rounded-full border border-green-400/40 px-3 py-1 text-xs font-semibold text-green-400"
+                        : "inline-flex rounded-full border border-red-400/40 px-3 py-1 text-xs font-semibold text-red-400"
+                    }
+                  >
+                    {acessoBths.ativo
+                      ? "Ativa"
+                      : "Inativa"}
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-border bg-background/40 p-4">
+                  <p className="text-xs text-muted">
+                    ID da conta
+                  </p>
+
+                  <p className="mt-1 break-all text-sm font-medium text-foreground">
+                    {acessoBths.usuarioId}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="font-medium text-foreground">
+                    Nenhuma conta BTHS vinculada
+                  </p>
+
+                  <p className="mt-2 text-sm text-muted">
+                    Crie ou vincule uma conta para liberar o acesso do hóspede ao aplicativo.
+                  </p>
+                </div>
+
+                <div className="space-y-4 border-t border-border pt-5">
+                  <div>
+                    <label
+                      htmlFor="email-acesso-bths"
+                      className="mb-2 block text-sm font-medium text-foreground"
+                    >
+                      E-mail de acesso
+                    </label>
+
+                    <input
+                      id="email-acesso-bths"
+                      type="email"
+                      value={emailAcessoBths}
+                      onChange={(event) =>
+                        setEmailAcessoBths(
+                          event.target.value,
+                        )
+                      }
+                      placeholder="hospede@email.com"
+                      className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="senha-temporaria-bths"
+                      className="mb-2 block text-sm font-medium text-foreground"
+                    >
+                      Senha temporária
+                    </label>
+
+                    <input
+                      id="senha-temporaria-bths"
+                      type="password"
+                      value={senhaTemporariaBths}
+                      onChange={(event) =>
+                        setSenhaTemporariaBths(
+                          event.target.value,
+                        )
+                      }
+                      placeholder="Defina uma senha temporária"
+                      className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                    />
+                  </div>
+
+                  {erroAcessoBths && (
+                    <p
+                      role="alert"
+                      className="text-sm text-red-400"
+                    >
+                      {erroAcessoBths}
+                    </p>
+                  )}
+
+                  {sucessoAcessoBths && (
+                    <p className="text-sm text-green-400">
+                      {sucessoAcessoBths}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleCriarAcessoBths}
+                    disabled={criandoAcessoBths}
+                    className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {criandoAcessoBths
+                      ? "Criando acesso..."
+                      : "Criar acesso BTHS"}
+                  </button>
+                </div>
+              </>
+            )}
+          </Card>
+        </section>
+      )}
 
       <section className="space-y-4">
         <div>

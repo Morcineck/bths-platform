@@ -92,6 +92,18 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/hospedes/*/acesso-bths"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/hospedes/*/acesso-bths"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/hospedes/*/usuario/*"
                         )
