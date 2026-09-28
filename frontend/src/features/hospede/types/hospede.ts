@@ -41,3 +41,15 @@ export type AtualizarHospedeRequest = {
     | "NAO_COMPARECEU";
   viagemId: number;
 };
+
+export type HospedeAcessoBths = {
+  vinculado: boolean;
+  usuarioId: string | null;
+  email: string | null;
+  ativo: boolean;
+};
+
+export type CriarAcessoBthsRequest = {
+  email: string;
+  senhaTemporaria: string;
+};

@@ -1,5 +1,7 @@
 package com.bths.platform.hospede;
 
+import com.bths.platform.hospede.dto.HospedeAcessoBthsResponse;
+import com.bths.platform.hospede.dto.HospedeCriarAcessoBthsRequest;
 import com.bths.platform.hospede.dto.HospedeRequest;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import jakarta.validation.Valid;
@@ -91,6 +93,38 @@ public class HospedeController {
                 );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/acesso-bths")
+    public ResponseEntity<HospedeAcessoBthsResponse> buscarAcessoBths(
+            @PathVariable Long id
+    ) {
+
+        HospedeAcessoBthsResponse response =
+                hospedeService.buscarAcessoBths(
+                        id
+                );
+
+        return ResponseEntity.ok(
+                response
+        );
+    }
+
+    @PostMapping("/{id}/acesso-bths")
+    public ResponseEntity<HospedeAcessoBthsResponse> criarOuVincularAcessoBths(
+            @PathVariable Long id,
+            @Valid @RequestBody HospedeCriarAcessoBthsRequest request
+    ) {
+
+        HospedeAcessoBthsResponse response =
+                hospedeService.criarOuVincularAcessoBths(
+                        id,
+                        request
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
 }

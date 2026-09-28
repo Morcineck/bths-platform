@@ -1,5 +1,7 @@
 package com.bths.platform.hospede;
 
+import com.bths.platform.hospede.dto.HospedeAcessoBthsResponse;
+import com.bths.platform.hospede.dto.HospedeCriarAcessoBthsRequest;
 import com.bths.platform.hospede.dto.HospedeRequest;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
@@ -10,6 +12,8 @@ import com.bths.platform.usuario.enums.PerfilUsuario;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
@@ -25,17 +29,20 @@ public class HospedeService {
     private final ViagemRepository viagemRepository;
     private final HospedeMapper hospedeMapper;
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public HospedeService(
             HospedeRepository hospedeRepository,
             ViagemRepository viagemRepository,
             HospedeMapper hospedeMapper,
-            UsuarioRepository usuarioRepository
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.hospedeRepository = hospedeRepository;
         this.viagemRepository = viagemRepository;
         this.hospedeMapper = hospedeMapper;
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
 
     }
 
@@ -209,7 +216,7 @@ public class HospedeService {
         Usuario usuario =
                 usuarioRepository
                         .findByEmail(email)
-                        .orElseThrow(()->
+                        .orElseThrow(() ->
                                 new UsuarioNaoEncontradoException(
                                         "Usuário não encontrado!"
                                 )
@@ -236,5 +243,150 @@ public class HospedeService {
 
     }
 
+    public HospedeAcessoBthsResponse buscarAcessoBths(
+            Long hospedeId
+    ) {
+
+        Hospede hospede =
+                hospedeRepository
+                        .findById(hospedeId)
+                        .orElseThrow(() ->
+                                new HospedeNaoEncontradoException(
+                                        "Hóspede não encontrado!"
+                                )
+                        );
+
+        HospedeAcessoBthsResponse response =
+                new HospedeAcessoBthsResponse();
+
+        if (hospede.getUsuario() == null) {
+
+            response.setVinculado(false);
+            response.setUsuarioId(null);
+            response.setEmail(null);
+            response.setAtivo(false);
+
+            return response;
+        }
+
+        Usuario usuario =
+                hospede.getUsuario();
+
+        response.setVinculado(true);
+
+        response.setUsuarioId(
+                usuario.getId()
+        );
+
+        response.setEmail(
+                usuario.getEmail()
+        );
+
+        response.setAtivo(
+                usuario.isAtivo()
+        );
+
+        return response;
+    }
+
+    @Transactional
+    public HospedeAcessoBthsResponse criarOuVincularAcessoBths(
+            Long hospedeId,
+            HospedeCriarAcessoBthsRequest request
+    ) {
+
+        Hospede hospede =
+                hospedeRepository
+                        .findById(hospedeId)
+                        .orElseThrow(() ->
+                                new HospedeNaoEncontradoException(
+                                        "Hóspede não encontrado!"
+                                )
+                        );
+        if (hospede.getUsuario() != null) {
+            throw new HospedeJaVinculadoException(
+                    "Esse hóspede já possui uma conta BTHS vinculada."
+            );
+        }
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(
+                                request.getEmail()
+                        )
+                        .orElse(null);
+
+        if (usuario == null) {
+
+            usuario =
+                    new Usuario();
+
+            usuario.setNome(
+                    hospede.getNomeCompleto()
+            );
+
+            usuario.setEmail(
+                    request.getEmail()
+            );
+
+            usuario.setSenha(
+                    passwordEncoder.encode(
+                            request.getSenhaTemporaria()
+                    )
+            );
+
+            usuario.setPerfil(
+                    PerfilUsuario.HOSPEDE
+            );
+
+            usuario.setAtivo(
+                    true
+            );
+
+            usuario =
+                    usuarioRepository.save(
+                            usuario
+                    );
+
+        } else if (
+                usuario.getPerfil()
+                        != PerfilUsuario.HOSPEDE
+        ) {
+
+            throw new IllegalArgumentException(
+                    "O e-mail informado pertence a um usuário que não possui perfil HOSPEDE."
+            );
+        }
+
+        hospede.setUsuario(
+                usuario
+        );
+
+        hospedeRepository.save(
+                hospede
+        );
+
+        HospedeAcessoBthsResponse response =
+                new HospedeAcessoBthsResponse();
+
+        response.setVinculado(
+                true
+        );
+
+        response.setUsuarioId(
+                usuario.getId()
+        );
+
+        response.setEmail(
+                usuario.getEmail()
+        );
+
+        response.setAtivo(
+                usuario.isAtivo()
+        );
+
+        return response;
+    }
 }
+
 

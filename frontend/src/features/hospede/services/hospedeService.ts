@@ -8,7 +8,9 @@ import {
 import type {
   AtualizarHospedeRequest,
   CadastrarHospedeRequest,
+  CriarAcessoBthsRequest,
   Hospede,
+  HospedeAcessoBths,
 } from "../types/hospede";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -106,6 +108,56 @@ export async function atualizarHospede(
     throw new Error(
       erro?.mensagem ??
         "Não foi possível atualizar o hóspede.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function buscarAcessoBths(
+  hospedeId: number,
+): Promise<HospedeAcessoBths> {
+  const response = await authFetch(
+    `${API_URL}/api/hospedes/${hospedeId}/acesso-bths`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar a situação de acesso BTHS.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function criarAcessoBths(
+  hospedeId: number,
+  dados: CriarAcessoBthsRequest,
+): Promise<HospedeAcessoBths> {
+  await inicializarCsrf();
+
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
+
+  const response = await authFetch(
+    `${API_URL}/api/hospedes/${hospedeId}/acesso-bths`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": csrfToken,
+      },
+      body: JSON.stringify(dados),
+    },
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível criar o acesso BTHS.",
     );
   }
 

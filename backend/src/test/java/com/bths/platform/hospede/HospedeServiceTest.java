@@ -1,24 +1,27 @@
 package com.bths.platform.hospede;
 
+import com.bths.platform.hospede.dto.HospedeAcessoBthsResponse;
+import com.bths.platform.hospede.dto.HospedeCriarAcessoBthsRequest;
+import com.bths.platform.hospede.dto.HospedeRequest;
+import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
 import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.hospede.mapper.HospedeMapper;
 import com.bths.platform.usuario.Usuario;
 import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.usuario.enums.PerfilUsuario;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
-import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
-import com.bths.platform.hospede.dto.HospedeRequest;
-import com.bths.platform.hospede.dto.HospedeResponse;
-import com.bths.platform.hospede.enums.StatusCheckIn;
-import com.bths.platform.hospede.mapper.HospedeMapper;
 import com.bths.platform.viagem.Viagem;
 import com.bths.platform.viagem.ViagemRepository;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +47,9 @@ class HospedeServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @BeforeEach
     void setUp() {
 
@@ -51,7 +57,8 @@ class HospedeServiceTest {
                 hospedeRepository,
                 viagemRepository,
                 hospedeMapper,
-                usuarioRepository
+                usuarioRepository,
+                passwordEncoder
         );
     }
 
@@ -1182,6 +1189,612 @@ class HospedeServiceTest {
         );
     }
 
+    @Test
+    void deveRetornarAcessoBthsVinculadoComSucesso() {
 
+        Long hospedeId = 1L;
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(usuarioId);
+        usuario.setEmail(
+                "hospede@beattrips.com"
+        );
+        usuario.setAtivo(true);
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(hospedeId);
+        hospede.setUsuario(usuario);
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        HospedeAcessoBthsResponse resultado =
+                hospedeService
+                        .buscarAcessoBths(
+                                hospedeId
+                        );
+
+        assertNotNull(
+                resultado
+        );
+
+        assertTrue(
+                resultado.isVinculado()
+        );
+
+        assertEquals(
+                usuarioId,
+                resultado.getUsuarioId()
+        );
+
+        assertEquals(
+                "hospede@beattrips.com",
+                resultado.getEmail()
+        );
+
+        assertTrue(
+                resultado.isAtivo()
+        );
+    }
+
+    @Test
+    void deveRetornarAcessoBthsNaoVinculado() {
+
+        Long hospedeId = 1L;
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        HospedeAcessoBthsResponse resultado =
+                hospedeService
+                        .buscarAcessoBths(
+                                hospedeId
+                        );
+
+        assertNotNull(
+                resultado
+        );
+
+        assertFalse(
+                resultado.isVinculado()
+        );
+
+        assertNull(
+                resultado.getUsuarioId()
+        );
+
+        assertNull(
+                resultado.getEmail()
+        );
+
+        assertFalse(
+                resultado.isAtivo()
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoAoBuscarAcessoBthsDeHospedeInexistente() {
+
+        Long hospedeId = 999L;
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                HospedeNaoEncontradoException.class,
+                () ->
+                        hospedeService
+                                .buscarAcessoBths(
+                                        hospedeId
+                                )
+        );
+    }
+
+    @Test
+    void deveCriarNovoUsuarioHospedeEVincularAoHospede() {
+
+        Long hospedeId = 1L;
+        UUID usuarioId = UUID.randomUUID();
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(hospedeId);
+        hospede.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
+        HospedeCriarAcessoBthsRequest request =
+                new HospedeCriarAcessoBthsRequest();
+
+        request.setEmail(
+                "lucas@beattrips.com"
+        );
+
+        request.setSenhaTemporaria(
+                "Senha123!"
+        );
+
+        Usuario usuarioSalvo =
+                new Usuario();
+
+        usuarioSalvo.setId(
+                usuarioId
+        );
+
+        usuarioSalvo.setNome(
+                "Lucas Cesar"
+        );
+
+        usuarioSalvo.setEmail(
+                "lucas@beattrips.com"
+        );
+
+        usuarioSalvo.setSenha(
+                "senha-criptografada"
+        );
+
+        usuarioSalvo.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        usuarioSalvo.setAtivo(
+                true
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        "lucas@beattrips.com"
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        when(
+                passwordEncoder.encode(
+                        "Senha123!"
+                )
+        ).thenReturn(
+                "senha-criptografada"
+        );
+
+        when(
+                usuarioRepository.save(
+                        any(Usuario.class)
+                )
+        ).thenReturn(
+                usuarioSalvo
+        );
+
+        when(
+                hospedeRepository.save(
+                        hospede
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        HospedeAcessoBthsResponse resultado =
+                hospedeService
+                        .criarOuVincularAcessoBths(
+                                hospedeId,
+                                request
+                        );
+
+        assertNotNull(
+                resultado
+        );
+
+        assertTrue(
+                resultado.isVinculado()
+        );
+
+        assertEquals(
+                usuarioId,
+                resultado.getUsuarioId()
+        );
+
+        assertEquals(
+                "lucas@beattrips.com",
+                resultado.getEmail()
+        );
+
+        assertTrue(
+                resultado.isAtivo()
+        );
+
+        assertEquals(
+                usuarioSalvo,
+                hospede.getUsuario()
+        );
+
+        verify(
+                passwordEncoder
+        ).encode(
+                "Senha123!"
+        );
+
+        verify(
+                usuarioRepository
+        ).save(
+                any(Usuario.class)
+        );
+
+        verify(
+                hospedeRepository
+        ).save(
+                hospede
+        );
+    }
+
+    @Test
+    void deveReutilizarUsuarioHospedeExistenteEVincularAoHospede() {
+
+        Long hospedeId = 1L;
+        UUID usuarioId = UUID.randomUUID();
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(hospedeId);
+        hospede.setNomeCompleto(
+                "Lucas Cesar"
+        );
+
+        HospedeCriarAcessoBthsRequest request =
+                new HospedeCriarAcessoBthsRequest();
+
+        request.setEmail(
+                "lucas@beattrips.com"
+        );
+
+        request.setSenhaTemporaria(
+                "Senha123!"
+        );
+
+        Usuario usuarioExistente =
+                new Usuario();
+
+        usuarioExistente.setId(
+                usuarioId
+        );
+
+        usuarioExistente.setNome(
+                "Lucas Cesar"
+        );
+
+        usuarioExistente.setEmail(
+                "lucas@beattrips.com"
+        );
+
+        usuarioExistente.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        usuarioExistente.setAtivo(
+                true
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        "lucas@beattrips.com"
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuarioExistente
+                )
+        );
+
+        when(
+                hospedeRepository.save(
+                        hospede
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        HospedeAcessoBthsResponse resultado =
+                hospedeService
+                        .criarOuVincularAcessoBths(
+                                hospedeId,
+                                request
+                        );
+
+        assertNotNull(
+                resultado
+        );
+
+        assertTrue(
+                resultado.isVinculado()
+        );
+
+        assertEquals(
+                usuarioId,
+                resultado.getUsuarioId()
+        );
+
+        assertEquals(
+                "lucas@beattrips.com",
+                resultado.getEmail()
+        );
+
+        assertTrue(
+                resultado.isAtivo()
+        );
+
+        assertEquals(
+                usuarioExistente,
+                hospede.getUsuario()
+        );
+
+        verify(
+                usuarioRepository,
+                never()
+        ).save(
+                any(Usuario.class)
+        );
+
+        verifyNoInteractions(
+                passwordEncoder
+        );
+
+        verify(
+                hospedeRepository
+        ).save(
+                hospede
+        );
+    }
+
+    @Test
+    void deveBloquearCriacaoDeAcessoQuandoEmailPertencerAAdminOuStaff() {
+
+        Long hospedeId = 1L;
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(hospedeId);
+
+        HospedeCriarAcessoBthsRequest request =
+                new HospedeCriarAcessoBthsRequest();
+
+        request.setEmail(
+                "admin@beattrips.com"
+        );
+
+        request.setSenhaTemporaria(
+                "Senha123!"
+        );
+
+        Usuario usuarioExistente =
+                new Usuario();
+
+        usuarioExistente.setEmail(
+                "admin@beattrips.com"
+        );
+
+        usuarioExistente.setPerfil(
+                PerfilUsuario.ADMIN
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuarioExistente
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        hospedeService
+                                .criarOuVincularAcessoBths(
+                                        hospedeId,
+                                        request
+                                )
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+
+        verify(
+                usuarioRepository,
+                never()
+        ).save(
+                any(Usuario.class)
+        );
+
+        verifyNoInteractions(
+                passwordEncoder
+        );
+    }
+
+    @Test
+    void deveBloquearCriacaoDeAcessoQuandoHospedeJaPossuirUsuario() {
+
+        Long hospedeId = 1L;
+
+        Usuario usuarioAtual =
+                new Usuario();
+
+        usuarioAtual.setId(
+                UUID.randomUUID()
+        );
+
+        usuarioAtual.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        hospede.setUsuario(
+                usuarioAtual
+        );
+
+        HospedeCriarAcessoBthsRequest request =
+                new HospedeCriarAcessoBthsRequest();
+
+        request.setEmail(
+                "novo@beattrips.com"
+        );
+
+        request.setSenhaTemporaria(
+                "Senha123!"
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(
+                        hospede
+                )
+        );
+
+        assertThrows(
+                HospedeJaVinculadoException.class,
+                () ->
+                        hospedeService
+                                .criarOuVincularAcessoBths(
+                                        hospedeId,
+                                        request
+                                )
+        );
+
+        verifyNoInteractions(
+                usuarioRepository
+        );
+
+        verifyNoInteractions(
+                passwordEncoder
+        );
+
+        verify(
+                hospedeRepository,
+                never()
+        ).save(
+                any(Hospede.class)
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoAoCriarAcessoParaHospedeInexistente() {
+
+        Long hospedeId = 999L;
+
+        HospedeCriarAcessoBthsRequest request =
+                new HospedeCriarAcessoBthsRequest();
+
+        request.setEmail(
+                "hospede@beattrips.com"
+        );
+
+        request.setSenhaTemporaria(
+                "Senha123!"
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                HospedeNaoEncontradoException.class,
+                () ->
+                        hospedeService
+                                .criarOuVincularAcessoBths(
+                                        hospedeId,
+                                        request
+                                )
+        );
+
+        verifyNoInteractions(
+                usuarioRepository
+        );
+
+        verifyNoInteractions(
+                passwordEncoder
+        );
+    }
 
 }
