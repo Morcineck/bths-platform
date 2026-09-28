@@ -7,12 +7,17 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface HospedeRepository extends JpaRepository<Hospede, Long> {
 
     boolean existsByCpfAndViagemId(String cpf, Long viagemId);
 
     List<Hospede> findByViagemId(Long viagemId);
+
+    List<Hospede> findByUsuarioId(
+            UUID usuarioId
+    );
 
     boolean existsByCpfAndViagemIdAndIdNot(
             String cpf,
@@ -34,18 +39,18 @@ public interface HospedeRepository extends JpaRepository<Hospede, Long> {
     );
 
     @Query("""
-        SELECT h
-        FROM Hospede h
-        WHERE h.viagem.id = :viagemId
-        AND h.statusCheckIn = :statusCheckIn
-        AND NOT EXISTS (
-            SELECT 1
-            FROM AlocacaoQuarto a
-            WHERE a.hospede.id = h.id
-            AND a.viagem.id = :viagemId
-        )
-        ORDER BY h.nomeCompleto
-        """)
+            SELECT h
+            FROM Hospede h
+            WHERE h.viagem.id = :viagemId
+            AND h.statusCheckIn = :statusCheckIn
+            AND NOT EXISTS (
+                SELECT 1
+                FROM AlocacaoQuarto a
+                WHERE a.hospede.id = h.id
+                AND a.viagem.id = :viagemId
+            )
+            ORDER BY h.nomeCompleto
+            """)
     List<Hospede> buscarSemQuartoPorViagemEStatusCheckIn(
             @Param("viagemId") Long viagemId,
             @Param("statusCheckIn") StatusCheckIn statusCheckIn

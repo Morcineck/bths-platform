@@ -1,6 +1,7 @@
 package com.bths.platform.hospede;
 
 import com.bths.platform.hospede.enums.StatusCheckIn;
+import com.bths.platform.usuario.Usuario;
 import com.bths.platform.viagem.Viagem;
 import jakarta.persistence.*;
 
@@ -56,6 +57,10 @@ public class Hospede {
     @ManyToOne
     @JoinColumn(name = "viagem_id", nullable = false)
     private Viagem viagem;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
     public Long getId() {
         return id;
@@ -185,5 +190,11 @@ public class Hospede {
         this.codigoCheckIn = codigoCheckIn;
     }
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
 
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
 }

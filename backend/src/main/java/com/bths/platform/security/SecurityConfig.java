@@ -92,6 +92,12 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/hospedes/*/usuario/*"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/hospedes/**"
                         )
@@ -143,6 +149,11 @@ public class SecurityConfig {
                                 "ADMIN",
                                 "STAFF"
                         )
+
+                        .requestMatchers(
+                                "/api/app/**"
+                        )
+                        .hasRole("HOSPEDE")
 
                         .anyRequest()
                         .authenticated()
