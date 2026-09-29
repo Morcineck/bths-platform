@@ -1,9 +1,13 @@
 package com.bths.platform.app;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
+import com.bths.platform.operacaoTraslado.OperacaoTraslado;
+import com.bths.platform.traslado.Traslado;
+import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.usuario.Usuario;
 import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.usuario.enums.PerfilUsuario;
@@ -19,16 +23,19 @@ public class AppHospedeService {
     private final UsuarioRepository usuarioRepository;
     private final HospedeRepository hospedeRepository;
     private final AlocacaoQuartoRepository alocacaoQuartoRepository;
+    private final TrasladoRepository trasladoRepository;
 
     public AppHospedeService(
             UsuarioRepository usuarioRepository,
             HospedeRepository hospedeRepository,
-            AlocacaoQuartoRepository alocacaoQuartoRepository
+            AlocacaoQuartoRepository alocacaoQuartoRepository,
+            TrasladoRepository trasladoRepository
     ) {
 
         this.usuarioRepository = usuarioRepository;
         this.hospedeRepository = hospedeRepository;
         this.alocacaoQuartoRepository = alocacaoQuartoRepository;
+        this.trasladoRepository = trasladoRepository;
 
     }
 
@@ -125,6 +132,119 @@ public class AppHospedeService {
                             alocacao.getQuarto().getNome()
                     );
                 });
+
+        return response;
+    }
+
+    public List<MeuTrasladoResponse> buscarMeusTraslados(
+            String email
+    ) {
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(email)
+                        .orElseThrow(() ->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+            throw new IllegalArgumentException(
+                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
+            );
+        }
+
+        List<Hospede> hospedes =
+                hospedeRepository.findByUsuarioId(
+                        usuario.getId()
+                );
+
+        if (hospedes.isEmpty()) {
+            return List.of();
+        }
+
+        Hospede hospede = hospedes.get(0);
+
+        return trasladoRepository
+                .findByHospedeId(hospede.getId())
+                .stream()
+                .map(this::paraMeuTrasladoResponse)
+                .toList();
+    }
+
+    private MeuTrasladoResponse paraMeuTrasladoResponse(
+            Traslado traslado
+    ) {
+
+        MeuTrasladoResponse response =
+                new MeuTrasladoResponse();
+
+        response.setId(traslado.getId());
+
+        response.setNumeroVoo(
+                traslado.getNumeroVoo()
+        );
+
+        response.setCompanhiaAerea(
+                traslado.getCompanhiaAerea()
+        );
+
+        OperacaoTraslado operacao =
+                traslado.getOperacaoTraslado();
+
+        if (operacao != null) {
+
+            response.setTipo(
+                    operacao.getTipo()
+            );
+
+            response.setDataHoraPrevista(
+                    operacao.getDataHoraPrevista()
+            );
+
+            response.setLocalOrigem(
+                    operacao.getLocalOrigem()
+            );
+
+            response.setLocalDestino(
+                    operacao.getLocalDestino()
+            );
+
+            response.setAeroporto(
+                    operacao.getAeroporto()
+            );
+
+            response.setStatus(
+                    operacao.getStatus()
+            );
+
+        } else {
+
+            response.setTipo(
+                    traslado.getTipo()
+            );
+
+            response.setDataHoraPrevista(
+                    traslado.getDataHoraPrevista()
+            );
+
+            response.setLocalOrigem(
+                    traslado.getLocalOrigem()
+            );
+
+            response.setLocalDestino(
+                    traslado.getLocalDestino()
+            );
+
+            response.setAeroporto(
+                    traslado.getAeroporto()
+            );
+
+            response.setStatus(
+                    traslado.getStatus()
+            );
+        }
 
         return response;
     }
