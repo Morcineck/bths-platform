@@ -1,9 +1,11 @@
 package com.bths.platform.app;
 
+import com.bths.platform.app.dto.MeuCheckInResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.security.JwtService;
 import com.bths.platform.security.UsuarioDetailsService;
 import com.bths.platform.traslado.enums.Aeroporto;
@@ -16,6 +18,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -929,5 +932,491 @@ class AppHospedeAuthorizationTest {
                         status().isUnauthorized()
                 );
     }
+
+    @Test
+    void devePermitirHospedeAcessarMeuCheckIn()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        MeuCheckInResponse response =
+                new MeuCheckInResponse();
+
+        response.setHospedeNome(
+                "Lucas Cesar"
+        );
+
+        response.setStatusCheckIn(
+                StatusCheckIn.PENDENTE
+        );
+
+        when(
+                appHospedeService.buscarMeuCheckIn(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                response
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.hospedeNome")
+                                .value("Lucas Cesar")
+                )
+                .andExpect(
+                        jsonPath("$.statusCheckIn")
+                                .value("PENDENTE")
+                );
+    }
+
+    @Test
+    void deveRetornar204QuandoHospedeNaoPossuiCheckInVinculado()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        when(
+                appHospedeService.buscarMeuCheckIn(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                null
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isNoContent()
+                );
+    }
+
+    @Test
+    void deveBloquearAdminAoAcessarMeuCheckIn()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearStaffAoAcessarMeuCheckIn()
+            throws Exception {
+
+        UserDetails staff = User
+                .withUsername("staff@beattrips.com")
+                .password("senha")
+                .roles("STAFF")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                "staff@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "staff@beattrips.com"
+                )
+        ).thenReturn(
+                staff
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveRetornar401AoAcessarMeuCheckInSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
+
+    @Test
+    void devePermitirHospedeAcessarProprioQrCode()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        byte[] imagem =
+                new byte[]{1, 2, 3, 4};
+
+        when(
+                appHospedeService.buscarMeuQrCode(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                imagem
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in/qr"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        content().contentType(
+                                "image/png"
+                        )
+                )
+                .andExpect(
+                        content().bytes(
+                                imagem
+                        )
+                );
+    }
+
+    @Test
+    void deveRetornar204QuandoHospedeNaoPossuiQrCode()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        when(
+                appHospedeService.buscarMeuQrCode(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                null
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in/qr"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isNoContent()
+                );
+    }
+
+    @Test
+    void deveBloquearAdminAoAcessarQrCodeDoHospede()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in/qr"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearStaffAoAcessarQrCodeDoHospede()
+            throws Exception {
+
+        UserDetails staff = User
+                .withUsername("staff@beattrips.com")
+                .password("senha")
+                .roles("STAFF")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                "staff@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "staff@beattrips.com"
+                )
+        ).thenReturn(
+                staff
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in/qr"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveRetornar401AoAcessarQrCodeSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/check-in/qr"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
+
+
 
 }

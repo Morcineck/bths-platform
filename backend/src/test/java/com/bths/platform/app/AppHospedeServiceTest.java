@@ -2,11 +2,14 @@ package com.bths.platform.app;
 
 import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.app.dto.MeuCheckInResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
+import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.operacaoTraslado.OperacaoTraslado;
+import com.bths.platform.qrcode.QrCodeGeradorService;
 import com.bths.platform.quarto.Quarto;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
@@ -50,13 +53,17 @@ class AppHospedeServiceTest {
     @Mock
     private TrasladoRepository trasladoRepository;
 
+    @Mock
+    private QrCodeGeradorService qrCodeGeradorService;
+
     @BeforeEach
     void setUp() {
         appHospedeService = new AppHospedeService(
                 usuarioRepository,
                 hospedeRepository,
                 alocacaoQuartoRepository,
-                trasladoRepository
+                trasladoRepository,
+                qrCodeGeradorService
         );
     }
 
@@ -688,5 +695,357 @@ class AppHospedeServiceTest {
                 exception.getMessage()
         );
     }
+
+    @Test
+    void deveBuscarMeuCheckInPendente() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Hospede hospede = new Hospede();
+        hospede.setNomeCompleto("Robson");
+        hospede.setStatusCheckIn(
+                StatusCheckIn.PENDENTE
+        );
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        MeuCheckInResponse response =
+                appHospedeService.buscarMeuCheckIn(
+                        email
+                );
+
+        assertNotNull(response);
+
+        assertEquals(
+                "Robson",
+                response.getHospedeNome()
+        );
+
+        assertEquals(
+                StatusCheckIn.PENDENTE,
+                response.getStatusCheckIn()
+        );
+
+        assertNull(
+                response.getDataHoraCheckIn()
+        );
+    }
+
+    @Test
+    void deveBuscarMeuCheckInRealizado() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        LocalDateTime dataHoraCheckIn =
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        30,
+                        14,
+                        30
+                );
+
+        Hospede hospede = new Hospede();
+        hospede.setNomeCompleto("Robson");
+        hospede.setStatusCheckIn(
+                StatusCheckIn.REALIZADO
+        );
+        hospede.setDataHoraCheckIn(
+                dataHoraCheckIn
+        );
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        MeuCheckInResponse response =
+                appHospedeService.buscarMeuCheckIn(
+                        email
+                );
+
+        assertNotNull(response);
+
+        assertEquals(
+                StatusCheckIn.REALIZADO,
+                response.getStatusCheckIn()
+        );
+
+        assertEquals(
+                dataHoraCheckIn,
+                response.getDataHoraCheckIn()
+        );
+    }
+
+    @Test
+    void deveBuscarMeuCheckInNaoCompareceu() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Hospede hospede = new Hospede();
+        hospede.setNomeCompleto("Robson");
+        hospede.setStatusCheckIn(
+                StatusCheckIn.NAO_COMPARECEU
+        );
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        MeuCheckInResponse response =
+                appHospedeService.buscarMeuCheckIn(
+                        email
+                );
+
+        assertNotNull(response);
+
+        assertEquals(
+                StatusCheckIn.NAO_COMPARECEU,
+                response.getStatusCheckIn()
+        );
+    }
+
+    @Test
+    void deveRetornarNullQuandoUsuarioNaoPossuiHospedeVinculadoAoBuscarCheckIn() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of()
+        );
+
+        MeuCheckInResponse response =
+                appHospedeService.buscarMeuCheckIn(
+                        email
+                );
+
+        assertNull(response);
+    }
+
+    @Test
+    void deveGerarQrCodeDoProprioHospede() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+        String codigoCheckIn =
+                "codigo-seguro-do-hospede";
+
+        byte[] imagemEsperada =
+                new byte[]{1, 2, 3, 4};
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setCodigoCheckIn(
+                codigoCheckIn
+        );
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                qrCodeGeradorService.gerarQRCode(
+                        codigoCheckIn
+                )
+        ).thenReturn(
+                imagemEsperada
+        );
+
+        byte[] response =
+                appHospedeService.buscarMeuQrCode(
+                        email
+                );
+
+        assertNotNull(response);
+
+        assertArrayEquals(
+                imagemEsperada,
+                response
+        );
+    }
+
+    @Test
+    void deveRetornarNullQuandoHospedeNaoPossuiCodigoCheckIn() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setCodigoCheckIn(null);
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        byte[] response =
+                appHospedeService.buscarMeuQrCode(
+                        email
+                );
+
+        assertNull(response);
+    }
+
+    @Test
+    void deveRetornarNullAoBuscarQrQuandoUsuarioNaoPossuiHospedeVinculado() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(usuarioId)
+        ).thenReturn(
+                List.of()
+        );
+
+        byte[] response =
+                appHospedeService.buscarMeuQrCode(
+                        email
+                );
+
+        assertNull(response);
+    }
+
+    @Test
+    void deveBloquearBuscaDeCheckInQuandoUsuarioNaoForHospede() {
+
+        String email = "admin@bths.com";
+
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.ADMIN);
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> appHospedeService.buscarMeuCheckIn(
+                        email
+                )
+        );
+    }
+
+    @Test
+    void deveBloquearBuscaDeQrCodeQuandoUsuarioNaoForHospede() {
+
+        String email = "staff@bths.com";
+
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.STAFF);
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> appHospedeService.buscarMeuQrCode(
+                        email
+                )
+        );
+    }
+
+
 
 }
