@@ -17,6 +17,8 @@ import type {
   MinhaViagem,
 } from "../types/minhaViagem";
 
+import type { MeuTraslado } from "../types/meuTraslado";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function listarHospedesPorViagem(
@@ -194,6 +196,20 @@ export async function buscarMinhaViagem(): Promise<MinhaViagem | null> {
   if (!response.ok) {
     throw new Error(
       "Não foi possível carregar sua viagem.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function buscarMeusTraslados(): Promise<MeuTraslado[]> {
+  const response = await authFetch(
+    `${API_URL}/api/app/traslados`
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar seus traslados."
     );
   }
 

@@ -1,5 +1,6 @@
 package com.bths.platform.app;
 
+import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
@@ -61,5 +62,18 @@ public class AppHospedeController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/traslados")
+    public ResponseEntity<List<MeuTrasladoResponse>> buscarMeusTraslados(
+            Authentication authentication
+    ) {
+
+        List<MeuTrasladoResponse> response =
+                appHospedeService.buscarMeusTraslados(
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(
+                response);
+    }
 
 }

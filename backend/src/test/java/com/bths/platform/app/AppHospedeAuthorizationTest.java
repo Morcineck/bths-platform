@@ -1,10 +1,14 @@
 package com.bths.platform.app;
 
+import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import com.bths.platform.security.JwtService;
 import com.bths.platform.security.UsuarioDetailsService;
+import com.bths.platform.traslado.enums.Aeroporto;
+import com.bths.platform.traslado.enums.StatusTraslado;
+import com.bths.platform.traslado.enums.TipoTraslado;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -604,5 +609,325 @@ class AppHospedeAuthorizationTest {
                 );
     }
 
+    @Test
+    void devePermitirHospedeAcessarPropriosTraslados()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        MeuTrasladoResponse traslado =
+                new MeuTrasladoResponse();
+
+        traslado.setId(30L);
+
+        traslado.setTipo(
+                TipoTraslado.AEROPORTO_PARA_HOSPEDAGEM
+        );
+
+        traslado.setDataHoraPrevista(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        29,
+                        16,
+                        0
+                )
+        );
+
+        traslado.setLocalOrigem(
+                "Terminal 2 - Guarulhos"
+        );
+
+        traslado.setLocalDestino(
+                "Chácara Beat Trips"
+        );
+
+        traslado.setAeroporto(
+                Aeroporto.GRU
+        );
+
+        traslado.setNumeroVoo(
+                "LA1234"
+        );
+
+        traslado.setCompanhiaAerea(
+                "LATAM"
+        );
+
+        traslado.setStatus(
+                StatusTraslado.EM_ANDAMENTO
+        );
+
+        when(
+                appHospedeService.buscarMeusTraslados(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                List.of(traslado)
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/traslados"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$[0].id")
+                                .value(30L)
+                )
+                .andExpect(
+                        jsonPath("$[0].tipo")
+                                .value(
+                                        "AEROPORTO_PARA_HOSPEDAGEM"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].dataHoraPrevista")
+                                .value(
+                                        "2027-04-29T16:00:00"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].localOrigem")
+                                .value(
+                                        "Terminal 2 - Guarulhos"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].localDestino")
+                                .value(
+                                        "Chácara Beat Trips"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].aeroporto")
+                                .value("GRU")
+                )
+                .andExpect(
+                        jsonPath("$[0].numeroVoo")
+                                .value("LA1234")
+                )
+                .andExpect(
+                        jsonPath("$[0].companhiaAerea")
+                                .value("LATAM")
+                )
+                .andExpect(
+                        jsonPath("$[0].status")
+                                .value("EM_ANDAMENTO")
+                );
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoHospedeNaoPossuiTraslados()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        when(
+                appHospedeService.buscarMeusTraslados(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                List.of()
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/traslados"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$")
+                                .isArray()
+                )
+                .andExpect(
+                        jsonPath("$")
+                                .isEmpty()
+                );
+    }
+
+    @Test
+    void deveBloquearAdminAoAcessarMeusTraslados()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/traslados"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearStaffAoAcessarMeusTraslados()
+            throws Exception {
+
+        UserDetails staff = User
+                .withUsername("staff@beattrips.com")
+                .password("senha")
+                .roles("STAFF")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                "staff@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "staff@beattrips.com"
+                )
+        ).thenReturn(
+                staff
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/traslados"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveRetornar401AoAcessarMeusTrasladosSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/traslados"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
 
 }
