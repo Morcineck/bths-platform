@@ -13,6 +13,10 @@ import type {
   HospedeAcessoBths,
 } from "../types/hospede";
 
+import type {
+  MinhaViagem,
+} from "../types/minhaViagem";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function listarHospedesPorViagem(
@@ -172,6 +176,24 @@ export async function buscarHospedesDoUsuario(): Promise<Hospede[]> {
   if (!response.ok) {
     throw new Error(
       "Não foi possível carregar os dados do hóspede.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function buscarMinhaViagem(): Promise<MinhaViagem | null> {
+  const response = await authFetch(
+    `${API_URL}/api/app/viagem`,
+  );
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar sua viagem.",
     );
   }
 
