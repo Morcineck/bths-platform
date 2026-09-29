@@ -18,6 +18,7 @@ import type {
 } from "../types/minhaViagem";
 
 import type { MeuTraslado } from "../types/meuTraslado";
+import type { MeuCheckIn } from "../types/meuCheckIn";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -215,3 +216,40 @@ export async function buscarMeusTraslados(): Promise<MeuTraslado[]> {
 
   return response.json();
 }
+
+export async function buscarMeuCheckIn(): Promise<MeuCheckIn | null> {
+  const response = await authFetch(
+    `${API_URL}/api/app/check-in`,
+  );
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar as informações de check-in.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function buscarMeuQrCode(): Promise<Blob | null> {
+  const response = await authFetch(
+    `${API_URL}/api/app/check-in/qr`,
+  );
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar o QR Code.",
+    );
+  }
+
+  return response.blob();
+}
+

@@ -1,9 +1,11 @@
 package com.bths.platform.app;
 
+import com.bths.platform.app.dto.MeuCheckInResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,4 +78,40 @@ public class AppHospedeController {
                 response);
     }
 
+    @GetMapping("/check-in")
+    public ResponseEntity<MeuCheckInResponse> buscarMeuCheckIn(
+            Authentication authentication
+    ) {
+
+        MeuCheckInResponse response =
+                appHospedeService.buscarMeuCheckIn(
+                        authentication.getName()
+                );
+
+        if (response == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = "/check-in/qr",produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> buscarCheckInQR(
+            Authentication authentication
+    ) {
+
+        byte[] imagem =
+                appHospedeService.buscarMeuQrCode(
+                        authentication.getName()
+                );
+
+        if (imagem == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(imagem);
+    }
 }

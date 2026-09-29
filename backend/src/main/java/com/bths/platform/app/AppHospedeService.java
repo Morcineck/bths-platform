@@ -1,11 +1,13 @@
 package com.bths.platform.app;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.app.dto.MeuCheckInResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.operacaoTraslado.OperacaoTraslado;
+import com.bths.platform.qrcode.QrCodeGeradorService;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.usuario.Usuario;
@@ -24,18 +26,21 @@ public class AppHospedeService {
     private final HospedeRepository hospedeRepository;
     private final AlocacaoQuartoRepository alocacaoQuartoRepository;
     private final TrasladoRepository trasladoRepository;
+    private final QrCodeGeradorService qrCodeGeradorService;
 
     public AppHospedeService(
             UsuarioRepository usuarioRepository,
             HospedeRepository hospedeRepository,
             AlocacaoQuartoRepository alocacaoQuartoRepository,
-            TrasladoRepository trasladoRepository
+            TrasladoRepository trasladoRepository,
+            QrCodeGeradorService qrCodeGeradorService
     ) {
 
         this.usuarioRepository = usuarioRepository;
         this.hospedeRepository = hospedeRepository;
         this.alocacaoQuartoRepository = alocacaoQuartoRepository;
         this.trasladoRepository = trasladoRepository;
+        this.qrCodeGeradorService = qrCodeGeradorService;
 
     }
 
@@ -247,6 +252,94 @@ public class AppHospedeService {
         }
 
         return response;
+    }
+
+    public MeuCheckInResponse buscarMeuCheckIn(
+            String email
+    ) {
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(email)
+                        .orElseThrow(()->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+            throw new IllegalArgumentException(
+                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
+            );
+        }
+
+        List<Hospede> hospedes =
+                hospedeRepository.findByUsuarioId(
+                        usuario.getId()
+                );
+
+        if (hospedes.isEmpty()) {
+            return null;
+        }
+
+        Hospede hospede = hospedes.get(0);
+
+        MeuCheckInResponse response =
+                new MeuCheckInResponse();
+
+        response.setHospedeNome(
+                hospede.getNomeCompleto()
+        );
+
+        response.setStatusCheckIn(
+                hospede.getStatusCheckIn()
+        );
+
+        response.setDataHoraCheckIn(
+                hospede.getDataHoraCheckIn()
+        );
+
+        return response;
+    }
+
+    public byte[] buscarMeuQrCode(
+            String email
+    ) {
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(email)
+                        .orElseThrow(()->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+            throw new IllegalArgumentException(
+                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
+            );
+        }
+
+        List<Hospede> hospedes =
+                hospedeRepository.findByUsuarioId(
+                        usuario.getId()
+                );
+
+        if (hospedes.isEmpty()) {
+            return null;
+        }
+
+        Hospede hospede = hospedes.get(0);
+
+        if (hospede.getCodigoCheckIn() == null
+                || hospede.getCodigoCheckIn().isBlank()) {
+            return null;
+        }
+
+        return qrCodeGeradorService.gerarQRCode(
+                hospede.getCodigoCheckIn()
+        );
     }
 
 }
