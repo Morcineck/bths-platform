@@ -116,7 +116,7 @@ export default function AppHospedeLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-surface">
+      <header className="hidden border-b border-border bg-surface md:block">
         <div className="mx-auto flex w-full max-w-xl items-center justify-between px-5 py-4">
           <div>
             <p className="text-sm font-semibold text-primary">
@@ -154,7 +154,7 @@ export default function AppHospedeLayout({
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-xl px-5 py-6 pb-24">
+      <main className="mx-auto w-full max-w-xl px-5 pt-3 pb-24 md:py-6">
         {children}
       </main>
     </div>

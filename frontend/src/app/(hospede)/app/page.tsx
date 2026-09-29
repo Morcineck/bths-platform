@@ -1,8 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { Card } from "@/components/ui/Card";
+import {
+  BedDouble,
+  Bell,
+  Building2,
+  Bus,
+  CalendarDays,
+  ChevronRight,
+  LifeBuoy,
+  MapPin,
+  QrCode,
+} from "lucide-react";
 
 import {
   buscarUsuarioAutenticado,
@@ -13,25 +24,141 @@ import type {
 } from "@/features/auth/types/auth";
 
 import {
-  buscarHospedesDoUsuario,
+  buscarMinhaViagem,
 } from "@/features/hospede/services/hospedeService";
 
 import type {
-  Hospede,
-} from "@/features/hospede/types/hospede";
+  MinhaViagem,
+} from "@/features/hospede/types/minhaViagem";
+
+function obterPrimeiroNome(
+  nome: string | undefined,
+) {
+  if (!nome) {
+    return "";
+  }
+
+  return nome.trim().split(" ")[0];
+}
+
+function formatarData(
+  data: string,
+) {
+  const [ano, mes, dia] =
+    data.split("-");
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+function formatarStatus(
+  status: string,
+) {
+  switch (status) {
+    case "PLANEJADA":
+      return "Viagem confirmada";
+
+    case "EM_ANDAMENTO":
+      return "Viagem em andamento";
+
+    case "FINALIZADA":
+      return "Viagem finalizada";
+
+    case "CANCELADA":
+      return "Viagem cancelada";
+
+    default:
+      return status;
+  }
+}
+
+function calcularDiasAteViagem(
+  dataInicio: string,
+) {
+  const hoje = new Date();
+
+  hoje.setHours(
+    0,
+    0,
+    0,
+    0,
+  );
+
+  const [
+    ano,
+    mes,
+    dia,
+  ] = dataInicio
+    .split("-")
+    .map(Number);
+
+  const inicioViagem = new Date(
+    ano,
+    mes - 1,
+    dia,
+  );
+
+  const diferenca =
+    inicioViagem.getTime() -
+    hoje.getTime();
+
+  return Math.max(
+    0,
+    Math.ceil(
+      diferenca /
+        (1000 * 60 * 60 * 24),
+    ),
+  );
+}
+
+const atalhos = [
+  {
+    href: "/app/viagem",
+    label: "Meu quarto",
+    icon: BedDouble,
+  },
+  {
+    href: "/app/traslados",
+    label: "Transporte",
+    icon: Bus,
+  },
+  {
+    href: "/app/check-in",
+    label: "QR Code",
+    icon: QrCode,
+  },
+  {
+    href: "/app/viagem",
+    label: "Hospedagem",
+    icon: Building2,
+  },
+  {
+    href: "/app/avisos",
+    label: "Avisos",
+    icon: Bell,
+  },
+  {
+    href: "/app/perfil",
+    label: "Suporte",
+    icon: LifeBuoy,
+  },
+] as const;
 
 export default function AppHospedePage() {
   const [
     usuario,
     setUsuario,
-  ] = useState<UsuarioAutenticado | null>(
-    null,
-  );
+  ] =
+    useState<UsuarioAutenticado | null>(
+      null,
+    );
 
   const [
-    hospedes,
-    setHospedes,
-  ] = useState<Hospede[]>([]);
+    viagem,
+    setViagem,
+  ] =
+    useState<MinhaViagem | null>(
+      null,
+    );
 
   const [
     carregando,
@@ -44,110 +171,242 @@ export default function AppHospedePage() {
   ] = useState("");
 
   useEffect(() => {
-    async function carregarApp() {
+    async function carregarHome() {
       try {
         setErro("");
 
         const [
           usuarioAutenticado,
-          hospedesDoUsuario,
+          minhaViagem,
         ] = await Promise.all([
           buscarUsuarioAutenticado(),
-          buscarHospedesDoUsuario(),
+          buscarMinhaViagem(),
         ]);
 
         setUsuario(
           usuarioAutenticado,
         );
 
-        setHospedes(
-          hospedesDoUsuario,
+        setViagem(
+          minhaViagem,
         );
       } catch {
         setErro(
           "Não foi possível carregar suas informações.",
         );
       } finally {
-        setCarregando(
-          false,
-        );
+        setCarregando(false);
       }
     }
 
-    carregarApp();
+    carregarHome();
   }, []);
 
   if (carregando) {
     return (
-      <p className="text-sm text-muted">
-        Carregando suas informações...
-      </p>
+      <div className="py-10">
+        <p className="text-sm text-muted">
+          Carregando sua experiência...
+        </p>
+      </div>
     );
   }
 
   if (erro) {
     return (
-      <p
-        role="alert"
-        className="text-sm text-red-400"
-      >
-        {erro}
-      </p>
+      <div className="py-10">
+        <p
+          role="alert"
+          className="text-sm text-red-400"
+        >
+          {erro}
+        </p>
+      </div>
     );
   }
 
+  const primeiroNome =
+    obterPrimeiroNome(
+      usuario?.nome,
+    );
+
+  const diasAteViagem =
+    viagem
+      ? calcularDiasAteViagem(
+          viagem.dataInicio,
+        )
+      : 0;
+
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm text-muted">
-          Olá,
-        </p>
-
-        <h1 className="mt-1 text-2xl font-semibold text-foreground">
-          {usuario?.nome}
-        </h1>
-
-        <p className="mt-2 text-sm text-muted">
-          Bem-vindo ao seu espaço Beat Trips.
-        </p>
-      </div>
-
-      {hospedes.length === 0 ? (
-        <Card>
-          <p className="font-medium text-foreground">
-            Nenhuma viagem vinculada à sua conta.
+      <header className="flex items-start justify-between gap-4 pt-1">
+        <div>
+          <p className="text-xs font-medium text-primary">
+            Beat Trips
           </p>
+
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+            Olá, {primeiroNome} 👋
+          </h1>
 
           <p className="mt-2 text-sm text-muted">
-            Assim que sua hospedagem for vinculada ao acesso BTHS, ela aparecerá aqui.
+            Sua experiência começa aqui.
           </p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {hospedes.map(
-            (hospede) => (
-              <Card
-                key={hospede.id}
-              >
-                <p className="text-sm text-muted">
-                  Sua viagem
-                </p>
-
-                <p className="mt-2 text-lg font-semibold text-foreground">
-                  {hospede.viagemNome}
-                </p>
-
-                <p className="mt-3 text-sm text-muted">
-                  Hóspede
-                </p>
-
-                <p className="mt-1 font-medium text-foreground">
-                  {hospede.nomeCompleto}
-                </p>
-              </Card>
-            ),
-          )}
         </div>
+
+        <Link
+          href="/app/avisos"
+          aria-label="Avisos"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-surface/60 text-foreground transition-colors hover:border-primary hover:text-primary"
+        >
+          <Bell
+            size={20}
+            strokeWidth={1.9}
+          />
+        </Link>
+      </header>
+
+      {!viagem ? (
+        <section className="glass rounded-3xl p-5 shadow-soft">
+          <p className="font-semibold text-foreground">
+            Nenhuma viagem disponível
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Assim que sua hospedagem estiver vinculada à sua conta, sua experiência Beat Trips aparecerá aqui.
+          </p>
+        </section>
+      ) : (
+        <Link
+          href="/app/viagem"
+          className="group relative block overflow-hidden rounded-3xl border border-border bg-surface shadow-soft"
+        >
+          <div className="relative min-h-60 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,oklch(0.66_0.26_340_/_35%),transparent_42%),radial-gradient(circle_at_bottom_left,oklch(0.7_0.19_245_/_24%),transparent_40%)]" />
+
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-transparent to-magenta/15" />
+
+            <div className="relative flex min-h-60 flex-col justify-between p-4">
+              <div>
+                <span className="inline-flex rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                  {formatarStatus(
+                    viagem.status,
+                  )}
+                </span>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  {viagem.viagemNome}
+                </h2>
+
+                <div className="mt-4 grid grid-cols-2 gap-2.5">
+                  <div className="rounded-2xl border border-border bg-background/35 p-2.5 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-xs text-muted">
+                      <CalendarDays
+                        size={15}
+                        className="text-primary"
+                      />
+
+                      Período
+                    </div>
+
+                    <p className="mt-2 text-sm font-medium text-foreground">
+                      {formatarData(
+                        viagem.dataInicio,
+                      )}
+                    </p>
+
+                    <p className="text-xs text-muted">
+                      até{" "}
+                      {formatarData(
+                        viagem.dataFim,
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-border bg-background/35 p-2.5 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-xs text-muted">
+                      <MapPin
+                        size={15}
+                        className="text-electric"
+                      />
+
+                      Destino
+                    </div>
+
+                    <p className="mt-2 text-sm font-medium text-foreground">
+                      {viagem.cidade}
+                    </p>
+
+                    <p className="text-xs text-muted">
+                      {viagem.estado}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-4">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm text-muted">
+                      Faltam
+                    </span>
+
+                    <span className="text-lg font-semibold text-primary">
+                      {diasAteViagem}{" "}
+                      {diasAteViagem === 1
+                        ? "dia"
+                        : "dias"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-xs font-medium text-primary">
+                    Ver minha viagem
+
+                    <ChevronRight
+                      size={16}
+                      className="transition-transform group-hover:translate-x-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
+
+      {viagem && (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">
+            Atalhos
+          </h2>
+
+          <div className="grid grid-cols-3 gap-3">
+            {atalhos.map(
+              ({
+                href,
+                label,
+                icon: Icon,
+              }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="group flex aspect-square flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-surface/60 p-3 text-center shadow-soft transition-all active:scale-95"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary transition-transform group-hover:scale-105">
+                    <Icon
+                      size={21}
+                      strokeWidth={1.9}
+                    />
+                  </span>
+
+                  <span className="text-xs font-medium text-foreground">
+                    {label}
+                  </span>
+                </Link>
+              ),
+            )}
+          </div>
+        </section>
       )}
     </div>
   );

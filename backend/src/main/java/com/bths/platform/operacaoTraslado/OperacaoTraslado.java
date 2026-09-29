@@ -66,6 +66,9 @@ public class OperacaoTraslado {
     @Column(columnDefinition = "TEXT")
     private String observacao;
 
+    @Column(name = "orientacao_hospede", columnDefinition = "TEXT")
+    private String orientacaoHospede;
+
     public Long getId() {
         return id;
     }
@@ -169,5 +172,13 @@ public class OperacaoTraslado {
             String observacao
     ) {
         this.observacao = observacao;
+    }
+
+    public String getOrientacaoHospede() {
+        return orientacaoHospede;
+    }
+
+    public void setOrientacaoHospede(String orientacaoHospede) {
+        this.orientacaoHospede = orientacaoHospede;
     }
 }

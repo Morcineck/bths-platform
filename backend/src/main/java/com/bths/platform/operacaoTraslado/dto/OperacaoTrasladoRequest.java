@@ -34,6 +34,8 @@ public class OperacaoTrasladoRequest {
 
     private String observacao;
 
+    private String orientacaoHospede;
+
     public Long getViagemId() {
         return viagemId;
     }
@@ -104,6 +106,14 @@ public class OperacaoTrasladoRequest {
 
     public void setObservacao(String observacao) {
         this.observacao = observacao;
+    }
+
+    public String getOrientacaoHospede() {
+        return orientacaoHospede;
+    }
+
+    public void setOrientacaoHospede(String orientacaoHospede) {
+        this.orientacaoHospede = orientacaoHospede;
     }
 }
 

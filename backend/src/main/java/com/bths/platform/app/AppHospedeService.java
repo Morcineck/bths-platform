@@ -51,7 +51,7 @@ public class AppHospedeService {
         Usuario usuario =
                 usuarioRepository
                         .findByEmail(email)
-                        .orElseThrow(()->
+                        .orElseThrow(() ->
                                 new UsuarioNaoEncontradoException(
                                         "Usuário não encontrado!"
                                 )
@@ -224,6 +224,29 @@ public class AppHospedeService {
                     operacao.getStatus()
             );
 
+            if (operacao.getMotorista() != null) {
+                response.setMotoristaNome(
+                        operacao.getMotorista()
+                                .getNomeCompleto()
+                );
+            }
+
+            if (operacao.getVeiculo() != null) {
+                response.setVeiculoModelo(
+                        operacao.getVeiculo()
+                                .getModelo()
+                );
+
+                response.setVeiculoPlaca(
+                        operacao.getVeiculo()
+                                .getPlaca()
+                );
+            }
+
+            response.setOrientacaoHospede(
+                    operacao.getOrientacaoHospede()
+            );
+
         } else {
 
             response.setTipo(
@@ -249,6 +272,29 @@ public class AppHospedeService {
             response.setStatus(
                     traslado.getStatus()
             );
+
+            if (traslado.getMotorista() != null) {
+                response.setMotoristaNome(
+                        traslado.getMotorista()
+                                .getNomeCompleto()
+                );
+            }
+
+            if (traslado.getVeiculo() != null) {
+                response.setVeiculoModelo(
+                        traslado.getVeiculo()
+                                .getModelo()
+                );
+
+                response.setVeiculoPlaca(
+                        traslado.getVeiculo()
+                                .getPlaca()
+                );
+            }
+
+            response.setOrientacaoHospede(
+                    traslado.getOrientacaoHospede()
+            );
         }
 
         return response;
@@ -261,7 +307,7 @@ public class AppHospedeService {
         Usuario usuario =
                 usuarioRepository
                         .findByEmail(email)
-                        .orElseThrow(()->
+                        .orElseThrow(() ->
                                 new UsuarioNaoEncontradoException(
                                         "Usuário não encontrado!"
                                 )
@@ -309,7 +355,7 @@ public class AppHospedeService {
         Usuario usuario =
                 usuarioRepository
                         .findByEmail(email)
-                        .orElseThrow(()->
+                        .orElseThrow(() ->
                                 new UsuarioNaoEncontradoException(
                                         "Usuário não encontrado!"
                                 )

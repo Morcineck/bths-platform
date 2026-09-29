@@ -8,6 +8,7 @@ import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.enums.StatusCheckIn;
+import com.bths.platform.motorista.Motorista;
 import com.bths.platform.operacaoTraslado.OperacaoTraslado;
 import com.bths.platform.qrcode.QrCodeGeradorService;
 import com.bths.platform.quarto.Quarto;
@@ -20,6 +21,7 @@ import com.bths.platform.usuario.Usuario;
 import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.usuario.enums.PerfilUsuario;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
+import com.bths.platform.veiculo.Veiculo;
 import com.bths.platform.viagem.Viagem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1046,6 +1048,298 @@ class AppHospedeServiceTest {
         );
     }
 
+    @Test
+    void deveExporMotoristaVeiculoEOrientacaoDoTrasladoIndividual() {
 
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+
+        Motorista motorista =
+                new Motorista();
+
+        motorista.setNomeCompleto(
+                "Anderson Reis"
+        );
+
+        Veiculo veiculo =
+                new Veiculo();
+
+        veiculo.setModelo(
+                "Van Sprinter"
+        );
+
+        veiculo.setPlaca(
+                "FKZ7A32"
+        );
+
+        Traslado traslado =
+                new Traslado();
+
+        traslado.setId(30L);
+        traslado.setHospede(hospede);
+
+        traslado.setTipo(
+                TipoTraslado.AEROPORTO_PARA_HOSPEDAGEM
+        );
+
+        traslado.setStatus(
+                StatusTraslado.AGUARDANDO
+        );
+
+        traslado.setDataHoraPrevista(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        29,
+                        13,
+                        0
+                )
+        );
+
+        traslado.setLocalOrigem(
+                "Aeroporto de Guarulhos"
+        );
+
+        traslado.setLocalDestino(
+                "Hospedagem Beat Trips"
+        );
+
+        traslado.setMotorista(
+                motorista
+        );
+
+        traslado.setVeiculo(
+                veiculo
+        );
+
+        traslado.setOrientacaoHospede(
+                "Motorista aguardando próximo à saída H."
+        );
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                trasladoRepository.findByHospedeId(
+                        20L
+                )
+        ).thenReturn(
+                List.of(traslado)
+        );
+
+        List<MeuTrasladoResponse> response =
+                appHospedeService.buscarMeusTraslados(
+                        email
+                );
+
+        MeuTrasladoResponse meuTraslado =
+                response.get(0);
+
+        assertEquals(
+                "Anderson Reis",
+                meuTraslado.getMotoristaNome()
+        );
+
+        assertEquals(
+                "Van Sprinter",
+                meuTraslado.getVeiculoModelo()
+        );
+
+        assertEquals(
+                "FKZ7A32",
+                meuTraslado.getVeiculoPlaca()
+        );
+
+        assertEquals(
+                "Motorista aguardando próximo à saída H.",
+                meuTraslado.getOrientacaoHospede()
+        );
+    }
+
+    @Test
+    void devePriorizarMotoristaVeiculoEOrientacaoDaOperacao() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+
+        Motorista motoristaIndividual =
+                new Motorista();
+
+        motoristaIndividual.setNomeCompleto(
+                "Motorista antigo"
+        );
+
+        Veiculo veiculoIndividual =
+                new Veiculo();
+
+        veiculoIndividual.setModelo(
+                "Veículo antigo"
+        );
+
+        veiculoIndividual.setPlaca(
+                "ABC1D23"
+        );
+
+        Motorista motoristaOperacao =
+                new Motorista();
+
+        motoristaOperacao.setNomeCompleto(
+                "Anderson Reis"
+        );
+
+        Veiculo veiculoOperacao =
+                new Veiculo();
+
+        veiculoOperacao.setModelo(
+                "Van Sprinter"
+        );
+
+        veiculoOperacao.setPlaca(
+                "FKZ7A32"
+        );
+
+        Traslado traslado = new Traslado();
+
+        traslado.setId(30L);
+        traslado.setHospede(hospede);
+
+        traslado.setMotorista(
+                motoristaIndividual
+        );
+
+        traslado.setVeiculo(
+                veiculoIndividual
+        );
+
+        traslado.setOrientacaoHospede(
+                "Orientação antiga."
+        );
+
+        OperacaoTraslado operacao =
+                new OperacaoTraslado();
+
+        operacao.setTipo(
+                TipoTraslado.AEROPORTO_PARA_HOSPEDAGEM
+        );
+
+        operacao.setAeroporto(
+                Aeroporto.GRU
+        );
+
+        operacao.setStatus(
+                StatusTraslado.AGUARDANDO
+        );
+
+        operacao.setDataHoraPrevista(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        29,
+                        13,
+                        0
+                )
+        );
+
+        operacao.setLocalOrigem(
+                "Aeroporto de Guarulhos"
+        );
+
+        operacao.setLocalDestino(
+                "Hospedagem Beat Trips"
+        );
+
+        operacao.setMotorista(
+                motoristaOperacao
+        );
+
+        operacao.setVeiculo(
+                veiculoOperacao
+        );
+
+        operacao.setOrientacaoHospede(
+                "Aguarde próximo à saída H."
+        );
+
+        traslado.setOperacaoTraslado(
+                operacao
+        );
+
+        when(
+                usuarioRepository.findByEmail(email)
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                trasladoRepository.findByHospedeId(
+                        20L
+                )
+        ).thenReturn(
+                List.of(traslado)
+        );
+
+        List<MeuTrasladoResponse> response =
+                appHospedeService.buscarMeusTraslados(
+                        email
+                );
+
+        MeuTrasladoResponse meuTraslado =
+                response.get(0);
+
+        assertEquals(
+                "Anderson Reis",
+                meuTraslado.getMotoristaNome()
+        );
+
+        assertEquals(
+                "Van Sprinter",
+                meuTraslado.getVeiculoModelo()
+        );
+
+        assertEquals(
+                "FKZ7A32",
+                meuTraslado.getVeiculoPlaca()
+        );
+
+        assertEquals(
+                "Aguarde próximo à saída H.",
+                meuTraslado.getOrientacaoHospede()
+        );
+    }
 
 }

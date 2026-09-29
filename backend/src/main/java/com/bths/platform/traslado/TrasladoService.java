@@ -94,6 +94,7 @@ public class TrasladoService {
         traslado.setLocalOrigem(request.getLocalOrigem());
         traslado.setLocalDestino(request.getLocalDestino());
         traslado.setObservacao(request.getObservacoes());
+        traslado.setOrientacaoHospede(request.getOrientacaoHospede());
 
         Traslado salvo = trasladoRepository.save(traslado);
 
@@ -177,6 +178,7 @@ public class TrasladoService {
         traslado.setLocalOrigem(request.getLocalOrigem());
         traslado.setLocalDestino(request.getLocalDestino());
         traslado.setObservacao(request.getObservacoes());
+        traslado.setOrientacaoHospede(request.getOrientacaoHospede());
 
         Traslado atualizado =
                 trasladoRepository.save(traslado);

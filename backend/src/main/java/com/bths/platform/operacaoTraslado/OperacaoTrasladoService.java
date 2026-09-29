@@ -154,6 +154,10 @@ public class OperacaoTrasladoService {
                 request.getObservacao()
         );
 
+        operacao.setOrientacaoHospede(
+                request.getOrientacaoHospede()
+        );
+
         OperacaoTraslado salva =
                 operacaoTrasladoRepository.save(
                         operacao
@@ -446,6 +450,10 @@ public class OperacaoTrasladoService {
 
         operacao.setObservacao(
                 request.getObservacao()
+        );
+
+        operacao.setOrientacaoHospede(
+                request.getOrientacaoHospede()
         );
 
         OperacaoTraslado salva =

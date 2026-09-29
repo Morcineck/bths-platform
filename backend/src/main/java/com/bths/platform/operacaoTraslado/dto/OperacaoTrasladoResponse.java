@@ -35,6 +35,8 @@ public class OperacaoTrasladoResponse {
 
     private String observacao;
 
+    private String orientacaoHospede;
+
     public Long getId() {
         return id;
     }
@@ -197,5 +199,13 @@ public class OperacaoTrasladoResponse {
             String observacao
     ) {
         this.observacao = observacao;
+    }
+
+    public String getOrientacaoHospede() {
+        return orientacaoHospede;
+    }
+
+    public void setOrientacaoHospede(String orientacaoHospede) {
+        this.orientacaoHospede = orientacaoHospede;
     }
 }

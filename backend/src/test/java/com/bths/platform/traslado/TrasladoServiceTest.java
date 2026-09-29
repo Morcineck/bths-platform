@@ -105,6 +105,7 @@ class TrasladoServiceTest {
         request.setLocalOrigem("Aeroporto de Guarulhos");
         request.setLocalDestino("Hospedagem Beat Trips");
         request.setObservacoes("Teste de traslado");
+        request.setOrientacaoHospede("Motorista aguardando na saída H.");
 
         TrasladoResponse responseEsperado = new TrasladoResponse();
         responseEsperado.setId(1L);
@@ -137,8 +138,29 @@ class TrasladoServiceTest {
 
         verify(hospedeRepository).findById(1L);
         verify(viagemRepository).findById(1L);
-        verify(trasladoRepository).save(any(Traslado.class));
-        verify(trasladoMapper).paraResponse(any(Traslado.class));
+
+        ArgumentCaptor<Traslado> captor =
+                ArgumentCaptor.forClass(
+                        Traslado.class
+                );
+
+        verify(
+                trasladoRepository
+        ).save(
+                captor.capture()
+        );
+
+        assertEquals(
+                "Motorista aguardando na saída H.",
+                captor.getValue()
+                        .getOrientacaoHospede()
+        );
+
+        verify(
+                trasladoMapper
+        ).paraResponse(
+                any(Traslado.class)
+        );
     }
 
     @Test
@@ -519,6 +541,9 @@ class TrasladoServiceTest {
         request.setLocalOrigem("Hospedagem Beat Trips");
         request.setLocalDestino("Aeroporto de Guarulhos");
         request.setObservacoes("Traslado atualizado");
+        request.setOrientacaoHospede(
+                "Embarque no estacionamento principal."
+        );
 
         TrasladoResponse responseEsperado = new TrasladoResponse();
         responseEsperado.setId(1L);
@@ -548,6 +573,11 @@ class TrasladoServiceTest {
         assertEquals(Aeroporto.GRU, response.getAeroporto());
         assertEquals(StatusTraslado.AGUARDANDO, response.getStatus());
         assertEquals("G39876", response.getNumeroVoo());
+
+        assertEquals(
+                "Embarque no estacionamento principal.",
+                traslado.getOrientacaoHospede()
+        );
 
         verify(trasladoRepository).findById(1L);
         verify(trasladoRepository).save(traslado);
@@ -1579,7 +1609,5 @@ class TrasladoServiceTest {
 
         verifyNoInteractions(trasladoMapper);
     }
-
-
 
 }
