@@ -1,5 +1,6 @@
 package com.bths.platform.app;
 
+import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +16,16 @@ import java.util.List;
 public class AppHospedeController {
 
     private final HospedeService hospedeService;
+    private final AppHospedeService appHospedeService;
 
     public AppHospedeController(
-            HospedeService hospedeService
+            HospedeService hospedeService,
+            AppHospedeService appHospedeService
     ) {
         this.hospedeService =
                 hospedeService;
+        this.appHospedeService =
+                appHospedeService;
     }
 
     @GetMapping("/hospedes")
@@ -39,4 +44,22 @@ public class AppHospedeController {
                 response
         );
     }
+
+    @GetMapping("/viagem")
+    public ResponseEntity<MinhaViagemResponse> buscarMinhaViagem(
+            Authentication authentication
+    ) {
+
+        MinhaViagemResponse response =
+                appHospedeService.buscarMinhaViagem(
+                        authentication.getName()
+                );
+
+        if (response == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(response);
+    }
+
+
 }
