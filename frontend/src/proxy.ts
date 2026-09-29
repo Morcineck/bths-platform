@@ -21,5 +21,6 @@ export const config = {
     "/hospedes/:path*",
     "/motorista/:path*",
     "/veiculos/:path*",
+    "/app/:path*",
   ],
 };

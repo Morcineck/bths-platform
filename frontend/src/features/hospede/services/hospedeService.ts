@@ -163,3 +163,17 @@ export async function criarAcessoBths(
 
   return response.json();
 }
+
+export async function buscarHospedesDoUsuario(): Promise<Hospede[]> {
+  const response = await authFetch(
+    `${API_URL}/api/app/hospedes`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar os dados do hóspede.",
+    );
+  }
+
+  return response.json();
+}
