@@ -1,53 +1,20 @@
-package com.bths.platform.alocacao.dto;
+package com.bths.platform.app.dto;
 
 import com.bths.platform.alocacao.enums.TipoCama;
+import com.bths.platform.quarto.enums.TipoQuarto;
 
-import java.time.LocalDateTime;
-
-public class AlocacaoQuartoResponse {
-
-    private Long id;
-
-    private Long hospedeId;
-    private String hospedeNome;
+public class MeuQuartoResponse {
 
     private Long quartoId;
     private String quartoNome;
+    private TipoQuarto quartoTipo;
+    private TipoCama tipoCama;
+    private Integer capacidade;
 
     private Long viagemId;
     private String viagemNome;
 
-    private TipoCama tipoCama;
 
-    private LocalDateTime dataAlocacao;
-
-    public AlocacaoQuartoResponse() {
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getHospedeId() {
-        return hospedeId;
-    }
-
-    public void setHospedeId(Long hospedeId) {
-        this.hospedeId = hospedeId;
-    }
-
-    public String getHospedeNome() {
-        return hospedeNome;
-    }
-
-    public void setHospedeNome(String hospedeNome) {
-        this.hospedeNome = hospedeNome;
-    }
 
     public Long getQuartoId() {
         return quartoId;
@@ -65,6 +32,22 @@ public class AlocacaoQuartoResponse {
         this.quartoNome = quartoNome;
     }
 
+    public TipoQuarto getQuartoTipo() {
+        return quartoTipo;
+    }
+
+    public void setQuartoTipo(TipoQuarto quartoTipo) {
+        this.quartoTipo = quartoTipo;
+    }
+
+    public Integer getCapacidade() {
+        return capacidade;
+    }
+
+    public void setCapacidade(Integer capacidade) {
+        this.capacidade = capacidade;
+    }
+
     public Long getViagemId() {
         return viagemId;
     }
@@ -79,14 +62,6 @@ public class AlocacaoQuartoResponse {
 
     public void setViagemNome(String viagemNome) {
         this.viagemNome = viagemNome;
-    }
-
-    public LocalDateTime getDataAlocacao() {
-        return dataAlocacao;
-    }
-
-    public void setDataAlocacao(LocalDateTime dataAlocacao) {
-        this.dataAlocacao = dataAlocacao;
     }
 
     public TipoCama getTipoCama() {

@@ -19,9 +19,11 @@ public class AlocacaoQuartoMapper {
         response.setHospedeNome(alocacao.getHospede().getNomeCompleto());
         response.setQuartoId(alocacao.getQuarto().getId());
         response.setQuartoNome(alocacao.getQuarto().getNome());
+        response.setTipoCama(alocacao.getTipoCama());
         response.setViagemId(alocacao.getViagem().getId());
         response.setViagemNome(alocacao.getViagem().getNome());
         response.setDataAlocacao(alocacao.getDataAlocacao());
+
 
         return response;
     }

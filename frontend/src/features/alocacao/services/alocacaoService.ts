@@ -8,6 +8,7 @@ import {
 import type {
   AlocacaoQuarto,
   AlocacaoQuartoRequest,
+  TipoCama,
 } from "../types/alocacao";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -81,6 +82,7 @@ export async function listarAlocacoesPorQuarto(
 export async function trocarQuarto(
   alocacaoId: number,
   novoQuartoId: number,
+  tipoCama: TipoCama,
 ): Promise<AlocacaoQuarto> {
   await inicializarCsrf();
 
@@ -97,6 +99,7 @@ export async function trocarQuarto(
       },
       body: JSON.stringify({
         novoQuartoId,
+        tipoCama,
       }),
     },
   );

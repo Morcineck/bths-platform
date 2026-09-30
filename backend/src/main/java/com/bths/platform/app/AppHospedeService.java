@@ -1,7 +1,9 @@
 package com.bths.platform.app;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.MeuCheckInResponse;
+import com.bths.platform.app.dto.MeuQuartoResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.Hospede;
@@ -28,12 +30,14 @@ public class AppHospedeService {
     private final TrasladoRepository trasladoRepository;
     private final QrCodeGeradorService qrCodeGeradorService;
 
+
     public AppHospedeService(
             UsuarioRepository usuarioRepository,
             HospedeRepository hospedeRepository,
             AlocacaoQuartoRepository alocacaoQuartoRepository,
             TrasladoRepository trasladoRepository,
             QrCodeGeradorService qrCodeGeradorService
+
     ) {
 
         this.usuarioRepository = usuarioRepository;
@@ -41,6 +45,7 @@ public class AppHospedeService {
         this.alocacaoQuartoRepository = alocacaoQuartoRepository;
         this.trasladoRepository = trasladoRepository;
         this.qrCodeGeradorService = qrCodeGeradorService;
+
 
     }
 
@@ -141,8 +146,9 @@ public class AppHospedeService {
         return response;
     }
 
-    public List<MeuTrasladoResponse> buscarMeusTraslados(
+    public MeuQuartoResponse buscarMeuQuarto(
             String email
+
     ) {
 
         Usuario usuario =
@@ -165,227 +171,308 @@ public class AppHospedeService {
                         usuario.getId()
                 );
 
-        if (hospedes.isEmpty()) {
-            return List.of();
-        }
+        Hospede hospede =
+                hospedes.get(0);
 
-        Hospede hospede = hospedes.get(0);
+        Viagem viagem =
+                hospede.getViagem();
 
-        return trasladoRepository
-                .findByHospedeId(hospede.getId())
-                .stream()
-                .map(this::paraMeuTrasladoResponse)
-                .toList();
-    }
+        return alocacaoQuartoRepository
+                .findByHospedeIdAndViagemId(
+                        hospede.getId(),
+                        viagem.getId()
+                )
+                .map(alocacao -> {
 
-    private MeuTrasladoResponse paraMeuTrasladoResponse(
-            Traslado traslado
-    ) {
+                    MeuQuartoResponse response =
+                            new MeuQuartoResponse();
 
-        MeuTrasladoResponse response =
-                new MeuTrasladoResponse();
+                    response.setQuartoId(
+                            alocacao.getQuarto()
+                                    .getId()
+                    );
 
-        response.setId(traslado.getId());
+                    response.setQuartoNome(
+                            alocacao
+                                    .getQuarto()
+                                    .getNome()
+                    );
 
-        response.setNumeroVoo(
-                traslado.getNumeroVoo()
-        );
+                    response.setQuartoTipo(
+                            alocacao
+                                    .getQuarto()
+                                    .getTipo()
+                    );
 
-        response.setCompanhiaAerea(
-                traslado.getCompanhiaAerea()
-        );
+                    response.setTipoCama(
+                            alocacao.getTipoCama()
+                    );
 
-        OperacaoTraslado operacao =
-                traslado.getOperacaoTraslado();
+                    response.setCapacidade(
+                            alocacao
+                                    .getQuarto()
+                                    .getCapacidade()
+                    );
 
-        if (operacao != null) {
+                    response.setViagemId(
+                            viagem.getId()
+                    );
 
-            response.setTipo(
-                    operacao.getTipo()
-            );
+                    response.setViagemNome(
+                            viagem.getNome()
+                    );
 
-            response.setDataHoraPrevista(
-                    operacao.getDataHoraPrevista()
-            );
+                    return response;
+                })
+                .orElse(null);
 
-            response.setLocalOrigem(
-                    operacao.getLocalOrigem()
-            );
+                }
 
-            response.setLocalDestino(
-                    operacao.getLocalDestino()
-            );
+        public List<MeuTrasladoResponse> buscarMeusTraslados (
+                String email
+    ){
 
-            response.setAeroporto(
-                    operacao.getAeroporto()
-            );
+            Usuario usuario =
+                    usuarioRepository
+                            .findByEmail(email)
+                            .orElseThrow(() ->
+                                    new UsuarioNaoEncontradoException(
+                                            "Usuário não encontrado!"
+                                    )
+                            );
 
-            response.setStatus(
-                    operacao.getStatus()
-            );
-
-            if (operacao.getMotorista() != null) {
-                response.setMotoristaNome(
-                        operacao.getMotorista()
-                                .getNomeCompleto()
+            if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+                throw new IllegalArgumentException(
+                        "A consulta é permitida apenas para usuários com perfil HOSPEDE."
                 );
             }
 
-            if (operacao.getVeiculo() != null) {
-                response.setVeiculoModelo(
-                        operacao.getVeiculo()
-                                .getModelo()
+            List<Hospede> hospedes =
+                    hospedeRepository.findByUsuarioId(
+                            usuario.getId()
+                    );
+
+            if (hospedes.isEmpty()) {
+                return List.of();
+            }
+
+            Hospede hospede = hospedes.get(0);
+
+            return trasladoRepository
+                    .findByHospedeId(hospede.getId())
+                    .stream()
+                    .map(this::paraMeuTrasladoResponse)
+                    .toList();
+        }
+
+        private MeuTrasladoResponse paraMeuTrasladoResponse (
+                Traslado traslado
+    ){
+
+            MeuTrasladoResponse response =
+                    new MeuTrasladoResponse();
+
+            response.setId(traslado.getId());
+
+            response.setNumeroVoo(
+                    traslado.getNumeroVoo()
+            );
+
+            response.setCompanhiaAerea(
+                    traslado.getCompanhiaAerea()
+            );
+
+            OperacaoTraslado operacao =
+                    traslado.getOperacaoTraslado();
+
+            if (operacao != null) {
+
+                response.setTipo(
+                        operacao.getTipo()
                 );
 
-                response.setVeiculoPlaca(
-                        operacao.getVeiculo()
-                                .getPlaca()
+                response.setDataHoraPrevista(
+                        operacao.getDataHoraPrevista()
+                );
+
+                response.setLocalOrigem(
+                        operacao.getLocalOrigem()
+                );
+
+                response.setLocalDestino(
+                        operacao.getLocalDestino()
+                );
+
+                response.setAeroporto(
+                        operacao.getAeroporto()
+                );
+
+                response.setStatus(
+                        operacao.getStatus()
+                );
+
+                if (operacao.getMotorista() != null) {
+                    response.setMotoristaNome(
+                            operacao.getMotorista()
+                                    .getNomeCompleto()
+                    );
+                }
+
+                if (operacao.getVeiculo() != null) {
+                    response.setVeiculoModelo(
+                            operacao.getVeiculo()
+                                    .getModelo()
+                    );
+
+                    response.setVeiculoPlaca(
+                            operacao.getVeiculo()
+                                    .getPlaca()
+                    );
+                }
+
+                response.setOrientacaoHospede(
+                        operacao.getOrientacaoHospede()
+                );
+
+            } else {
+
+                response.setTipo(
+                        traslado.getTipo()
+                );
+
+                response.setDataHoraPrevista(
+                        traslado.getDataHoraPrevista()
+                );
+
+                response.setLocalOrigem(
+                        traslado.getLocalOrigem()
+                );
+
+                response.setLocalDestino(
+                        traslado.getLocalDestino()
+                );
+
+                response.setAeroporto(
+                        traslado.getAeroporto()
+                );
+
+                response.setStatus(
+                        traslado.getStatus()
+                );
+
+                if (traslado.getMotorista() != null) {
+                    response.setMotoristaNome(
+                            traslado.getMotorista()
+                                    .getNomeCompleto()
+                    );
+                }
+
+                if (traslado.getVeiculo() != null) {
+                    response.setVeiculoModelo(
+                            traslado.getVeiculo()
+                                    .getModelo()
+                    );
+
+                    response.setVeiculoPlaca(
+                            traslado.getVeiculo()
+                                    .getPlaca()
+                    );
+                }
+
+                response.setOrientacaoHospede(
+                        traslado.getOrientacaoHospede()
                 );
             }
 
-            response.setOrientacaoHospede(
-                    operacao.getOrientacaoHospede()
-            );
+            return response;
+        }
 
-        } else {
+        public MeuCheckInResponse buscarMeuCheckIn (
+                String email
+    ){
 
-            response.setTipo(
-                    traslado.getTipo()
-            );
+            Usuario usuario =
+                    usuarioRepository
+                            .findByEmail(email)
+                            .orElseThrow(() ->
+                                    new UsuarioNaoEncontradoException(
+                                            "Usuário não encontrado!"
+                                    )
+                            );
 
-            response.setDataHoraPrevista(
-                    traslado.getDataHoraPrevista()
-            );
-
-            response.setLocalOrigem(
-                    traslado.getLocalOrigem()
-            );
-
-            response.setLocalDestino(
-                    traslado.getLocalDestino()
-            );
-
-            response.setAeroporto(
-                    traslado.getAeroporto()
-            );
-
-            response.setStatus(
-                    traslado.getStatus()
-            );
-
-            if (traslado.getMotorista() != null) {
-                response.setMotoristaNome(
-                        traslado.getMotorista()
-                                .getNomeCompleto()
+            if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+                throw new IllegalArgumentException(
+                        "A consulta é permitida apenas para usuários com perfil HOSPEDE."
                 );
             }
 
-            if (traslado.getVeiculo() != null) {
-                response.setVeiculoModelo(
-                        traslado.getVeiculo()
-                                .getModelo()
-                );
+            List<Hospede> hospedes =
+                    hospedeRepository.findByUsuarioId(
+                            usuario.getId()
+                    );
 
-                response.setVeiculoPlaca(
-                        traslado.getVeiculo()
-                                .getPlaca()
+            if (hospedes.isEmpty()) {
+                return null;
+            }
+
+            Hospede hospede = hospedes.get(0);
+
+            MeuCheckInResponse response =
+                    new MeuCheckInResponse();
+
+            response.setHospedeNome(
+                    hospede.getNomeCompleto()
+            );
+
+            response.setStatusCheckIn(
+                    hospede.getStatusCheckIn()
+            );
+
+            response.setDataHoraCheckIn(
+                    hospede.getDataHoraCheckIn()
+            );
+
+            return response;
+        }
+
+        public byte[] buscarMeuQrCode (
+                String email
+    ){
+
+            Usuario usuario =
+                    usuarioRepository
+                            .findByEmail(email)
+                            .orElseThrow(() ->
+                                    new UsuarioNaoEncontradoException(
+                                            "Usuário não encontrado!"
+                                    )
+                            );
+
+            if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+                throw new IllegalArgumentException(
+                        "A consulta é permitida apenas para usuários com perfil HOSPEDE."
                 );
             }
 
-            response.setOrientacaoHospede(
-                    traslado.getOrientacaoHospede()
+            List<Hospede> hospedes =
+                    hospedeRepository.findByUsuarioId(
+                            usuario.getId()
+                    );
+
+            if (hospedes.isEmpty()) {
+                return null;
+            }
+
+            Hospede hospede = hospedes.get(0);
+
+            if (hospede.getCodigoCheckIn() == null
+                    || hospede.getCodigoCheckIn().isBlank()) {
+                return null;
+            }
+
+            return qrCodeGeradorService.gerarQRCode(
+                    hospede.getCodigoCheckIn()
             );
         }
 
-        return response;
     }
-
-    public MeuCheckInResponse buscarMeuCheckIn(
-            String email
-    ) {
-
-        Usuario usuario =
-                usuarioRepository
-                        .findByEmail(email)
-                        .orElseThrow(() ->
-                                new UsuarioNaoEncontradoException(
-                                        "Usuário não encontrado!"
-                                )
-                        );
-
-        if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
-            throw new IllegalArgumentException(
-                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
-            );
-        }
-
-        List<Hospede> hospedes =
-                hospedeRepository.findByUsuarioId(
-                        usuario.getId()
-                );
-
-        if (hospedes.isEmpty()) {
-            return null;
-        }
-
-        Hospede hospede = hospedes.get(0);
-
-        MeuCheckInResponse response =
-                new MeuCheckInResponse();
-
-        response.setHospedeNome(
-                hospede.getNomeCompleto()
-        );
-
-        response.setStatusCheckIn(
-                hospede.getStatusCheckIn()
-        );
-
-        response.setDataHoraCheckIn(
-                hospede.getDataHoraCheckIn()
-        );
-
-        return response;
-    }
-
-    public byte[] buscarMeuQrCode(
-            String email
-    ) {
-
-        Usuario usuario =
-                usuarioRepository
-                        .findByEmail(email)
-                        .orElseThrow(() ->
-                                new UsuarioNaoEncontradoException(
-                                        "Usuário não encontrado!"
-                                )
-                        );
-
-        if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
-            throw new IllegalArgumentException(
-                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
-            );
-        }
-
-        List<Hospede> hospedes =
-                hospedeRepository.findByUsuarioId(
-                        usuario.getId()
-                );
-
-        if (hospedes.isEmpty()) {
-            return null;
-        }
-
-        Hospede hospede = hospedes.get(0);
-
-        if (hospede.getCodigoCheckIn() == null
-                || hospede.getCodigoCheckIn().isBlank()) {
-            return null;
-        }
-
-        return qrCodeGeradorService.gerarQRCode(
-                hospede.getCodigoCheckIn()
-        );
-    }
-
-}
