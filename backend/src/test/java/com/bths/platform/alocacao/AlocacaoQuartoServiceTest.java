@@ -3,6 +3,7 @@ package com.bths.platform.alocacao;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoRequest;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
 import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
 import com.bths.platform.alocacao.exception.ViagemIncompativelException;
@@ -92,6 +93,7 @@ class AlocacaoQuartoServiceTest {
         alocacaoSalva.setId(1L);
         alocacaoSalva.setHospede(hospede);
         alocacaoSalva.setQuarto(quarto);
+
         alocacaoSalva.setViagem(viagem);
 
         AlocacaoQuartoResponse responseEsperado =
@@ -792,7 +794,8 @@ class AlocacaoQuartoServiceTest {
         AlocacaoQuartoResponse resultado =
                 alocacaoService.trocarQuarto(
                         alocacaoId,
-                        novoQuartoId
+                        novoQuartoId,
+                        TipoCama.BELICHE
                 );
 
         assertEquals(alocacaoId, resultado.getId());
@@ -822,7 +825,8 @@ class AlocacaoQuartoServiceTest {
                 AlocacaoNaoEncontradaException.class,
                 () -> alocacaoService.trocarQuarto(
                         alocacaoId,
-                        novoQuartoId
+                        novoQuartoId,
+                        TipoCama.BELICHE
                 )
         );
 
@@ -865,7 +869,8 @@ class AlocacaoQuartoServiceTest {
                 QuartoNaoEncontradoException.class,
                 () -> alocacaoService.trocarQuarto(
                         alocacaoId,
-                        novoQuartoId
+                        novoQuartoId,
+                        TipoCama.BELICHE
                 )
         );
 
@@ -919,7 +924,8 @@ class AlocacaoQuartoServiceTest {
                 ViagemIncompativelException.class,
                 () -> alocacaoService.trocarQuarto(
                         alocacaoId,
-                        novoQuartoId
+                        novoQuartoId,
+                        TipoCama.BELICHE
                 )
         );
 
@@ -971,7 +977,8 @@ class AlocacaoQuartoServiceTest {
                 QuartoIndisponivelException.class,
                 () -> alocacaoService.trocarQuarto(
                         alocacaoId,
-                        novoQuartoId
+                        novoQuartoId,
+                        TipoCama.BELICHE
                 )
         );
 
@@ -1026,7 +1033,8 @@ class AlocacaoQuartoServiceTest {
                 QuartoLotadoException.class,
                 () -> alocacaoService.trocarQuarto(
                         alocacaoId,
-                        novoQuartoId
+                        novoQuartoId,
+                        TipoCama.BELICHE
                 )
         );
 

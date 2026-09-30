@@ -112,7 +112,7 @@ function calcularDiasAteViagem(
 
 const atalhos = [
   {
-    href: "/app/viagem",
+    href: "/app/quarto",
     label: "Meu quarto",
     icon: BedDouble,
   },

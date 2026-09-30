@@ -65,7 +65,8 @@ public class AlocacaoQuartoController {
         return ResponseEntity.ok(
                 alocacaoService.trocarQuarto(
                         id,
-                        request.getNovoQuartoId()
+                        request.getNovoQuartoId(),
+                        request.getTipoCama()
                 )
         );
     }

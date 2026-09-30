@@ -2,7 +2,9 @@ package com.bths.platform.app;
 
 import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.MeuCheckInResponse;
+import com.bths.platform.app.dto.MeuQuartoResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.Hospede;
@@ -12,6 +14,7 @@ import com.bths.platform.motorista.Motorista;
 import com.bths.platform.operacaoTraslado.OperacaoTraslado;
 import com.bths.platform.qrcode.QrCodeGeradorService;
 import com.bths.platform.quarto.Quarto;
+import com.bths.platform.quarto.enums.TipoQuarto;
 import com.bths.platform.traslado.Traslado;
 import com.bths.platform.traslado.TrasladoRepository;
 import com.bths.platform.traslado.enums.Aeroporto;
@@ -1341,5 +1344,184 @@ class AppHospedeServiceTest {
                 meuTraslado.getOrientacaoHospede()
         );
     }
+
+    @Test
+    void deveBuscarMeuQuartoQuandoHospedePossuiAlocacao() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+        viagem.setNome("Tomorrowland Brasil 2027");
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setNomeCompleto("Robson");
+        hospede.setViagem(viagem);
+
+        Quarto quarto = new Quarto();
+        quarto.setId(30L);
+        quarto.setNome("Suíte 01");
+        quarto.setTipo(
+                TipoQuarto.SUITE
+        );
+        quarto.setCapacidade(
+                4
+        );
+
+        AlocacaoQuarto alocacao =
+                new AlocacaoQuarto();
+
+        alocacao.setHospede(
+                hospede
+        );
+
+        alocacao.setViagem(
+                viagem
+        );
+
+        alocacao.setQuarto(
+                quarto
+        );
+
+        alocacao.setTipoCama(
+                TipoCama.CASAL
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                alocacaoQuartoRepository
+                        .findByHospedeIdAndViagemId(
+                                20L,
+                                10L
+                        )
+        ).thenReturn(
+                Optional.of(alocacao)
+        );
+
+        MeuQuartoResponse response =
+                appHospedeService.buscarMeuQuarto(
+                        email
+                );
+
+        assertNotNull(
+                response
+        );
+
+        assertEquals(
+                30L,
+                response.getQuartoId()
+        );
+
+        assertEquals(
+                "Suíte 01",
+                response.getQuartoNome()
+        );
+
+        assertEquals(
+                TipoQuarto.SUITE,
+                response.getQuartoTipo()
+        );
+
+        assertEquals(
+                TipoCama.CASAL,
+                response.getTipoCama()
+        );
+
+        assertEquals(
+                4,
+                response.getCapacidade()
+        );
+
+        assertEquals(
+                10L,
+                response.getViagemId()
+        );
+
+        assertEquals(
+                "Tomorrowland Brasil 2027",
+                response.getViagemNome()
+        );
+    }
+
+    @Test
+    void deveRetornarNullQuandoHospedeAindaNaoPossuiQuarto() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+        viagem.setNome("Tomorrowland Brasil 2027");
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setNomeCompleto("Robson");
+        hospede.setViagem(
+                viagem
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                alocacaoQuartoRepository
+                        .findByHospedeIdAndViagemId(
+                                20L,
+                                10L
+                        )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        MeuQuartoResponse response =
+                appHospedeService.buscarMeuQuarto(
+                        email
+                );
+
+        assertNull(
+                response
+        );
+    }
+
 
 }

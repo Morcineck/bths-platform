@@ -4,6 +4,7 @@ package com.bths.platform.alocacao;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 
 import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
 import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
 import com.bths.platform.alocacao.exception.ViagemIncompativelException;
@@ -63,6 +64,7 @@ class AlocacaoQuartoControllerTest {
         response.setHospedeNome("João da Silva");
         response.setQuartoId(2L);
         response.setQuartoNome("Suíte 01");
+        response.setTipoCama(TipoCama.BELICHE);
         response.setViagemId(1L);
         response.setViagemNome("Tomorrowland Brasil 2027");
 
@@ -70,11 +72,12 @@ class AlocacaoQuartoControllerTest {
                 .thenReturn(response);
 
         String requestJson = """
-            {
-                "hospedeId": 1,
-                "quartoId": 2
-            }
-            """;
+                {
+                    "hospedeId": 1,
+                    "quartoId": 2,
+                    "tipoCama": "BELICHE"
+                }
+                """;
 
         mockMvc.perform(
                         post("/api/alocacoes-quartos")
@@ -87,6 +90,7 @@ class AlocacaoQuartoControllerTest {
                 .andExpect(jsonPath("$.hospedeNome").value("João da Silva"))
                 .andExpect(jsonPath("$.quartoId").value(2))
                 .andExpect(jsonPath("$.quartoNome").value("Suíte 01"))
+                .andExpect(jsonPath("$.tipoCama").value("BELICHE"))
                 .andExpect(jsonPath("$.viagemId").value(1))
                 .andExpect(jsonPath("$.viagemNome")
                         .value("Tomorrowland Brasil 2027"));
@@ -123,6 +127,7 @@ class AlocacaoQuartoControllerTest {
                 .andExpect(jsonPath("$.viagemId").value(1))
                 .andExpect(jsonPath("$.viagemNome")
                         .value("Tomorrowland Brasil 2027"));
+
     }
 
     @Test
@@ -218,15 +223,17 @@ class AlocacaoQuartoControllerTest {
         response.setHospedeNome("João da Silva");
         response.setQuartoId(3L);
         response.setQuartoNome("Suíte 02");
+        response.setTipoCama(TipoCama.BELICHE);
         response.setViagemId(1L);
         response.setViagemNome("Tomorrowland Brasil 2027");
 
-        when(alocacaoService.trocarQuarto(1L, 3L))
+        when(alocacaoService.trocarQuarto(1L, 3L, TipoCama.BELICHE))
                 .thenReturn(response);
 
         String requestJson = """
             {
-                "novoQuartoId": 3
+                "novoQuartoId": 3,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -243,10 +250,12 @@ class AlocacaoQuartoControllerTest {
                 .andExpect(jsonPath("$.quartoId").value(3))
                 .andExpect(jsonPath("$.quartoNome")
                         .value("Suíte 02"))
+                .andExpect(jsonPath("$.tipoCama").value("BELICHE"))
                 .andExpect(jsonPath("$.viagemId").value(1))
                 .andExpect(jsonPath("$.viagemNome")
                         .value("Tomorrowland Brasil 2027"));
     }
+
 
     @Test
     void deveRemoverAlocacaoComSucesso() throws Exception {
@@ -299,7 +308,8 @@ class AlocacaoQuartoControllerTest {
         String requestJson = """
             {
                 "hospedeId": 999,
-                "quartoId": 2
+                "quartoId": 2,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -330,7 +340,8 @@ class AlocacaoQuartoControllerTest {
         String requestJson = """
             {
                 "hospedeId": 1,
-                "quartoId": 999
+                "quartoId": 999,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -361,7 +372,8 @@ class AlocacaoQuartoControllerTest {
         String requestJson = """
             {
                 "hospedeId": 1,
-                "quartoId": 2
+                "quartoId": 2,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -392,7 +404,8 @@ class AlocacaoQuartoControllerTest {
         String requestJson = """
             {
                 "hospedeId": 1,
-                "quartoId": 2
+                "quartoId": 2,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -410,6 +423,7 @@ class AlocacaoQuartoControllerTest {
                         .value(409));
     }
 
+
     @Test
     void deveRetornar409QuandoQuartoEstiverLotado() throws Exception {
 
@@ -423,7 +437,8 @@ class AlocacaoQuartoControllerTest {
         String requestJson = """
             {
                 "hospedeId": 1,
-                "quartoId": 2
+                "quartoId": 2,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -441,6 +456,7 @@ class AlocacaoQuartoControllerTest {
                         .value(409));
     }
 
+
     @Test
     void deveRetornar409QuandoViagemForIncompativel() throws Exception {
 
@@ -454,7 +470,8 @@ class AlocacaoQuartoControllerTest {
         String requestJson = """
             {
                 "hospedeId": 1,
-                "quartoId": 5
+                "quartoId": 5,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -477,7 +494,8 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "quartoId": 2
+                "quartoId": 2,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -497,7 +515,30 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "hospedeId": 1
+                "hospedeId": 1,
+                "tipoCama": "BELICHE"
+            }
+            """;
+
+        mockMvc.perform(
+                        post("/api/alocacoes-quartos")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson)
+                )
+                .andExpect(status().isBadRequest());
+
+        verify(alocacaoService, never())
+                .alocarHospede(any());
+    }
+
+    @Test
+    void deveRetornar400QuandoTipoCamaNaoForInformadoAoAlocar()
+            throws Exception {
+
+        String requestJson = """
+            {
+                "hospedeId": 1,
+                "quartoId": 2
             }
             """;
 
@@ -517,6 +558,7 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -528,7 +570,7 @@ class AlocacaoQuartoControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(alocacaoService, never())
-                .trocarQuarto(anyLong(), anyLong());
+                .trocarQuarto(anyLong(), anyLong(), any());
     }
 
     @Test
@@ -536,7 +578,7 @@ class AlocacaoQuartoControllerTest {
 
         Long alocacaoId = 999L;
 
-        when(alocacaoService.trocarQuarto(alocacaoId, 3L))
+        when(alocacaoService.trocarQuarto(alocacaoId, 3L, TipoCama.BELICHE))
                 .thenThrow(
                         new AlocacaoNaoEncontradaException(
                                 "Alocação não encontrada!"
@@ -545,7 +587,8 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "novoQuartoId": 3
+                "novoQuartoId": 3,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -563,7 +606,7 @@ class AlocacaoQuartoControllerTest {
                         .value(404));
 
         verify(alocacaoService)
-                .trocarQuarto(alocacaoId, 3L);
+                .trocarQuarto(alocacaoId, 3L, TipoCama.BELICHE);
     }
 
     @Test
@@ -572,7 +615,7 @@ class AlocacaoQuartoControllerTest {
         Long alocacaoId = 1L;
         Long novoQuartoId = 999L;
 
-        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId))
+        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE))
                 .thenThrow(
                         new QuartoNaoEncontradoException(
                                 "Quarto não encontrado!"
@@ -581,7 +624,8 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "novoQuartoId": 999
+                "novoQuartoId": 999,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -599,8 +643,9 @@ class AlocacaoQuartoControllerTest {
                         .value(404));
 
         verify(alocacaoService)
-                .trocarQuarto(alocacaoId, novoQuartoId);
+                .trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE);
     }
+
 
     @Test
     void deveRetornar409AoTrocarParaQuartoDeOutraViagem() throws Exception {
@@ -608,7 +653,7 @@ class AlocacaoQuartoControllerTest {
         Long alocacaoId = 1L;
         Long novoQuartoId = 5L;
 
-        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId))
+        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE))
                 .thenThrow(
                         new ViagemIncompativelException(
                                 "Hóspede e quarto pertencem a viagens diferentes!"
@@ -617,7 +662,8 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "novoQuartoId": 5
+                "novoQuartoId": 5,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -635,7 +681,7 @@ class AlocacaoQuartoControllerTest {
                         .value(409));
 
         verify(alocacaoService)
-                .trocarQuarto(alocacaoId, novoQuartoId);
+                .trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE);
     }
 
     @Test
@@ -644,7 +690,7 @@ class AlocacaoQuartoControllerTest {
         Long alocacaoId = 1L;
         Long novoQuartoId = 3L;
 
-        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId))
+        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE))
                 .thenThrow(
                         new QuartoIndisponivelException(
                                 "Quarto indisponível para alocação!"
@@ -653,7 +699,8 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "novoQuartoId": 3
+                "novoQuartoId": 3,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -671,7 +718,7 @@ class AlocacaoQuartoControllerTest {
                         .value(409));
 
         verify(alocacaoService)
-                .trocarQuarto(alocacaoId, novoQuartoId);
+                .trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE);
     }
 
     @Test
@@ -680,7 +727,7 @@ class AlocacaoQuartoControllerTest {
         Long alocacaoId = 1L;
         Long novoQuartoId = 3L;
 
-        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId))
+        when(alocacaoService.trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE))
                 .thenThrow(
                         new QuartoLotadoException(
                                 "Quarto lotado!"
@@ -689,7 +736,8 @@ class AlocacaoQuartoControllerTest {
 
         String requestJson = """
             {
-                "novoQuartoId": 3
+                "novoQuartoId": 3,
+                "tipoCama": "BELICHE"
             }
             """;
 
@@ -707,7 +755,7 @@ class AlocacaoQuartoControllerTest {
                         .value(409));
 
         verify(alocacaoService)
-                .trocarQuarto(alocacaoId, novoQuartoId);
+                .trocarQuarto(alocacaoId, novoQuartoId, TipoCama.BELICHE);
     }
 
     @Test
@@ -744,6 +792,7 @@ class AlocacaoQuartoControllerTest {
                 .buscarOcupacaoPorQuarto(quartoId);
     }
 
+
     @Test
     void deveRetornar404AoBuscarOcupacaoDeQuartoInexistente() throws Exception {
 
@@ -773,4 +822,39 @@ class AlocacaoQuartoControllerTest {
         verify(alocacaoService)
                 .buscarOcupacaoPorQuarto(quartoId);
     }
+
+    @Test
+    void deveRetornar400QuandoTipoCamaNaoForInformado()
+            throws Exception {
+
+        String requestJson = """
+        {
+            "novoQuartoId": 3
+        }
+        """;
+
+        mockMvc.perform(
+                        put(
+                                "/api/alocacoes-quartos/1/quarto"
+                        )
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(requestJson)
+                )
+                .andExpect(
+                        status().isBadRequest()
+                );
+
+        verify(
+                alocacaoService,
+                never()
+        ).trocarQuarto(
+                anyLong(),
+                anyLong(),
+                any()
+        );
+    }
+
+
 }

@@ -1,11 +1,14 @@
 package com.bths.platform.app;
 
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.MeuCheckInResponse;
+import com.bths.platform.app.dto.MeuQuartoResponse;
 import com.bths.platform.app.dto.MeuTrasladoResponse;
 import com.bths.platform.app.dto.MinhaViagemResponse;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import com.bths.platform.hospede.enums.StatusCheckIn;
+import com.bths.platform.quarto.enums.TipoQuarto;
 import com.bths.platform.security.JwtService;
 import com.bths.platform.security.UsuarioDetailsService;
 import com.bths.platform.traslado.enums.Aeroporto;
@@ -1417,6 +1420,293 @@ class AppHospedeAuthorizationTest {
                 );
     }
 
+    @Test
+    void devePermitirHospedeAcessarMeuQuarto()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        MeuQuartoResponse response =
+                new MeuQuartoResponse();
+
+        response.setQuartoId(
+                30L
+        );
+
+        response.setQuartoNome(
+                "Suíte 01"
+        );
+
+        response.setQuartoTipo(
+                TipoQuarto.SUITE
+        );
+
+        response.setTipoCama(
+                TipoCama.CASAL
+        );
+
+        response.setCapacidade(
+                4
+        );
+
+        response.setViagemId(
+                20L
+        );
+
+        response.setViagemNome(
+                "Tomorrowland Brasil 2027"
+        );
+
+        when(
+                appHospedeService.buscarMeuQuarto(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                response
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/quarto"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.quartoId")
+                                .value(30L)
+                )
+                .andExpect(
+                        jsonPath("$.quartoNome")
+                                .value("Suíte 01")
+                )
+                .andExpect(
+                        jsonPath("$.quartoTipo")
+                                .value("SUITE")
+                )
+
+                .andExpect(
+                        jsonPath("$.tipoCama")
+                                .value("CASAL")
+                )
+                .andExpect(
+                        jsonPath("$.capacidade")
+                                .value(4)
+                )
+                .andExpect(
+                        jsonPath("$.viagemId")
+                                .value(20L)
+                )
+                .andExpect(
+                        jsonPath("$.viagemNome")
+                                .value(
+                                        "Tomorrowland Brasil 2027"
+                                )
+                );
+    }
+
+    @Test
+    void deveRetornar204QuandoHospedeAindaNaoPossuiQuarto()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        when(
+                appHospedeService.buscarMeuQuarto(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                null
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/quarto"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isNoContent()
+                );
+    }
+
+    @Test
+    void deveBloquearAdminAoAcessarMeuQuarto()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/quarto"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearStaffAoAcessarMeuQuarto()
+            throws Exception {
+
+        UserDetails staff = User
+                .withUsername("staff@beattrips.com")
+                .password("senha")
+                .roles("STAFF")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                "staff@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "staff@beattrips.com"
+                )
+        ).thenReturn(
+                staff
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/quarto"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveRetornar401AoAcessarMeuQuartoSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/quarto"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
 
 
 }

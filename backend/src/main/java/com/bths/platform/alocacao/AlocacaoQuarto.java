@@ -1,5 +1,6 @@
 package com.bths.platform.alocacao;
 
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.quarto.Quarto;
 import com.bths.platform.viagem.Viagem;
@@ -34,6 +35,10 @@ public class AlocacaoQuarto {
     @ManyToOne
     @JoinColumn(name = "viagem_id", nullable = false)
     private Viagem viagem;
+
+
+    @Enumerated(EnumType.STRING)
+    private TipoCama tipoCama;
 
     @Column(nullable = false)
     private LocalDateTime dataAlocacao;
@@ -86,5 +91,13 @@ public class AlocacaoQuarto {
 
     public void setDataAlocacao(LocalDateTime dataAlocacao) {
         this.dataAlocacao = dataAlocacao;
+    }
+
+    public TipoCama getTipoCama() {
+        return tipoCama;
+    }
+
+    public void setTipoCama(TipoCama tipoCama) {
+        this.tipoCama = tipoCama;
     }
 }

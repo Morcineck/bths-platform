@@ -3,6 +3,7 @@ package com.bths.platform.alocacao;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoRequest;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
+import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
 import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
 import com.bths.platform.alocacao.exception.ViagemIncompativelException;
@@ -103,6 +104,7 @@ public class AlocacaoService {
 
         alocacao.setHospede(hospede);
         alocacao.setQuarto(quarto);
+        alocacao.setTipoCama(request.getTipoCama());
         alocacao.setViagem(hospede.getViagem());
 
         AlocacaoQuarto alocacaoSalva =
@@ -147,7 +149,8 @@ public class AlocacaoService {
 
     public AlocacaoQuartoResponse trocarQuarto(
             Long alocacaoId,
-            Long novoQuartoId
+            Long novoQuartoId,
+            TipoCama tipoCama
     ) {
 
         AlocacaoQuarto alocacao = alocacaoRepository
@@ -184,9 +187,18 @@ public class AlocacaoService {
             );
         }
 
-        alocacao.setQuarto(novoQuarto);
+        alocacao.setQuarto(
+                novoQuarto
+        );
 
-        AlocacaoQuarto alocacaoAtualizada = alocacaoRepository.save(alocacao);
+        alocacao.setTipoCama(
+                tipoCama
+        );
+
+        AlocacaoQuarto alocacaoAtualizada =
+                alocacaoRepository.save(
+                        alocacao
+                );
 
         return alocacaoMapper.paraResponse(alocacaoAtualizada);
     }

@@ -13,6 +13,7 @@ import {
 
 import type {
   AlocacaoQuarto,
+  TipoCama,
 } from "@/features/alocacao/types/alocacao";
 
 import {
@@ -114,6 +115,11 @@ export default function HospedeDetalhePage({
   ] = useState("");
 
   const [
+    tipoCamaSelecionado,
+    setTipoCamaSelecionado,
+  ] = useState<TipoCama | "">("");
+
+  const [
     alocandoQuarto,
     setAlocandoQuarto,
   ] = useState(false);
@@ -132,6 +138,11 @@ export default function HospedeDetalhePage({
     novoQuartoId,
     setNovoQuartoId,
   ] = useState("");
+
+  const [
+    novoTipoCama,
+    setNovoTipoCama,
+  ] = useState<TipoCama | "">("");
 
   const [
     trocandoQuarto,
@@ -455,6 +466,15 @@ export default function HospedeDetalhePage({
       return;
     }
 
+    if (!tipoCamaSelecionado) {
+        setErroAlocacao(
+          "Selecione o tipo de cama para continuar.",
+        );
+
+        return;
+
+        }
+
     try {
       setAlocandoQuarto(true);
       setErroAlocacao("");
@@ -467,6 +487,10 @@ export default function HospedeDetalhePage({
           quartoId: Number(
             quartoSelecionadoId,
           ),
+
+          tipoCama:
+            tipoCamaSelecionado,
+
         });
 
       setAlocacao(
@@ -489,6 +513,7 @@ export default function HospedeDetalhePage({
       );
 
       setQuartoSelecionadoId("");
+      setTipoCamaSelecionado("");
 
       setSucessoAlocacao(
         `Hóspede alocado com sucesso no quarto ${novaAlocacao.quartoNome}.`,
@@ -521,6 +546,14 @@ export default function HospedeDetalhePage({
       return;
     }
 
+    if (!novoTipoCama) {
+      setErroTrocaQuarto(
+        "Selecione o tipo de cama.",
+      );
+
+      return;
+    }
+
     try {
       setTrocandoQuarto(true);
       setErroTrocaQuarto("");
@@ -530,6 +563,7 @@ export default function HospedeDetalhePage({
         await trocarQuarto(
           alocacao.id,
           Number(novoQuartoId),
+          novoTipoCama,
         );
 
       setAlocacao(
@@ -552,6 +586,7 @@ export default function HospedeDetalhePage({
       );
 
       setNovoQuartoId("");
+      setNovoTipoCama("");
 
       setSucessoTrocaQuarto(
         `Quarto alterado com sucesso para ${alocacaoAtualizada.quartoNome}.`,
@@ -1551,6 +1586,40 @@ export default function HospedeDetalhePage({
                 </select>
               </div>
 
+              <div>
+                <label
+                  htmlFor="novo-tipo-cama"
+                  className="mb-2 block text-sm font-medium text-foreground"
+                >
+                  Nova cama
+                </label>
+
+                <select
+                  id="novo-tipo-cama"
+                  value={novoTipoCama}
+                  onChange={(event) =>
+                    setNovoTipoCama(
+                      event.target.value as
+                        | TipoCama
+                        | "",
+                    )
+                  }
+                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                >
+                  <option value="">
+                    Selecione o tipo de cama
+                  </option>
+
+                  <option value="CASAL">
+                    Casal
+                  </option>
+
+                  <option value="BELICHE">
+                    Beliche
+                  </option>
+                </select>
+              </div>
+
               {erroTrocaQuarto && (
                 <p
                   role="alert"
@@ -1577,7 +1646,8 @@ export default function HospedeDetalhePage({
                 }
                 disabled={
                   trocandoQuarto ||
-                  !novoQuartoId
+                  !novoQuartoId ||
+                  !novoTipoCama
                 }
                 className="rounded-xl border border-primary px-5 py-3 text-sm font-semibold text-primary transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -1616,6 +1686,7 @@ export default function HospedeDetalhePage({
                 </label>
 
                 <select
+
                   id="quarto"
                   value={
                     quartoSelecionadoId
@@ -1650,6 +1721,40 @@ export default function HospedeDetalhePage({
                       </option>
                     ),
                   )}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="tipo-cama"
+                  className="mb-2 block text-sm font-medium text-foreground"
+                >
+                  Tipo de cama
+                </label>
+
+                <select
+                  id="tipo-cama"
+                  value={tipoCamaSelecionado}
+                  onChange={(event) =>
+                    setTipoCamaSelecionado(
+                      event.target.value as
+                        | TipoCama
+                        | "",
+                    )
+                  }
+                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                >
+                  <option value="">
+                    Selecione o tipo de cama
+                  </option>
+
+                  <option value="CASAL">
+                    Casal
+                  </option>
+
+                  <option value="BELICHE">
+                    Beliche
+                  </option>
                 </select>
               </div>
 

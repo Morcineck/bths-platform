@@ -1,3 +1,7 @@
+export type TipoCama =
+  | "CASAL"
+  | "BELICHE";
+
 export type AlocacaoQuarto = {
   id: number;
 
@@ -6,6 +10,8 @@ export type AlocacaoQuarto = {
 
   quartoId: number;
   quartoNome: string;
+
+  tipoCama: TipoCama | null;
 
   viagemId: number;
   viagemNome: string;
@@ -16,4 +22,5 @@ export type AlocacaoQuarto = {
 export type AlocacaoQuartoRequest = {
   hospedeId: number;
   quartoId: number;
+  tipoCama: TipoCama;
 };
