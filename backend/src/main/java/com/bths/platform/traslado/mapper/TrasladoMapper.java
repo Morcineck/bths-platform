@@ -81,6 +81,10 @@ public class TrasladoMapper {
                 traslado.getObservacao()
         );
 
+        response.setOrientacaoHospede(
+                traslado.getOrientacaoHospede()
+        );
+
         if (
                 traslado.getMotorista()
                         != null

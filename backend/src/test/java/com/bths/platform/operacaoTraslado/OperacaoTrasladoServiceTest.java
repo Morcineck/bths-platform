@@ -802,6 +802,10 @@ class OperacaoTrasladoServiceTest {
                 "Operação atualizada"
         );
 
+        request.setOrientacaoHospede(
+                "Motorista aguardando próximo à saída H."
+        );
+
         OperacaoTrasladoResponse response =
                 new OperacaoTrasladoResponse();
 
@@ -888,6 +892,11 @@ class OperacaoTrasladoServiceTest {
         assertEquals(
                 "Operação atualizada",
                 operacao.getObservacao()
+        );
+
+        assertEquals(
+                "Motorista aguardando próximo à saída H.",
+                operacao.getOrientacaoHospede()
         );
 
         verify(

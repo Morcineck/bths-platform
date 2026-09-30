@@ -28,6 +28,8 @@ public class TrasladoUpdateRequest {
 
     private String observacoes;
 
+    private String orientacaoHospede;
+
 
     public TipoTraslado getTipo() {
         return tipo;
@@ -91,5 +93,13 @@ public class TrasladoUpdateRequest {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
+    }
+
+    public String getOrientacaoHospede() {
+        return orientacaoHospede;
+    }
+
+    public void setOrientacaoHospede(String orientacaoHospede) {
+        this.orientacaoHospede = orientacaoHospede;
     }
 }

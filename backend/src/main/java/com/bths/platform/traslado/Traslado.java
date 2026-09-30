@@ -65,6 +65,9 @@ public class Traslado {
     @Column(columnDefinition = "TEXT")
     private String observacao;
 
+    @Column(name = "orientacao_hospede", columnDefinition = "TEXT")
+    private String orientacaoHospede;
+
     @ManyToOne
     @JoinColumn(name = "operacao_traslado_id")
     private OperacaoTraslado operacaoTraslado;
@@ -187,5 +190,13 @@ public class Traslado {
 
     public void setOperacaoTraslado(OperacaoTraslado operacaoTraslado) {
         this.operacaoTraslado = operacaoTraslado;
+    }
+
+    public String getOrientacaoHospede() {
+        return orientacaoHospede;
+    }
+
+    public void setOrientacaoHospede(String orientacaoHospede) {
+        this.orientacaoHospede = orientacaoHospede;
     }
 }

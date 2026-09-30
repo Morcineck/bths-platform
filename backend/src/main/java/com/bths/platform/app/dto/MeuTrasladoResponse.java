@@ -20,7 +20,14 @@ public class MeuTrasladoResponse {
     private String numeroVoo;
     private String companhiaAerea;
 
+    private String motoristaNome;
+
+    private String veiculoModelo;
+    private String veiculoPlaca;
+
     private StatusTraslado status;
+
+    private String orientacaoHospede;
 
     public Long getId() {
         return id;
@@ -106,5 +113,37 @@ public class MeuTrasladoResponse {
             StatusTraslado status
     ) {
         this.status = status;
+    }
+
+    public String getMotoristaNome() {
+        return motoristaNome;
+    }
+
+    public void setMotoristaNome(String motoristaNome) {
+        this.motoristaNome = motoristaNome;
+    }
+
+    public String getVeiculoModelo() {
+        return veiculoModelo;
+    }
+
+    public void setVeiculoModelo(String veiculoModelo) {
+        this.veiculoModelo = veiculoModelo;
+    }
+
+    public String getVeiculoPlaca() {
+        return veiculoPlaca;
+    }
+
+    public void setVeiculoPlaca(String veiculoPlaca) {
+        this.veiculoPlaca = veiculoPlaca;
+    }
+
+    public String getOrientacaoHospede() {
+        return orientacaoHospede;
+    }
+
+    public void setOrientacaoHospede(String orientacaoHospede) {
+        this.orientacaoHospede = orientacaoHospede;
     }
 }
