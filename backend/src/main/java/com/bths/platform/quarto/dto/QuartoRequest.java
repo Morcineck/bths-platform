@@ -25,6 +25,8 @@ public class QuartoRequest {
     @NotNull
     private Long viagemId;
 
+    private Long hospedagemId;
+
     public QuartoRequest() {
 
     }
@@ -67,5 +69,13 @@ public class QuartoRequest {
 
     public void setViagemId(Long viagemId) {
         this.viagemId = viagemId;
+    }
+
+    public Long getHospedagemId() {
+        return hospedagemId;
+    }
+
+    public void setHospedagemId(Long hospedagemId) {
+        this.hospedagemId = hospedagemId;
     }
 }

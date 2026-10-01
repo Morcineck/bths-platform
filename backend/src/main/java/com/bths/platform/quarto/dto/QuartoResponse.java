@@ -14,6 +14,9 @@ public class QuartoResponse {
     private Long viagemId;
     private String viagemNome;
 
+    private Long hospedagemId;
+    private String hospedagemNome;
+
     public QuartoResponse() {
 
     }
@@ -72,5 +75,21 @@ public class QuartoResponse {
 
     public void setViagemNome(String viagemNome) {
         this.viagemNome = viagemNome;
+    }
+
+    public Long getHospedagemId() {
+        return hospedagemId;
+    }
+
+    public void setHospedagemId(Long hospedagemId) {
+        this.hospedagemId = hospedagemId;
+    }
+
+    public String getHospedagemNome() {
+        return hospedagemNome;
+    }
+
+    public void setHospedagemNome(String hospedagemNome) {
+        this.hospedagemNome = hospedagemNome;
     }
 }

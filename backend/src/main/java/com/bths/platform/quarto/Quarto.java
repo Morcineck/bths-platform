@@ -1,5 +1,6 @@
 package com.bths.platform.quarto;
 
+import com.bths.platform.hospedagem.Hospedagem;
 import com.bths.platform.quarto.enums.StatusQuarto;
 import com.bths.platform.quarto.enums.TipoQuarto;
 import com.bths.platform.viagem.Viagem;
@@ -31,6 +32,10 @@ public class Quarto {
     @ManyToOne
     @JoinColumn(name = "viagem_id", nullable = false)
     private Viagem viagem;
+
+    @ManyToOne
+    @JoinColumn(name = "hospedagem_id")
+    private Hospedagem hospedagem;
 
     public Quarto() {
 
@@ -82,5 +87,13 @@ public class Quarto {
 
     public void setViagem(Viagem viagem) {
         this.viagem = viagem;
+    }
+
+    public Hospedagem getHospedagem() {
+        return hospedagem;
+    }
+
+    public void setHospedagem(Hospedagem hospedagem) {
+        this.hospedagem = hospedagem;
     }
 }

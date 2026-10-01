@@ -1,9 +1,6 @@
 package com.bths.platform.app;
 
-import com.bths.platform.app.dto.MeuCheckInResponse;
-import com.bths.platform.app.dto.MeuQuartoResponse;
-import com.bths.platform.app.dto.MeuTrasladoResponse;
-import com.bths.platform.app.dto.MinhaViagemResponse;
+import com.bths.platform.app.dto.*;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import org.springframework.http.MediaType;
@@ -82,6 +79,28 @@ public class AppHospedeController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/hospedagem")
+    public ResponseEntity<MinhaHospedagemResponse> buscarMinhaHospedagem(
+            Authentication authentication
+    ) {
+
+        MinhaHospedagemResponse response =
+                appHospedeService
+                        .buscarMinhaHospedagem(
+                                authentication.getName()
+                        );
+
+        if (response == null) {
+            return ResponseEntity
+                    .noContent()
+                    .build();
+        }
+
+        return ResponseEntity.ok(
+                response
+        );
     }
 
     @GetMapping("/traslados")
