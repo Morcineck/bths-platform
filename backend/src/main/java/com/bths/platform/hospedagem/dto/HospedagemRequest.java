@@ -14,7 +14,7 @@ public class HospedagemRequest {
     private String cidade;
     private String estado;
 
-    private String LocalizacaoUrl;
+    private String localizacaoUrl;
     private String imagemUrl;
 
     private String wifiNome;
@@ -64,11 +64,11 @@ public class HospedagemRequest {
     }
 
     public String getLocalizacaoUrl() {
-        return LocalizacaoUrl;
+        return localizacaoUrl;
     }
 
     public void setLocalizacaoUrl(String localizacaoUrl) {
-        LocalizacaoUrl = localizacaoUrl;
+        this.localizacaoUrl = localizacaoUrl;
     }
 
     public String getImagemUrl() {

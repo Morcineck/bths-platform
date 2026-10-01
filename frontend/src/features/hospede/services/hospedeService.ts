@@ -21,6 +21,10 @@ import type {
   MeuQuarto,
 } from "../types/meuQuarto";
 
+import type {
+  MinhaHospedagem,
+} from "../types/minhaHospedagem";
+
 import type { MeuTraslado } from "../types/meuTraslado";
 import type { MeuCheckIn } from "../types/meuCheckIn";
 
@@ -219,6 +223,24 @@ export async function buscarMeuQuarto(): Promise<MeuQuarto | null> {
   if (!response.ok) {
     throw new Error(
       "Não foi possível carregar seu quarto.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function buscarMinhaHospedagem(): Promise<MinhaHospedagem | null> {
+  const response = await authFetch(
+    `${API_URL}/api/app/hospedagem`,
+  );
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar sua hospedagem.",
     );
   }
 

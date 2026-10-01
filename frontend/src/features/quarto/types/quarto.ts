@@ -15,6 +15,9 @@ export type Quarto = {
 
   viagemId: number;
   viagemNome: string;
+
+  hospedagemId: number | null;
+  hospedagemNome: string | null;
 };
 
 export type QuartoOcupacao = {
@@ -25,4 +28,14 @@ export type QuartoOcupacao = {
   capacidade: number;
   ocupacao: number;
   vagasDisponiveis: number;
+};
+
+export type QuartoRequest = {
+  nome: string;
+  tipo: TipoQuarto;
+  capacidade: number;
+  status: StatusQuarto;
+
+  viagemId: number;
+  hospedagemId: number | null;
 };
