@@ -3,10 +3,8 @@ package com.bths.platform.app;
 import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.alocacao.enums.TipoCama;
-import com.bths.platform.app.dto.MeuCheckInResponse;
-import com.bths.platform.app.dto.MeuQuartoResponse;
-import com.bths.platform.app.dto.MeuTrasladoResponse;
-import com.bths.platform.app.dto.MinhaViagemResponse;
+import com.bths.platform.app.dto.*;
+import com.bths.platform.hospedagem.Hospedagem;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.hospede.enums.StatusCheckIn;
@@ -1462,6 +1460,284 @@ class AppHospedeServiceTest {
         assertEquals(
                 "Tomorrowland Brasil 2027",
                 response.getViagemNome()
+        );
+    }
+
+    @Test
+    void deveBuscarMinhaHospedagemQuandoQuartoPossuiHospedagem() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+        viagem.setNome("Tomorrowland Brasil 2027");
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setNomeCompleto("Robson");
+        hospede.setViagem(viagem);
+
+        Hospedagem hospedagem =
+                new Hospedagem();
+
+        hospedagem.setId(40L);
+        hospedagem.setNome(
+                "Chácara Beat Trips"
+        );
+        hospedagem.setEndereco(
+                "Estrada Exemplo, 100"
+        );
+        hospedagem.setCidade(
+                "Alumínio"
+        );
+        hospedagem.setEstado(
+                "SP"
+        );
+        hospedagem.setWifiNome(
+                "Beat Trips"
+        );
+        hospedagem.setWifiSenha(
+                "senha123"
+        );
+        hospedagem.setViagem(
+                viagem
+        );
+
+        Quarto quarto = new Quarto();
+        quarto.setId(30L);
+        quarto.setNome("Suíte 01");
+        quarto.setHospedagem(
+                hospedagem
+        );
+
+        AlocacaoQuarto alocacao =
+                new AlocacaoQuarto();
+
+        alocacao.setHospede(
+                hospede
+        );
+        alocacao.setViagem(
+                viagem
+        );
+        alocacao.setQuarto(
+                quarto
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                alocacaoQuartoRepository
+                        .findByHospedeIdAndViagemId(
+                                20L,
+                                10L
+                        )
+        ).thenReturn(
+                Optional.of(alocacao)
+        );
+
+        MinhaHospedagemResponse response =
+                appHospedeService
+                        .buscarMinhaHospedagem(
+                                email
+                        );
+
+        assertNotNull(
+                response
+        );
+
+        assertEquals(
+                40L,
+                response.getHospedagemId()
+        );
+
+        assertEquals(
+                "Chácara Beat Trips",
+                response.getNome()
+        );
+
+        assertEquals(
+                "Estrada Exemplo, 100",
+                response.getEndereco()
+        );
+
+        assertEquals(
+                "Alumínio",
+                response.getCidade()
+        );
+
+        assertEquals(
+                "SP",
+                response.getEstado()
+        );
+
+        assertEquals(
+                "Beat Trips",
+                response.getWifiNome()
+        );
+
+        assertEquals(
+                "senha123",
+                response.getWifiSenha()
+        );
+
+        assertEquals(
+                10L,
+                response.getViagemId()
+        );
+
+        assertEquals(
+                "Tomorrowland Brasil 2027",
+                response.getViagemNome()
+        );
+    }
+
+    @Test
+    void deveRetornarNullQuandoHospedeAindaNaoPossuiAlocacaoParaHospedagem() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setViagem(
+                viagem
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                alocacaoQuartoRepository
+                        .findByHospedeIdAndViagemId(
+                                20L,
+                                10L
+                        )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        MinhaHospedagemResponse response =
+                appHospedeService
+                        .buscarMinhaHospedagem(
+                                email
+                        );
+
+        assertNull(
+                response
+        );
+    }
+
+    @Test
+    void deveRetornarNullQuandoQuartoAindaNaoPossuiHospedagem() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(PerfilUsuario.HOSPEDE);
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setViagem(
+                viagem
+        );
+
+        Quarto quarto = new Quarto();
+        quarto.setId(30L);
+
+        AlocacaoQuarto alocacao =
+                new AlocacaoQuarto();
+
+        alocacao.setHospede(
+                hospede
+        );
+        alocacao.setViagem(
+                viagem
+        );
+        alocacao.setQuarto(
+                quarto
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                alocacaoQuartoRepository
+                        .findByHospedeIdAndViagemId(
+                                20L,
+                                10L
+                        )
+        ).thenReturn(
+                Optional.of(alocacao)
+        );
+
+        MinhaHospedagemResponse response =
+                appHospedeService
+                        .buscarMinhaHospedagem(
+                                email
+                        );
+
+        assertNull(
+                response
         );
     }
 

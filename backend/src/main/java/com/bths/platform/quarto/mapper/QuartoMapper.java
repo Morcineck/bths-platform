@@ -21,6 +21,12 @@ public class QuartoMapper {
         response.setViagemId(quarto.getViagem().getId());
         response.setViagemNome(quarto.getViagem().getNome());
 
+        if (quarto.getHospedagem() != null) {
+
+            response.setHospedagemId(quarto.getHospedagem().getId());
+            response.setHospedagemNome(quarto.getHospedagem().getNome());
+        }
+
         return response;
     }
 

@@ -1,6 +1,9 @@
 package com.bths.platform.quarto;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.hospedagem.Hospedagem;
+import com.bths.platform.hospedagem.HospedagemRepository;
+import com.bths.platform.hospedagem.exception.HospedagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoOcupacaoResponse;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
@@ -20,17 +23,20 @@ public class QuartoService {
     private final ViagemRepository viagemRepository;
     private final QuartoMapper quartoMapper;
     private final AlocacaoQuartoRepository alocacaoQuartoRepository;
+    private final HospedagemRepository hospedagemRepository;
 
     public QuartoService(
             QuartoRepository quartoRepository,
             ViagemRepository viagemRepository,
             QuartoMapper quartoMapper,
-            AlocacaoQuartoRepository alocacaoQuartoRepository
+            AlocacaoQuartoRepository alocacaoQuartoRepository,
+            HospedagemRepository hospedagemRepository
     ) {
         this.quartoRepository = quartoRepository;
         this.viagemRepository = viagemRepository;
         this.quartoMapper = quartoMapper;
         this.alocacaoQuartoRepository = alocacaoQuartoRepository;
+        this.hospedagemRepository = hospedagemRepository;
     }
 
     public QuartoResponse cadastrarQuarto(QuartoRequest request) {
@@ -46,6 +52,34 @@ public class QuartoService {
         quartoMapper.atualizarEntidade(quarto, request);
 
         quarto.setViagem(viagem);
+
+        if (request.getHospedagemId() != null) {
+
+            Hospedagem hospedagem =
+                    hospedagemRepository
+                            .findById(
+                                    request.getHospedagemId()
+                            )
+                            .orElseThrow(() ->
+                                    new HospedagemNaoEncontradaException(
+                                            "Hospedagem não encontrada!"
+                                    )
+                            );
+
+            if (!hospedagem
+                    .getViagem()
+                    .getId()
+                    .equals(viagem.getId())) {
+
+                throw new IllegalArgumentException(
+                        "Hospedagem e quarto pertencem a viagens diferentes!"
+                );
+            }
+
+            quarto.setHospedagem(
+                    hospedagem
+            );
+        }
 
         Quarto quartoSalvo = quartoRepository.save(quarto);
 
@@ -88,6 +122,34 @@ public class QuartoService {
         quartoMapper.atualizarEntidade(quarto, request);
 
         quarto.setViagem(viagem);
+
+        if (request.getHospedagemId() != null) {
+
+            Hospedagem hospedagem =
+                    hospedagemRepository
+                            .findById(
+                                    request.getHospedagemId()
+                            )
+                            .orElseThrow(() ->
+                                    new HospedagemNaoEncontradaException(
+                                            "Hospedagem não encontrada!"
+                                    )
+                            );
+
+            if (!hospedagem
+                    .getViagem()
+                    .getId()
+                    .equals(viagem.getId())) {
+
+                throw new IllegalArgumentException(
+                        "Hospedagem e quarto pertencem a viagens diferentes!"
+                );
+            }
+
+            quarto.setHospedagem(
+                    hospedagem
+            );
+        }
 
         Quarto quartoAtualizado = quartoRepository.save(quarto);
 

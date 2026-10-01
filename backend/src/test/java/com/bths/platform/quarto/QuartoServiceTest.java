@@ -1,6 +1,9 @@
 package com.bths.platform.quarto;
 
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
+import com.bths.platform.hospedagem.Hospedagem;
+import com.bths.platform.hospedagem.HospedagemRepository;
+import com.bths.platform.hospedagem.exception.HospedagemNaoEncontradaException;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
 import com.bths.platform.quarto.dto.QuartoRequest;
@@ -40,6 +43,9 @@ class QuartoServiceTest {
     @Mock
     private AlocacaoQuartoRepository alocacaoQuartoRepository;
 
+    @Mock
+    private HospedagemRepository hospedagemRepository;
+
     private QuartoService quartoService;
 
     @BeforeEach
@@ -49,7 +55,8 @@ class QuartoServiceTest {
                 quartoRepository,
                 viagemRepository,
                 quartoMapper,
-                alocacaoQuartoRepository
+                alocacaoQuartoRepository,
+                hospedagemRepository
         );
     }
 
@@ -657,6 +664,197 @@ class QuartoServiceTest {
         verifyNoInteractions(
                 alocacaoQuartoRepository
         );
+    }
+
+    @Test
+    void deveCadastrarQuartoComHospedagemDaMesmaViagem() {
+
+        Long viagemId = 1L;
+        Long hospedagemId = 10L;
+
+        Viagem viagem = new Viagem();
+        viagem.setId(viagemId);
+        viagem.setNome("Tomorrowland Brasil 2027");
+
+        Hospedagem hospedagem = new Hospedagem();
+        hospedagem.setId(hospedagemId);
+        hospedagem.setNome("Chácara Beat Trips");
+        hospedagem.setViagem(viagem);
+
+        QuartoRequest request = new QuartoRequest();
+        request.setNome("Suíte 01");
+        request.setTipo(TipoQuarto.SUITE);
+        request.setCapacidade(6);
+        request.setStatus(StatusQuarto.DISPONIVEL);
+        request.setViagemId(viagemId);
+        request.setHospedagemId(hospedagemId);
+
+        Quarto quartoSalvo = new Quarto();
+        quartoSalvo.setId(1L);
+        quartoSalvo.setNome("Suíte 01");
+        quartoSalvo.setTipo(TipoQuarto.SUITE);
+        quartoSalvo.setCapacidade(6);
+        quartoSalvo.setStatus(StatusQuarto.DISPONIVEL);
+        quartoSalvo.setViagem(viagem);
+        quartoSalvo.setHospedagem(hospedagem);
+
+        QuartoResponse responseEsperado =
+                new QuartoResponse();
+
+        responseEsperado.setId(1L);
+        responseEsperado.setNome("Suíte 01");
+        responseEsperado.setTipo(TipoQuarto.SUITE);
+        responseEsperado.setCapacidade(6);
+        responseEsperado.setStatus(StatusQuarto.DISPONIVEL);
+        responseEsperado.setViagemId(viagemId);
+        responseEsperado.setViagemNome("Tomorrowland Brasil 2027");
+        responseEsperado.setHospedagemId(hospedagemId);
+        responseEsperado.setHospedagemNome("Chácara Beat Trips");
+
+        when(viagemRepository.findById(viagemId))
+                .thenReturn(Optional.of(viagem));
+
+        when(hospedagemRepository.findById(hospedagemId))
+                .thenReturn(Optional.of(hospedagem));
+
+        when(quartoRepository.save(any(Quarto.class)))
+                .thenReturn(quartoSalvo);
+
+        when(quartoMapper.paraResponse(quartoSalvo))
+                .thenReturn(responseEsperado);
+
+        QuartoResponse resultado =
+                quartoService.cadastrarQuarto(
+                        request
+                );
+
+        assertEquals(
+                hospedagemId,
+                resultado.getHospedagemId()
+        );
+
+        assertEquals(
+                "Chácara Beat Trips",
+                resultado.getHospedagemNome()
+        );
+
+        verify(viagemRepository)
+                .findById(viagemId);
+
+        verify(hospedagemRepository)
+                .findById(hospedagemId);
+
+        verify(quartoRepository)
+                .save(any(Quarto.class));
+
+        verify(quartoMapper)
+                .paraResponse(quartoSalvo);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoHospedagemNaoExistirAoCadastrarQuarto() {
+
+        Long viagemId = 1L;
+        Long hospedagemId = 999L;
+
+        Viagem viagem = new Viagem();
+        viagem.setId(viagemId);
+        viagem.setNome("Tomorrowland Brasil 2027");
+
+        QuartoRequest request = new QuartoRequest();
+        request.setNome("Suíte 01");
+        request.setTipo(TipoQuarto.SUITE);
+        request.setCapacidade(6);
+        request.setStatus(StatusQuarto.DISPONIVEL);
+        request.setViagemId(viagemId);
+        request.setHospedagemId(hospedagemId);
+
+        when(viagemRepository.findById(viagemId))
+                .thenReturn(Optional.of(viagem));
+
+        when(hospedagemRepository.findById(hospedagemId))
+                .thenReturn(Optional.empty());
+
+        HospedagemNaoEncontradaException exception =
+                assertThrows(
+                        HospedagemNaoEncontradaException.class,
+                        () ->
+                                quartoService.cadastrarQuarto(
+                                        request
+                                )
+                );
+
+        assertEquals(
+                "Hospedagem não encontrada!",
+                exception.getMessage()
+        );
+
+        verify(viagemRepository)
+                .findById(viagemId);
+
+        verify(hospedagemRepository)
+                .findById(hospedagemId);
+
+        verify(quartoRepository, never())
+                .save(any(Quarto.class));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoHospedagemPertencerAOutraViagem() {
+
+        Long viagemId = 1L;
+        Long outraViagemId = 2L;
+        Long hospedagemId = 10L;
+
+        Viagem viagemQuarto = new Viagem();
+        viagemQuarto.setId(viagemId);
+        viagemQuarto.setNome("Tomorrowland Brasil 2027");
+
+        Viagem viagemHospedagem = new Viagem();
+        viagemHospedagem.setId(outraViagemId);
+        viagemHospedagem.setNome("Tomorrowland Brasil 2028");
+
+        Hospedagem hospedagem = new Hospedagem();
+        hospedagem.setId(hospedagemId);
+        hospedagem.setNome("Chácara Beat Trips");
+        hospedagem.setViagem(viagemHospedagem);
+
+        QuartoRequest request = new QuartoRequest();
+        request.setNome("Suíte 01");
+        request.setTipo(TipoQuarto.SUITE);
+        request.setCapacidade(6);
+        request.setStatus(StatusQuarto.DISPONIVEL);
+        request.setViagemId(viagemId);
+        request.setHospedagemId(hospedagemId);
+
+        when(viagemRepository.findById(viagemId))
+                .thenReturn(Optional.of(viagemQuarto));
+
+        when(hospedagemRepository.findById(hospedagemId))
+                .thenReturn(Optional.of(hospedagem));
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                quartoService.cadastrarQuarto(
+                                        request
+                                )
+                );
+
+        assertEquals(
+                "Hospedagem e quarto pertencem a viagens diferentes!",
+                exception.getMessage()
+        );
+
+        verify(viagemRepository)
+                .findById(viagemId);
+
+        verify(hospedagemRepository)
+                .findById(hospedagemId);
+
+        verify(quartoRepository, never())
+                .save(any(Quarto.class));
     }
 
 }

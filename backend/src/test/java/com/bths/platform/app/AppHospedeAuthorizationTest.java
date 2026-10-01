@@ -1,10 +1,7 @@
 package com.bths.platform.app;
 
 import com.bths.platform.alocacao.enums.TipoCama;
-import com.bths.platform.app.dto.MeuCheckInResponse;
-import com.bths.platform.app.dto.MeuQuartoResponse;
-import com.bths.platform.app.dto.MeuTrasladoResponse;
-import com.bths.platform.app.dto.MinhaViagemResponse;
+import com.bths.platform.app.dto.*;
 import com.bths.platform.hospede.HospedeService;
 import com.bths.platform.hospede.dto.HospedeResponse;
 import com.bths.platform.hospede.enums.StatusCheckIn;
@@ -1538,6 +1535,267 @@ class AppHospedeAuthorizationTest {
                                 )
                 );
     }
+
+    @Test
+    void devePermitirHospedeAcessarMinhaHospedagem()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        MinhaHospedagemResponse response =
+                new MinhaHospedagemResponse();
+
+        response.setHospedagemId(
+                40L
+        );
+
+        response.setNome(
+                "Chácara Beat Trips"
+        );
+
+        response.setEndereco(
+                "Estrada Exemplo, 100"
+        );
+
+        response.setCidade(
+                "Alumínio"
+        );
+
+        response.setEstado(
+                "SP"
+        );
+
+        response.setWifiNome(
+                "Beat Trips"
+        );
+
+        response.setWifiSenha(
+                "senha123"
+        );
+
+        response.setViagemId(
+                20L
+        );
+
+        response.setViagemNome(
+                "Tomorrowland Brasil 2027"
+        );
+
+        when(
+                appHospedeService.buscarMinhaHospedagem(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                response
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/hospedagem"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$.hospedagemId")
+                                .value(40L)
+                )
+                .andExpect(
+                        jsonPath("$.nome")
+                                .value(
+                                        "Chácara Beat Trips"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.cidade")
+                                .value(
+                                        "Alumínio"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.estado")
+                                .value(
+                                        "SP"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.wifiNome")
+                                .value(
+                                        "Beat Trips"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.wifiSenha")
+                                .value(
+                                        "senha123"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.viagemId")
+                                .value(20L)
+                )
+                .andExpect(
+                        jsonPath("$.viagemNome")
+                                .value(
+                                        "Tomorrowland Brasil 2027"
+                                )
+                );
+    }
+
+    @Test
+    void deveRetornar204QuandoHospedagemAindaNaoEstiverDefinida()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        when(
+                appHospedeService.buscarMinhaHospedagem(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                null
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/hospedagem"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isNoContent()
+                );
+    }
+
+    @Test
+    void deveBloquearAdminAoAcessarMinhaHospedagem()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/hospedagem"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveRetornar401AoAcessarMinhaHospedagemSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/hospedagem"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
+
 
     @Test
     void deveRetornar204QuandoHospedeAindaNaoPossuiQuarto()
