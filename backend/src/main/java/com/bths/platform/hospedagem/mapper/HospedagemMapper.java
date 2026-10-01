@@ -78,6 +78,12 @@ public class HospedagemMapper {
                             .getViagem()
                             .getId()
             );
+
+            response.setViagemNome(
+                    hospedagem
+                            .getViagem()
+                            .getNome()
+            );
         }
 
         return response;
@@ -119,6 +125,14 @@ public class HospedagemMapper {
 
         hospedagem.setWifiSenha(
                 request.getWifiSenha()
+        );
+
+        hospedagem.setHorarioCheckIn(
+                request.getHorarioCheckIn()
+        );
+
+        hospedagem.setHorarioCheckOut(
+                request.getHorarioCheckOut()
         );
 
 

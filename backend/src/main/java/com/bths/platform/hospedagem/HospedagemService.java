@@ -142,6 +142,10 @@ public class HospedagemService {
                 request
         );
 
+        hospedagem.setViagem(
+                viagem
+        );
+
         Hospedagem hospedagemAtualizada =
                 hospedagemRepository.save(
                         hospedagem

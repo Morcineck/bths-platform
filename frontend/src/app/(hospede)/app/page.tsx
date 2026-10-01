@@ -127,7 +127,7 @@ const atalhos = [
     icon: QrCode,
   },
   {
-    href: "/app/viagem",
+    href: "/app/hospedagem",
     label: "Hospedagem",
     icon: Building2,
   },
