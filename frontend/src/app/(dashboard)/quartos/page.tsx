@@ -226,81 +226,92 @@ return (
         description="Gestão da capacidade, ocupação e disponibilidade dos quartos."
       />
 
-      <div className="relative w-full sm:w-[260px]">
-        <select
-          id="viagem"
-          value={
-            viagemSelecionadaId ?? ""
-          }
-          onChange={(event) =>
-            setViagemSelecionadaId(
-              Number(
-                event.target.value,
-              ),
-            )
-          }
-          disabled={
-            viagens.length === 0
-          }
-          aria-label="Selecionar viagem"
-          className="
-            h-12
-            w-full
-            appearance-none
-            rounded-xl
-            border
-            border-border
-            bg-surface
-            px-4
-            pr-11
-            text-sm
-            font-medium
-            text-foreground
-            outline-none
-            transition-all
-            duration-200
-            hover:border-primary/60
-            focus:border-primary
-            focus:ring-2
-            focus:ring-primary/20
-            disabled:cursor-not-allowed
-            disabled:opacity-50
-          "
-        >
-          {viagens.length === 0 ? (
-            <option value="">
-              Nenhuma viagem disponível
-            </option>
-          ) : (
-            viagens.map(
-              (viagem) => (
-                <option
-                  key={viagem.id}
-                  value={viagem.id}
-                >
-                  {viagem.nome}
-                </option>
-              ),
-            )
-          )}
-        </select>
-
-        <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            aria-hidden="true"
-            className="h-4 w-4 text-muted"
+      <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+        <div className="relative w-full sm:w-[260px]">
+          <select
+            id="viagem"
+            value={
+              viagemSelecionadaId ?? ""
+            }
+            onChange={(event) =>
+              setViagemSelecionadaId(
+                Number(
+                  event.target.value,
+                ),
+              )
+            }
+            disabled={
+              viagens.length === 0
+            }
+            aria-label="Selecionar viagem"
+            className="
+              h-12
+              w-full
+              appearance-none
+              rounded-xl
+              border
+              border-border
+              bg-surface
+              px-4
+              pr-11
+              text-sm
+              font-medium
+              text-foreground
+              outline-none
+              transition-all
+              duration-200
+              hover:border-primary/60
+              focus:border-primary
+              focus:ring-2
+              focus:ring-primary/20
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+            "
           >
-            <path
-              d="M6 8L10 12L14 8"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+            {viagens.length === 0 ? (
+              <option value="">
+                Nenhuma viagem disponível
+              </option>
+            ) : (
+              viagens.map(
+                (viagem) => (
+                  <option
+                    key={viagem.id}
+                    value={viagem.id}
+                  >
+                    {viagem.nome}
+                  </option>
+                ),
+              )
+            )}
+          </select>
+
+          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+              className="h-4 w-4 text-muted"
+            >
+              <path
+                d="M6 8L10 12L14 8"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
         </div>
+
+        {viagemSelecionadaId && (
+          <Link
+            href={`/quartos/novo?viagemId=${viagemSelecionadaId}`}
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Novo quarto
+          </Link>
+        )}
       </div>
     </div>
 
@@ -515,19 +526,30 @@ return (
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
-                    <p className="text-sm text-muted">
-                      Situação
-                    </p>
+                  <div className="space-y-4 border-t border-border pt-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-sm text-muted">
+                        Situação
+                      </p>
 
-                    <p className="text-sm font-medium text-foreground">
-                      {quarto.status ===
-                      "INDISPONIVEL"
-                        ? "Fora de operação"
-                        : lotado
-                          ? "Lotado"
-                          : "Com disponibilidade"}
-                    </p>
+                      <p className="text-sm font-medium text-foreground">
+                        {quarto.status ===
+                        "INDISPONIVEL"
+                          ? "Fora de operação"
+                          : lotado
+                            ? "Lotado"
+                            : "Com disponibilidade"}
+                      </p>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Link
+                        href={`/quartos/${quarto.quartoId}/editar`}
+                        className="text-sm font-medium text-primary transition-opacity hover:opacity-80"
+                      >
+                        Editar quarto
+                      </Link>
+                    </div>
                   </div>
                 </Card>
               );

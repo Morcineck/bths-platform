@@ -149,6 +149,12 @@ public class QuartoService {
             quarto.setHospedagem(
                     hospedagem
             );
+
+        } else {
+
+            quarto.setHospedagem(
+                    null
+            );
         }
 
         Quarto quartoAtualizado = quartoRepository.save(quarto);
