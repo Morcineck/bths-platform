@@ -71,6 +71,27 @@ function formatarStatus(
   }
 }
 
+function obterClasseStatusViagem(
+  status: string,
+) {
+  switch (status) {
+    case "PLANEJADA":
+      return "border-primary/30 bg-primary/10 text-primary";
+
+    case "EM_ANDAMENTO":
+      return "border-success/30 bg-success/10 text-success";
+
+    case "FINALIZADA":
+      return "border-border bg-background/40 text-muted";
+
+    case "CANCELADA":
+      return "border-danger/30 bg-danger/10 text-danger";
+
+    default:
+      return "border-border bg-background/40 text-muted";
+  }
+}
+
 function calcularDiasAteViagem(
   dataInicio: string,
 ) {
@@ -101,12 +122,9 @@ function calcularDiasAteViagem(
     inicioViagem.getTime() -
     hoje.getTime();
 
-  return Math.max(
-    0,
-    Math.ceil(
-      diferenca /
-        (1000 * 60 * 60 * 24),
-    ),
+  return Math.ceil(
+    diferenca /
+      (1000 * 60 * 60 * 24),
   );
 }
 
@@ -273,7 +291,7 @@ export default function AppHospedePage() {
           </p>
 
           <p className="mt-2 text-sm leading-6 text-muted">
-            Assim que sua hospedagem estiver vinculada à sua conta, sua experiência Beat Trips aparecerá aqui.
+            Assim que uma viagem estiver vinculada à sua conta, sua experiência Beat Trips aparecerá aqui.
           </p>
         </section>
       ) : (
@@ -288,7 +306,11 @@ export default function AppHospedePage() {
 
             <div className="relative flex min-h-60 flex-col justify-between p-4">
               <div>
-                <span className="inline-flex rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                <span
+                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${obterClasseStatusViagem(
+                    viagem.status,
+                  )}`}
+                >
                   {formatarStatus(
                     viagem.status,
                   )}
@@ -347,16 +369,37 @@ export default function AppHospedePage() {
 
                 <div className="mt-4 flex items-center justify-between gap-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm text-muted">
-                      Faltam
-                    </span>
+                    {viagem.status === "PLANEJADA" &&
+                    diasAteViagem > 0 ? (
+                      <>
+                        <span className="text-sm text-muted">
+                          Faltam
+                        </span>
 
-                    <span className="text-lg font-semibold text-primary">
-                      {diasAteViagem}{" "}
-                      {diasAteViagem === 1
-                        ? "dia"
-                        : "dias"}
-                    </span>
+                        <span className="text-lg font-semibold text-primary">
+                          {diasAteViagem}{" "}
+                          {diasAteViagem === 1
+                            ? "dia"
+                            : "dias"}
+                        </span>
+                      </>
+                    ) : viagem.status === "EM_ANDAMENTO" ? (
+                      <span className="text-sm font-medium text-success">
+                        Viagem em andamento
+                      </span>
+                    ) : viagem.status === "FINALIZADA" ? (
+                      <span className="text-sm font-medium text-muted">
+                        Viagem finalizada
+                      </span>
+                    ) : viagem.status === "CANCELADA" ? (
+                      <span className="text-sm font-medium text-danger">
+                        Viagem cancelada
+                      </span>
+                    ) : (
+                      <span className="text-sm font-medium text-muted">
+                        Aguardando início
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1 text-xs font-medium text-primary">

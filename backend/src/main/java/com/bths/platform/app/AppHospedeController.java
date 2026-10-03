@@ -103,6 +103,19 @@ public class AppHospedeController {
         );
     }
 
+    @GetMapping("/timeline")
+    public ResponseEntity<List<MinhaTimelineResponse>> buscarMinhaTimeline(
+            Authentication authentication
+    ) {
+
+        List<MinhaTimelineResponse> responses =
+                appHospedeService.buscarMinhaTimeline(
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(responses);
+    }
+
     @GetMapping("/traslados")
     public ResponseEntity<List<MeuTrasladoResponse>> buscarMeusTraslados(
             Authentication authentication
@@ -134,7 +147,7 @@ public class AppHospedeController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(value = "/check-in/qr",produces = MediaType.IMAGE_PNG_VALUE)
+    @GetMapping(value = "/check-in/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> buscarCheckInQR(
             Authentication authentication
     ) {
@@ -153,4 +166,5 @@ public class AppHospedeController {
                 .contentType(MediaType.IMAGE_PNG)
                 .body(imagem);
     }
+
 }

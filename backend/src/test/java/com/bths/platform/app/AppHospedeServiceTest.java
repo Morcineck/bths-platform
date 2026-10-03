@@ -1,5 +1,8 @@
 package com.bths.platform.app;
 
+import com.bths.platform.agenda.AgendaViagem;
+import com.bths.platform.agenda.AgendaViagemRepository;
+import com.bths.platform.agenda.enums.TipoAgendaViagem;
 import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.alocacao.enums.TipoCama;
@@ -59,6 +62,9 @@ class AppHospedeServiceTest {
     @Mock
     private QrCodeGeradorService qrCodeGeradorService;
 
+    @Mock
+    private AgendaViagemRepository agendaViagemRepository;
+
     @BeforeEach
     void setUp() {
         appHospedeService = new AppHospedeService(
@@ -66,7 +72,8 @@ class AppHospedeServiceTest {
                 hospedeRepository,
                 alocacaoQuartoRepository,
                 trasladoRepository,
-                qrCodeGeradorService
+                qrCodeGeradorService,
+                agendaViagemRepository
         );
     }
 
@@ -1798,6 +1805,285 @@ class AppHospedeServiceTest {
                 response
         );
     }
+
+    @Test
+    void deveBuscarMinhaTimelineComItensVisiveisEAtivos() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+        viagem.setNome(
+                "Tomorrowland Brasil 2027"
+        );
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setNomeCompleto(
+                "Robson"
+        );
+        hospede.setViagem(
+                viagem
+        );
+
+        AgendaViagem dia1 =
+                new AgendaViagem();
+
+        dia1.setId(100L);
+        dia1.setTitulo(
+                "Festival — Dia 1"
+        );
+        dia1.setDescricao(
+                "Primeiro dia do festival"
+        );
+        dia1.setDataHoraInicio(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        30,
+                        13,
+                        0
+                )
+        );
+        dia1.setTipo(
+                TipoAgendaViagem.FESTIVAL
+        );
+        dia1.setOrdem(1);
+        dia1.setAtivo(true);
+        dia1.setVisivelHospede(true);
+        dia1.setViagem(
+                viagem
+        );
+
+        AgendaViagem dia2 =
+                new AgendaViagem();
+
+        dia2.setId(101L);
+        dia2.setTitulo(
+                "Festival — Dia 2"
+        );
+        dia2.setDataHoraInicio(
+                LocalDateTime.of(
+                        2027,
+                        5,
+                        1,
+                        13,
+                        0
+                )
+        );
+        dia2.setTipo(
+                TipoAgendaViagem.FESTIVAL
+        );
+        dia2.setOrdem(2);
+        dia2.setAtivo(true);
+        dia2.setVisivelHospede(true);
+        dia2.setViagem(
+                viagem
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                agendaViagemRepository
+                        .findByViagemIdAndAtivoTrueAndVisivelHospedeTrueOrderByOrdemAscDataHoraInicioAsc(
+                                10L
+                        )
+        ).thenReturn(
+                List.of(
+                        dia1,
+                        dia2
+                )
+        );
+
+        List<MinhaTimelineResponse> response =
+                appHospedeService.buscarMinhaTimeline(
+                        email
+                );
+
+        assertNotNull(
+                response
+        );
+
+        assertEquals(
+                2,
+                response.size()
+        );
+
+        MinhaTimelineResponse primeiro =
+                response.get(0);
+
+        assertEquals(
+                100L,
+                primeiro.getId()
+        );
+
+        assertEquals(
+                "Festival — Dia 1",
+                primeiro.getTitulo()
+        );
+
+        assertEquals(
+                "Primeiro dia do festival",
+                primeiro.getDescricao()
+        );
+
+        assertEquals(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        30,
+                        13,
+                        0
+                ),
+                primeiro.getDataHoraInicio()
+        );
+
+        assertEquals(
+                TipoAgendaViagem.FESTIVAL,
+                primeiro.getTipo()
+        );
+
+        MinhaTimelineResponse segundo =
+                response.get(1);
+
+        assertEquals(
+                "Festival — Dia 2",
+                segundo.getTitulo()
+        );
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoHospedeNaoPossuirItensNaTimeline() {
+
+        String email = "hospede@bths.com";
+        UUID usuarioId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(usuarioId);
+        usuario.setEmail(email);
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Viagem viagem = new Viagem();
+        viagem.setId(10L);
+        viagem.setNome(
+                "Tomorrowland Brasil 2027"
+        );
+
+        Hospede hospede = new Hospede();
+        hospede.setId(20L);
+        hospede.setViagem(
+                viagem
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(hospede)
+        );
+
+        when(
+                agendaViagemRepository
+                        .findByViagemIdAndAtivoTrueAndVisivelHospedeTrueOrderByOrdemAscDataHoraInicioAsc(
+                                10L
+                        )
+        ).thenReturn(
+                List.of()
+        );
+
+        List<MinhaTimelineResponse> response =
+                appHospedeService.buscarMinhaTimeline(
+                        email
+                );
+
+        assertNotNull(
+                response
+        );
+
+        assertTrue(
+                response.isEmpty()
+        );
+    }
+
+    @Test
+    void deveBloquearTimelineQuandoUsuarioNaoForHospede() {
+
+        String email = "admin@bths.com";
+        UUID usuarioId =
+                UUID.randomUUID();
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.ADMIN
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                appHospedeService
+                                        .buscarMinhaTimeline(
+                                                email
+                                        )
+                );
+
+        assertEquals(
+                "A consulta é permitida apenas para usuários com perfil HOSPEDE.",
+                exception.getMessage()
+        );
+    }
+
 
 
 }

@@ -25,6 +25,10 @@ import type {
   MinhaHospedagem,
 } from "../types/minhaHospedagem";
 
+import type {
+  MinhaTimeline,
+} from "../types/minhaTimeline";
+
 import type { MeuTraslado } from "../types/meuTraslado";
 import type { MeuCheckIn } from "../types/meuCheckIn";
 
@@ -295,5 +299,19 @@ export async function buscarMeuQrCode(): Promise<Blob | null> {
   }
 
   return response.blob();
+}
+
+export async function buscarMinhaTimeline(): Promise<MinhaTimeline[]> {
+  const response = await authFetch(
+    `${API_URL}/api/app/timeline`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar sua timeline.",
+    );
+  }
+
+  return response.json();
 }
 

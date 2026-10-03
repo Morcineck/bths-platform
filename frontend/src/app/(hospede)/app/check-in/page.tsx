@@ -36,7 +36,7 @@ function obterStatusCheckIn(
 
     case "PENDENTE":
     default:
-      return "Check-in disponível";
+      return "Check-in pendente";
   }
 }
 
