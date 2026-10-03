@@ -1,5 +1,6 @@
 package com.bths.platform.app;
 
+import com.bths.platform.agenda.enums.TipoAgendaViagem;
 import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.*;
 import com.bths.platform.hospede.HospedeService;
@@ -1966,5 +1967,230 @@ class AppHospedeAuthorizationTest {
                 );
     }
 
+    @Test
+    void devePermitirHospedeAcessarMinhaTimeline()
+            throws Exception {
+
+        UserDetails hospede = User
+                .withUsername("hospede@beattrips.com")
+                .password("senha")
+                .roles("HOSPEDE")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                "hospede@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        MinhaTimelineResponse item =
+                new MinhaTimelineResponse();
+
+        item.setId(
+                100L
+        );
+
+        item.setTitulo(
+                "Festival — Dia 1"
+        );
+
+        item.setDescricao(
+                "Primeiro dia do festival"
+        );
+
+        item.setDataHoraInicio(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        30,
+                        13,
+                        0
+                )
+        );
+
+        item.setTipo(
+                TipoAgendaViagem.FESTIVAL
+        );
+
+        when(
+                appHospedeService.buscarMinhaTimeline(
+                        "hospede@beattrips.com"
+                )
+        ).thenReturn(
+                List.of(item)
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/timeline"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                )
+                .andExpect(
+                        jsonPath("$[0].id")
+                                .value(100L)
+                )
+                .andExpect(
+                        jsonPath("$[0].titulo")
+                                .value(
+                                        "Festival — Dia 1"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].descricao")
+                                .value(
+                                        "Primeiro dia do festival"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].dataHoraInicio")
+                                .value(
+                                        "2027-04-30T13:00:00"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$[0].tipo")
+                                .value(
+                                        "FESTIVAL"
+                                )
+                );
+    }
+
+    @Test
+    void deveBloquearAdminAoAcessarMinhaTimeline()
+            throws Exception {
+
+        UserDetails admin = User
+                .withUsername("admin@beattrips.com")
+                .password("senha")
+                .roles("ADMIN")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                "admin@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "admin@beattrips.com"
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/timeline"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearStaffAoAcessarMinhaTimeline()
+            throws Exception {
+
+        UserDetails staff = User
+                .withUsername("staff@beattrips.com")
+                .password("senha")
+                .roles("STAFF")
+                .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                "staff@beattrips.com"
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        "staff@beattrips.com"
+                )
+        ).thenReturn(
+                staff
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/timeline"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveRetornar401AoAcessarMinhaTimelineSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/timeline"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
 
 }

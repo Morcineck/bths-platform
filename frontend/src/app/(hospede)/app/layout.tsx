@@ -154,7 +154,7 @@ export default function AppHospedeLayout({
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-xl px-5 pt-3 pb-24 md:py-6">
+      <main className="mx-auto w-full max-w-xl px-5 pt-3 pb-[calc(6rem+env(safe-area-inset-bottom))] md:py-6">
         {children}
       </main>
     </div>

@@ -46,6 +46,7 @@ export function OperationalNavigation({
     isActive("/traslados") ||
     isActive("/quartos") ||
     isActive("/hospedagens") ||
+    isActive("/agenda-viagem") ||
     (perfil === "ADMIN" &&
       (isActive("/motoristas") ||
         isActive("/veiculos")));
@@ -90,6 +91,18 @@ export function OperationalNavigation({
               )}
             >
               Hospedagens
+            </Link>
+
+            <Link
+              href="/agenda-viagem"
+              onClick={() =>
+                setMenuMaisAberto(false)
+              }
+              className={mobileMenuLinkClass(
+                "/agenda-viagem",
+              )}
+            >
+              Agenda
             </Link>
 
             {perfil === "ADMIN" && (
@@ -261,6 +274,14 @@ export function OperationalNavigation({
                 )}
               >
                 Hospedagens
+              </Link>
+              <Link
+                href="/agenda-viagem"
+                className={desktopLinkClass(
+                  "/agenda-viagem",
+                )}
+              >
+                Agenda
               </Link>
             </nav>
           </div>

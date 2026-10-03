@@ -81,7 +81,7 @@ export function HospedeNavigation() {
       </nav>
 
       {/* Navegação mobile */}
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         <div className="grid grid-cols-5">
           {/* Início */}
           <Link

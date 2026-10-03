@@ -1,5 +1,6 @@
 package com.bths.platform.app;
 
+import com.bths.platform.agenda.AgendaViagemRepository;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.*;
@@ -27,6 +28,7 @@ public class AppHospedeService {
     private final AlocacaoQuartoRepository alocacaoQuartoRepository;
     private final TrasladoRepository trasladoRepository;
     private final QrCodeGeradorService qrCodeGeradorService;
+    private final AgendaViagemRepository agendaViagemRepository;
 
 
     public AppHospedeService(
@@ -34,7 +36,8 @@ public class AppHospedeService {
             HospedeRepository hospedeRepository,
             AlocacaoQuartoRepository alocacaoQuartoRepository,
             TrasladoRepository trasladoRepository,
-            QrCodeGeradorService qrCodeGeradorService
+            QrCodeGeradorService qrCodeGeradorService,
+            AgendaViagemRepository agendaViagemRepository
 
     ) {
 
@@ -43,6 +46,7 @@ public class AppHospedeService {
         this.alocacaoQuartoRepository = alocacaoQuartoRepository;
         this.trasladoRepository = trasladoRepository;
         this.qrCodeGeradorService = qrCodeGeradorService;
+        this.agendaViagemRepository = agendaViagemRepository;
 
 
     }
@@ -596,6 +600,80 @@ public class AppHospedeService {
         return qrCodeGeradorService.gerarQRCode(
                 hospede.getCodigoCheckIn()
         );
+    }
+
+    public List<MinhaTimelineResponse> buscarMinhaTimeline(
+            String email
+
+    ) {
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(email)
+                        .orElseThrow(() ->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (usuario.getPerfil() != PerfilUsuario.HOSPEDE) {
+            throw new IllegalArgumentException(
+                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
+            );
+        }
+
+        List<Hospede> hospedes =
+                hospedeRepository.findByUsuarioId(
+                        usuario.getId()
+                );
+
+        if (hospedes.isEmpty()) {
+            return null;
+        }
+
+        Hospede hospede =
+                hospedes.get(0);
+
+        Viagem viagem =
+                hospede.getViagem();
+
+        return agendaViagemRepository
+                .findByViagemIdAndAtivoTrueAndVisivelHospedeTrueOrderByOrdemAscDataHoraInicioAsc(
+                        viagem.getId()
+                )
+                .stream()
+                .map(agenda -> {
+
+                    MinhaTimelineResponse response =
+                            new MinhaTimelineResponse();
+
+                    response.setId(
+                            agenda.getId()
+                    );
+
+                    response.setTitulo(
+                            agenda.getTitulo()
+                    );
+
+                    response.setDescricao(
+                            agenda.getDescricao()
+                    );
+
+                    response.setDataHoraInicio(
+                            agenda.getDataHoraInicio()
+                    );
+
+                    response.setDataHoraFim(
+                            agenda.getDataHoraFim()
+                    );
+
+                    response.setTipo(
+                            agenda.getTipo()
+                    );
+
+                    return response;
+                })
+                .toList();
     }
 
 }

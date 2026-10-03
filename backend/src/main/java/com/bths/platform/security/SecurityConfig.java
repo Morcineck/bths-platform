@@ -153,6 +153,7 @@ public class SecurityConfig {
                                 "/api/hospedes/**",
                                 "/api/quartos/**",
                                 "/api/hospedagens/**",
+                                "/api/agenda-viagem/**",
                                 "/api/alocacoes-quartos/**",
                                 "/api/traslados/**",
                                 "/api/check-in/qr/**",
