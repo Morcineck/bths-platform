@@ -40,7 +40,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AppHospedeServiceTest {
@@ -2085,5 +2086,116 @@ class AppHospedeServiceTest {
     }
 
 
+    @Test
+    void deveRetornarNullNoMeuQuartoQuandoUsuarioNaoPossuirHospedeVinculado() {
+
+        String email = "semvinculo@beattrips.com";
+        UUID usuarioId =
+                UUID.randomUUID();
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of()
+        );
+
+        MeuQuartoResponse response =
+                appHospedeService.buscarMeuQuarto(
+                        email
+                );
+
+        assertNull(
+                response
+        );
+
+        verify(
+                alocacaoQuartoRepository,
+                never()
+        ).findByHospedeIdAndViagemId(
+                anyLong(),
+                anyLong()
+        );
+    }
+
+    @Test
+    void deveRetornarTimelineVaziaQuandoUsuarioNaoPossuirHospedeVinculado() {
+
+        String email = "semvinculo@beattrips.com";
+        UUID usuarioId =
+                UUID.randomUUID();
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(usuario)
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of()
+        );
+
+        List<MinhaTimelineResponse> response =
+                appHospedeService.buscarMinhaTimeline(
+                        email
+                );
+
+        assertNotNull(
+                response
+        );
+
+        assertTrue(
+                response.isEmpty()
+        );
+
+        verifyNoInteractions(
+                agendaViagemRepository
+        );
+    }
 
 }

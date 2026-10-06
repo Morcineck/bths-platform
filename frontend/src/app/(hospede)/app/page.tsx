@@ -287,11 +287,11 @@ export default function AppHospedePage() {
       {!viagem ? (
         <section className="glass rounded-3xl p-5 shadow-soft">
           <p className="font-semibold text-foreground">
-            Nenhuma viagem disponível
+            Sua viagem ainda não foi vinculada
           </p>
 
           <p className="mt-2 text-sm leading-6 text-muted">
-            Assim que uma viagem estiver vinculada à sua conta, sua experiência Beat Trips aparecerá aqui.
+            Assim que a equipe Beat Trips concluir essa etapa, sua hospedagem, transporte, quarto e demais informações aparecerão aqui.
           </p>
         </section>
       ) : (

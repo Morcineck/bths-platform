@@ -173,6 +173,10 @@ public class AppHospedeService {
                         usuario.getId()
                 );
 
+        if (hospedes.isEmpty()) {
+            return null;
+        }
+
         Hospede hospede =
                 hospedes.get(0);
 
@@ -628,7 +632,7 @@ public class AppHospedeService {
                 );
 
         if (hospedes.isEmpty()) {
-            return null;
+            return List.of();
         }
 
         Hospede hospede =

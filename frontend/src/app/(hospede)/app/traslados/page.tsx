@@ -99,7 +99,7 @@ function classeStatus(
       return "border-success/30 bg-success/10 text-success";
 
     case "CANCELADO":
-      return "border-red-500/30 bg-red-500/10 text-red-400";
+      return "border-danger/30 bg-danger/10 text-danger";
 
     default:
       return "border-border bg-surface-secondary text-muted";
@@ -414,9 +414,7 @@ function TrasladoCard({
   const motoristaDesignado =
     Boolean(
       traslado.motoristaNome,
-    ) ||
-    emAndamento ||
-    concluido;
+    );
 
   const cancelado =
     traslado.status ===

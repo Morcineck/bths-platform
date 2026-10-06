@@ -11,6 +11,7 @@ import type {
   CriarAcessoBthsRequest,
   Hospede,
   HospedeAcessoBths,
+  RedefinirSenhaAcessoBthsRequest,
 } from "../types/hospede";
 
 import type {
@@ -181,6 +182,44 @@ export async function criarAcessoBths(
   }
 
   return response.json();
+}
+
+export async function redefinirSenhaAcessoBths(
+  hospedeId: number,
+  dados: RedefinirSenhaAcessoBthsRequest,
+): Promise<void> {
+  await inicializarCsrf();
+
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
+
+  const response = await authFetch(
+    `${API_URL}/api/hospedes/${hospedeId}/acesso-bths/senha`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type":
+          "application/json",
+        "X-XSRF-TOKEN":
+          csrfToken,
+      },
+      body: JSON.stringify(
+        dados,
+      ),
+    },
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response
+        .json()
+        .catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível redefinir a senha do acesso BTHS.",
+    );
+  }
 }
 
 export async function buscarHospedesDoUsuario(): Promise<Hospede[]> {

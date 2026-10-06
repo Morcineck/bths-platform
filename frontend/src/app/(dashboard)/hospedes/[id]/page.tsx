@@ -34,6 +34,7 @@ import {
   buscarAcessoBths,
   buscarHospedePorId,
   criarAcessoBths,
+  redefinirSenhaAcessoBths,
 } from "@/features/hospede/services/hospedeService";
 
 import type {
@@ -288,6 +289,22 @@ export default function HospedeDetalhePage({
     senhaTemporariaBths,
     setSenhaTemporariaBths,
   ] = useState("");
+
+  const [
+    novaSenhaBths,
+    setNovaSenhaBths,
+  ] = useState("");
+
+  const [
+    confirmarNovaSenhaBths,
+    setConfirmarNovaSenhaBths,
+  ] = useState("");
+
+  const [
+    redefinindoSenhaBths,
+    setRedefinindoSenhaBths,
+  ] = useState(false);
+
 
   const [
     criandoAcessoBths,
@@ -1140,6 +1157,71 @@ export default function HospedeDetalhePage({
     }
   }
 
+  async function handleRedefinirSenhaBths() {
+    setErroAcessoBths("");
+    setSucessoAcessoBths("");
+
+    if (!novaSenhaBths.trim()) {
+      setErroAcessoBths(
+        "Informe a nova senha.",
+      );
+
+      return;
+    }
+
+    if (
+      novaSenhaBths.length < 8
+    ) {
+      setErroAcessoBths(
+        "A nova senha deve possuir pelo menos 8 caracteres.",
+      );
+
+      return;
+    }
+
+    if (
+      novaSenhaBths !==
+      confirmarNovaSenhaBths
+    ) {
+      setErroAcessoBths(
+        "As senhas informadas não coincidem.",
+      );
+
+      return;
+    }
+
+    try {
+      setRedefinindoSenhaBths(
+        true,
+      );
+
+      await redefinirSenhaAcessoBths(
+        Number(id),
+        {
+          novaSenha:
+            novaSenhaBths,
+        },
+      );
+
+      setNovaSenhaBths("");
+      setConfirmarNovaSenhaBths("");
+
+      setSucessoAcessoBths(
+        "Senha do acesso BTHS redefinida com sucesso.",
+      );
+    } catch (error) {
+      setErroAcessoBths(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível redefinir a senha do acesso BTHS.",
+      );
+    } finally {
+      setRedefinindoSenhaBths(
+        false,
+      );
+    }
+  }
+
   if (carregando) {
     return (
       <p className="text-sm text-muted">
@@ -1361,6 +1443,99 @@ export default function HospedeDetalhePage({
                     {acessoBths.usuarioId}
                   </p>
                 </div>
+                <div className="mt-5 border-t border-border pt-5">
+                  <p className="text-sm font-semibold text-foreground">
+                    Redefinir senha
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    Defina uma nova senha temporária para o hóspede acessar o BTHS.
+                  </p>
+
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="novaSenhaBths"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Nova senha
+                      </label>
+
+                      <input
+                        id="novaSenhaBths"
+                        type="password"
+                        value={novaSenhaBths}
+                        onChange={(event) =>
+                          setNovaSenhaBths(
+                            event.target.value,
+                          )
+                        }
+                        disabled={
+                          redefinindoSenhaBths
+                        }
+                        placeholder="Mínimo de 8 caracteres"
+                        className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="confirmarNovaSenhaBths"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Confirmar nova senha
+                      </label>
+
+                      <input
+                        id="confirmarNovaSenhaBths"
+                        type="password"
+                        value={
+                          confirmarNovaSenhaBths
+                        }
+                        onChange={(event) =>
+                          setConfirmarNovaSenhaBths(
+                            event.target.value,
+                          )
+                        }
+                        disabled={
+                          redefinindoSenhaBths
+                        }
+                        placeholder="Repita a nova senha"
+                        className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+
+                  {erroAcessoBths && (
+                    <p
+                      role="alert"
+                      className="mt-4 text-sm text-red-400"
+                    >
+                      {erroAcessoBths}
+                    </p>
+                  )}
+
+                  {sucessoAcessoBths && (
+                    <p className="mt-4 text-sm font-medium text-success">
+                      {sucessoAcessoBths}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={
+                      handleRedefinirSenhaBths
+                    }
+                    disabled={
+                      redefinindoSenhaBths
+                    }
+                    className="mt-4 inline-flex h-11 items-center justify-center rounded-xl border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {redefinindoSenhaBths
+                      ? "Redefinindo..."
+                      : "Redefinir senha"}
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -1450,6 +1625,8 @@ export default function HospedeDetalhePage({
           </Card>
         </section>
       )}
+
+
 
       <section className="space-y-4">
         <div>
