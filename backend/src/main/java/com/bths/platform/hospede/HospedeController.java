@@ -1,9 +1,6 @@
 package com.bths.platform.hospede;
 
-import com.bths.platform.hospede.dto.HospedeAcessoBthsResponse;
-import com.bths.platform.hospede.dto.HospedeCriarAcessoBthsRequest;
-import com.bths.platform.hospede.dto.HospedeRequest;
-import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +30,22 @@ public class HospedeController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PutMapping("/{id}/acesso-bths/senha")
+    public ResponseEntity<Void> redefinirSenhaAcessoBths(
+            @PathVariable Long id,
+            @Valid @RequestBody HospedeRedefinirSenhaRequest request
+    ) {
+
+        hospedeService.redefinirSenhaAcessoBths(
+                id,
+                request
+        );
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
     @GetMapping

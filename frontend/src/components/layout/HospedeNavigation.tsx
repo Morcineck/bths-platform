@@ -107,13 +107,16 @@ export function HospedeNavigation() {
             className="relative flex min-h-16 flex-col items-center justify-end pb-2 text-xs font-medium"
           >
             <span
-              className={`absolute -top-4 flex h-14 w-14 items-center justify-center rounded-full border-4 border-surface shadow-lg transition-transform ${
+              className={`gradient-brand absolute -top-4 flex h-14 w-14 items-center justify-center rounded-full border-4 border-surface text-white shadow-glow transition-transform ${
                 isActive("/app/check-in")
-                  ? "scale-105 bg-primary text-white"
-                  : "bg-primary text-white hover:scale-105"
+                  ? "scale-105"
+                  : "hover:scale-105"
               }`}
             >
-              <QrCode size={25} strokeWidth={2.2} />
+              <QrCode
+                size={25}
+                strokeWidth={2.2}
+              />
             </span>
 
             <span

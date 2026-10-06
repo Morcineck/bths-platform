@@ -1,9 +1,6 @@
 package com.bths.platform.hospede;
 
-import com.bths.platform.hospede.dto.HospedeAcessoBthsResponse;
-import com.bths.platform.hospede.dto.HospedeCriarAcessoBthsRequest;
-import com.bths.platform.hospede.dto.HospedeRequest;
-import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.dto.*;
 import com.bths.platform.hospede.enums.StatusCheckIn;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
 import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
@@ -1794,6 +1791,176 @@ class HospedeServiceTest {
 
         verifyNoInteractions(
                 passwordEncoder
+        );
+    }
+
+    @Test
+    void deveRedefinirSenhaDeAcessoBthsComSucesso() {
+
+        Long hospedeId = 1L;
+
+        HospedeRedefinirSenhaRequest request =
+                new HospedeRedefinirSenhaRequest();
+
+        request.setNovaSenha(
+                "Teste@123"
+        );
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                UUID.randomUUID()
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        hospede.setUsuario(
+                usuario
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
+
+        when(
+                passwordEncoder.encode(
+                        "Teste@123"
+                )
+        ).thenReturn(
+                "senha-criptografada"
+        );
+
+        hospedeService.redefinirSenhaAcessoBths(
+                hospedeId,
+                request
+        );
+
+        assertEquals(
+                "senha-criptografada",
+                usuario.getSenha()
+        );
+
+        verify(
+                passwordEncoder
+        ).encode(
+                "Teste@123"
+        );
+
+        verify(
+                usuarioRepository
+        ).save(
+                usuario
+        );
+    }
+
+    @Test
+    void deveBloquearRedefinicaoDeSenhaQuandoHospedeNaoPossuirAcessoBths() {
+
+        Long hospedeId = 1L;
+
+        HospedeRedefinirSenhaRequest request =
+                new HospedeRedefinirSenhaRequest();
+
+        request.setNovaSenha(
+                "Teste@123"
+        );
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                hospedeId
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.of(hospede)
+        );
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                hospedeService
+                                        .redefinirSenhaAcessoBths(
+                                                hospedeId,
+                                                request
+                                        )
+                );
+
+        assertEquals(
+                "Este hóspede ainda não possui acesso BTHS vinculado.",
+                exception.getMessage()
+        );
+
+        verifyNoInteractions(
+                passwordEncoder
+        );
+
+        verify(
+                usuarioRepository,
+                never()
+        ).save(
+                any(Usuario.class)
+        );
+    }
+
+    @Test
+    void deveLancarExcecaoAoRedefinirSenhaDeHospedeInexistente() {
+
+        Long hospedeId = 999L;
+
+        HospedeRedefinirSenhaRequest request =
+                new HospedeRedefinirSenhaRequest();
+
+        request.setNovaSenha(
+                "Teste@123"
+        );
+
+        when(
+                hospedeRepository.findById(
+                        hospedeId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+        assertThrows(
+                HospedeNaoEncontradoException.class,
+                () ->
+                        hospedeService
+                                .redefinirSenhaAcessoBths(
+                                        hospedeId,
+                                        request
+                                )
+        );
+
+        verifyNoInteractions(
+                passwordEncoder
+        );
+
+        verify(
+                usuarioRepository,
+                never()
+        ).save(
+                any(Usuario.class)
         );
     }
 

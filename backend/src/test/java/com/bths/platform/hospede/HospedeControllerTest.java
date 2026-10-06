@@ -1,5 +1,6 @@
 package com.bths.platform.hospede;
 
+import com.bths.platform.hospede.dto.HospedeRedefinirSenhaRequest;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.hospede.dto.HospedeResponse;
@@ -12,19 +13,19 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.mockito.Mockito.never;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
@@ -399,5 +400,111 @@ class HospedeControllerTest {
                 .cadastrarHospede(any());
     }
 
+    @Test
+    void deveRedefinirSenhaAcessoBthsERetornar204() throws Exception {
+
+        doNothing()
+                .when(hospedeService)
+                .redefinirSenhaAcessoBths(
+                        eq(1L),
+                        any(HospedeRedefinirSenhaRequest.class)
+                );
+
+        String json = """
+            {
+                "novaSenha": "Teste@123"
+            }
+            """;
+
+        mockMvc.perform(
+                        put(
+                                "/api/hospedes/1/acesso-bths/senha"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(
+                                        json
+                                )
+                )
+                .andExpect(
+                        status().isNoContent()
+                );
+
+        verify(
+                hospedeService
+        ).redefinirSenhaAcessoBths(
+                eq(1L),
+                any(HospedeRedefinirSenhaRequest.class)
+        );
+    }
+
+    @Test
+    void deveRetornar400AoRedefinirSenhaComMenosDeOitoCaracteres()
+            throws Exception {
+
+        String json = """
+            {
+                "novaSenha": "1234567"
+            }
+            """;
+
+        mockMvc.perform(
+                        put(
+                                "/api/hospedes/1/acesso-bths/senha"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(
+                                        json
+                                )
+                )
+                .andExpect(
+                        status().isBadRequest()
+                );
+
+        verify(
+                hospedeService,
+                never()
+        ).redefinirSenhaAcessoBths(
+                anyLong(),
+                any(HospedeRedefinirSenhaRequest.class)
+        );
+    }
+
+    @Test
+    void deveRetornar400AoRedefinirSenhaEmBranco()
+            throws Exception {
+
+        String json = """
+            {
+                "novaSenha": ""
+            }
+            """;
+
+        mockMvc.perform(
+                        put(
+                                "/api/hospedes/1/acesso-bths/senha"
+                        )
+                                .contentType(
+                                        "application/json"
+                                )
+                                .content(
+                                        json
+                                )
+                )
+                .andExpect(
+                        status().isBadRequest()
+                );
+
+        verify(
+                hospedeService,
+                never()
+        ).redefinirSenhaAcessoBths(
+                anyLong(),
+                any(HospedeRedefinirSenhaRequest.class)
+        );
+    }
 
 }

@@ -53,3 +53,7 @@ export type CriarAcessoBthsRequest = {
   email: string;
   senhaTemporaria: string;
 };
+
+export type RedefinirSenhaAcessoBthsRequest = {
+  novaSenha: string;
+};

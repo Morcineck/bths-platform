@@ -508,13 +508,11 @@ export default function AppViagemPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="text-center text-sm font-semibold text-foreground">
             Timeline da experiência
           </h2>
 
-          <p className="mt-1 text-xs text-muted">
-            Acompanhe os principais momentos da sua viagem.
-          </p>
+
         </div>
 
         {timeline.length === 0 ? (

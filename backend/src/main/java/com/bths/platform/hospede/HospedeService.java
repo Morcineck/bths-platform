@@ -1,9 +1,6 @@
 package com.bths.platform.hospede;
 
-import com.bths.platform.hospede.dto.HospedeAcessoBthsResponse;
-import com.bths.platform.hospede.dto.HospedeCriarAcessoBthsRequest;
-import com.bths.platform.hospede.dto.HospedeRequest;
-import com.bths.platform.hospede.dto.HospedeResponse;
+import com.bths.platform.hospede.dto.*;
 import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
 import com.bths.platform.hospede.mapper.HospedeMapper;
 import com.bths.platform.usuario.Usuario;
@@ -386,6 +383,52 @@ public class HospedeService {
         );
 
         return response;
+    }
+
+    @Transactional
+    public void redefinirSenhaAcessoBths(
+            Long hospedeId,
+            HospedeRedefinirSenhaRequest request
+    ) {
+
+        Hospede hospede =
+                hospedeRepository
+                        .findById(
+                                hospedeId
+                        )
+                        .orElseThrow(() ->
+                                new HospedeNaoEncontradoException(
+                                        "Hóspede não encontrado!"
+                                )
+                        );
+
+        Usuario usuario =
+                hospede.getUsuario();
+
+        if (usuario == null) {
+            throw new IllegalArgumentException(
+                    "Este hóspede ainda não possui acesso BTHS vinculado."
+            );
+        }
+
+        if (
+                usuario.getPerfil()
+                        != PerfilUsuario.HOSPEDE
+        ) {
+            throw new IllegalArgumentException(
+                    "O usuário vinculado ao hóspede não possui perfil HOSPEDE."
+            );
+        }
+
+        usuario.setSenha(
+                passwordEncoder.encode(
+                        request.getNovaSenha()
+                )
+        );
+
+        usuarioRepository.save(
+                usuario
+        );
     }
 }
 
