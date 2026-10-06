@@ -167,4 +167,19 @@ public class AppHospedeController {
                 .body(imagem);
     }
 
+    @GetMapping("/avisos")
+    public ResponseEntity<List<MeuAvisoResponse>> buscarMeusAvisos(
+            Authentication authentication
+    ) {
+
+        List<MeuAvisoResponse> responses =
+                appHospedeService.buscarMeusAvisos(
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(
+                responses
+        );
+    }
+
 }

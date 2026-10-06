@@ -30,6 +30,10 @@ import type {
   MinhaTimeline,
 } from "../types/minhaTimeline";
 
+import type {
+  MeuAviso,
+} from "../types/meuAviso";
+
 import type { MeuTraslado } from "../types/meuTraslado";
 import type { MeuCheckIn } from "../types/meuCheckIn";
 
@@ -348,6 +352,20 @@ export async function buscarMinhaTimeline(): Promise<MinhaTimeline[]> {
   if (!response.ok) {
     throw new Error(
       "Não foi possível carregar sua timeline.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function buscarMeusAvisos(): Promise<MeuAviso[]> {
+  const response = await authFetch(
+    `${API_URL}/api/app/avisos`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar seus avisos.",
     );
   }
 

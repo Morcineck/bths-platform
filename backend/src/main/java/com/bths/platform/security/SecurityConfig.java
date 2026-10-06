@@ -154,10 +154,12 @@ public class SecurityConfig {
                                 "/api/quartos/**",
                                 "/api/hospedagens/**",
                                 "/api/agenda-viagem/**",
+                                "/api/avisos/**",
                                 "/api/alocacoes-quartos/**",
                                 "/api/traslados/**",
                                 "/api/check-in/qr/**",
                                 "/api/dashboard/**"
+
                         )
                         .hasAnyRole(
                                 "ADMIN",
