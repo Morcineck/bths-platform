@@ -4,6 +4,7 @@ import com.bths.platform.agenda.AgendaViagemRepository;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.*;
+import com.bths.platform.aviso.AvisoRepository;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
 import com.bths.platform.operacaoTraslado.OperacaoTraslado;
@@ -29,6 +30,7 @@ public class AppHospedeService {
     private final TrasladoRepository trasladoRepository;
     private final QrCodeGeradorService qrCodeGeradorService;
     private final AgendaViagemRepository agendaViagemRepository;
+    private final AvisoRepository avisoRepository;
 
 
     public AppHospedeService(
@@ -37,7 +39,8 @@ public class AppHospedeService {
             AlocacaoQuartoRepository alocacaoQuartoRepository,
             TrasladoRepository trasladoRepository,
             QrCodeGeradorService qrCodeGeradorService,
-            AgendaViagemRepository agendaViagemRepository
+            AgendaViagemRepository agendaViagemRepository,
+            AvisoRepository avisoRepository
 
     ) {
 
@@ -47,6 +50,7 @@ public class AppHospedeService {
         this.trasladoRepository = trasladoRepository;
         this.qrCodeGeradorService = qrCodeGeradorService;
         this.agendaViagemRepository = agendaViagemRepository;
+        this.avisoRepository = avisoRepository;
 
 
     }
@@ -680,4 +684,76 @@ public class AppHospedeService {
                 .toList();
     }
 
+    public List<MeuAvisoResponse> buscarMeusAvisos(
+            String email
+    ) {
+
+        Usuario usuario =
+                usuarioRepository
+                        .findByEmail(email)
+                        .orElseThrow(() ->
+                                new UsuarioNaoEncontradoException(
+                                        "Usuário não encontrado!"
+                                )
+                        );
+
+        if (
+                usuario.getPerfil()
+                        != PerfilUsuario.HOSPEDE
+        ) {
+            throw new IllegalArgumentException(
+                    "A consulta é permitida apenas para usuários com perfil HOSPEDE."
+            );
+        }
+
+        List<Hospede> hospedes =
+                hospedeRepository
+                        .findByUsuarioId(
+                                usuario.getId()
+                        );
+
+        if (hospedes.isEmpty()) {
+            return List.of();
+        }
+
+        Hospede hospede =
+                hospedes.get(0);
+
+        Viagem viagem =
+                hospede.getViagem();
+
+        return avisoRepository
+                .findByViagemIdAndAtivoTrueOrderByDataPublicacaoDesc(
+                        viagem.getId()
+                )
+                .stream()
+                .map(aviso -> {
+
+                    MeuAvisoResponse response =
+                            new MeuAvisoResponse();
+
+                    response.setId(
+                            aviso.getId()
+                    );
+
+                    response.setTitulo(
+                            aviso.getTitulo()
+                    );
+
+                    response.setMensagem(
+                            aviso.getMensagem()
+                    );
+
+                    response.setTipo(
+                            aviso.getTipo()
+                    );
+
+                    response.setDataPublicacao(
+                            aviso.getDataPublicacao()
+                    );
+
+                    return response;
+                })
+                .toList();
+    }
 }

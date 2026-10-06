@@ -7,6 +7,9 @@ import com.bths.platform.alocacao.AlocacaoQuarto;
 import com.bths.platform.alocacao.AlocacaoQuartoRepository;
 import com.bths.platform.alocacao.enums.TipoCama;
 import com.bths.platform.app.dto.*;
+import com.bths.platform.aviso.Aviso;
+import com.bths.platform.aviso.AvisoRepository;
+import com.bths.platform.aviso.enums.TipoAviso;
 import com.bths.platform.hospedagem.Hospedagem;
 import com.bths.platform.hospede.Hospede;
 import com.bths.platform.hospede.HospedeRepository;
@@ -66,6 +69,9 @@ class AppHospedeServiceTest {
     @Mock
     private AgendaViagemRepository agendaViagemRepository;
 
+    @Mock
+    private AvisoRepository avisoRepository;
+
     @BeforeEach
     void setUp() {
         appHospedeService = new AppHospedeService(
@@ -74,7 +80,8 @@ class AppHospedeServiceTest {
                 alocacaoQuartoRepository,
                 trasladoRepository,
                 qrCodeGeradorService,
-                agendaViagemRepository
+                agendaViagemRepository,
+                avisoRepository
         );
     }
 
@@ -2195,6 +2202,274 @@ class AppHospedeServiceTest {
 
         verifyNoInteractions(
                 agendaViagemRepository
+        );
+    }
+
+    @Test
+    void deveRetornarAvisosAtivosDaViagemDoHospede() {
+
+        String email =
+                "hospede@beattrips.com";
+
+        UUID usuarioId =
+                UUID.randomUUID();
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        Viagem viagem =
+                new Viagem();
+
+        viagem.setId(
+                1L
+        );
+
+        Hospede hospede =
+                new Hospede();
+
+        hospede.setId(
+                1L
+        );
+
+        hospede.setViagem(
+                viagem
+        );
+
+        Aviso aviso1 =
+                new Aviso();
+
+        aviso1.setId(
+                10L
+        );
+
+        aviso1.setTitulo(
+                "Transporte confirmado"
+        );
+
+        aviso1.setMensagem(
+                "Seu transporte já está confirmado."
+        );
+
+        aviso1.setTipo(
+                TipoAviso.TRANSPORTE
+        );
+
+        aviso1.setDataPublicacao(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        28,
+                        10,
+                        0
+                )
+        );
+
+        Aviso aviso2 =
+                new Aviso();
+
+        aviso2.setId(
+                11L
+        );
+
+        aviso2.setTitulo(
+                "Welcome Beat"
+        );
+
+        aviso2.setMensagem(
+                "Confira as informações do Welcome Beat."
+        );
+
+        aviso2.setTipo(
+                TipoAviso.EVENTO
+        );
+
+        aviso2.setDataPublicacao(
+                LocalDateTime.of(
+                        2027,
+                        4,
+                        29,
+                        9,
+                        0
+                )
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of(
+                        hospede
+                )
+        );
+
+        when(
+                avisoRepository
+                        .findByViagemIdAndAtivoTrueOrderByDataPublicacaoDesc(
+                                1L
+                        )
+        ).thenReturn(
+                List.of(
+                        aviso2,
+                        aviso1
+                )
+        );
+
+        List<MeuAvisoResponse> response =
+                appHospedeService.buscarMeusAvisos(
+                        email
+                );
+
+        assertEquals(
+                2,
+                response.size()
+        );
+
+        assertEquals(
+                "Welcome Beat",
+                response.get(0).getTitulo()
+        );
+
+        assertEquals(
+                TipoAviso.EVENTO,
+                response.get(0).getTipo()
+        );
+
+        assertEquals(
+                "Transporte confirmado",
+                response.get(1).getTitulo()
+        );
+
+        verify(
+                avisoRepository
+        ).findByViagemIdAndAtivoTrueOrderByDataPublicacaoDesc(
+                1L
+        );
+    }
+
+    @Test
+    void deveRetornarListaVaziaDeAvisosQuandoUsuarioNaoPossuirHospedeVinculado() {
+
+        String email =
+                "semvinculo@beattrips.com";
+
+        UUID usuarioId =
+                UUID.randomUUID();
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                usuarioId
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.HOSPEDE
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        when(
+                hospedeRepository.findByUsuarioId(
+                        usuarioId
+                )
+        ).thenReturn(
+                List.of()
+        );
+
+        List<MeuAvisoResponse> response =
+                appHospedeService.buscarMeusAvisos(
+                        email
+                );
+
+        assertNotNull(
+                response
+        );
+
+        assertTrue(
+                response.isEmpty()
+        );
+
+        verifyNoInteractions(
+                avisoRepository
+        );
+    }
+
+    @Test
+    void deveBloquearConsultaDeAvisosParaUsuarioNaoHospede() {
+
+        String email =
+                "admin@beattrips.com";
+
+        Usuario usuario =
+                new Usuario();
+
+        usuario.setId(
+                UUID.randomUUID()
+        );
+
+        usuario.setEmail(
+                email
+        );
+
+        usuario.setPerfil(
+                PerfilUsuario.ADMIN
+        );
+
+        when(
+                usuarioRepository.findByEmail(
+                        email
+                )
+        ).thenReturn(
+                Optional.of(
+                        usuario
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        appHospedeService.buscarMeusAvisos(
+                                email
+                        )
+        );
+
+        verifyNoInteractions(
+                avisoRepository
         );
     }
 

@@ -2193,4 +2193,185 @@ class AppHospedeAuthorizationTest {
                 );
     }
 
+    @Test
+    void devePermitirAvisosParaHospede()
+            throws Exception {
+
+        String email =
+                "hospede@beattrips.com";
+
+        UserDetails hospede =
+                User
+                        .withUsername(email)
+                        .password("senha")
+                        .roles("HOSPEDE")
+                        .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-hospede"
+                )
+        ).thenReturn(
+                email
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        email
+                )
+        ).thenReturn(
+                hospede
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-hospede",
+                        hospede
+                )
+        ).thenReturn(
+                true
+        );
+
+        when(
+                appHospedeService.buscarMeusAvisos(
+                        email
+                )
+        ).thenReturn(
+                List.of()
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/avisos"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-hospede"
+                                )
+                )
+                .andExpect(
+                        status().isOk()
+                );
+    }
+
+    @Test
+    void deveBloquearAvisosParaAdmin()
+            throws Exception {
+
+        String email =
+                "admin@beattrips.com";
+
+        UserDetails admin =
+                User
+                        .withUsername(email)
+                        .password("senha")
+                        .roles("ADMIN")
+                        .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-admin"
+                )
+        ).thenReturn(
+                email
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        email
+                )
+        ).thenReturn(
+                admin
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-admin",
+                        admin
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/avisos"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearAvisosParaStaff()
+            throws Exception {
+
+        String email =
+                "staff@beattrips.com";
+
+        UserDetails staff =
+                User
+                        .withUsername(email)
+                        .password("senha")
+                        .roles("STAFF")
+                        .build();
+
+        when(
+                jwtService.extrairEmail(
+                        "token-staff"
+                )
+        ).thenReturn(
+                email
+        );
+
+        when(
+                usuarioDetailsService.loadUserByUsername(
+                        email
+                )
+        ).thenReturn(
+                staff
+        );
+
+        when(
+                jwtService.tokenValido(
+                        "token-staff",
+                        staff
+                )
+        ).thenReturn(
+                true
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/avisos"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(
+                        status().isForbidden()
+                );
+    }
+
+    @Test
+    void deveBloquearAvisosSemAutenticacao()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/app/avisos"
+                        )
+                )
+                .andExpect(
+                        status().isUnauthorized()
+                );
+    }
+
 }
