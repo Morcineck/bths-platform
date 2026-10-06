@@ -24,8 +24,13 @@ import type {
 } from "@/features/auth/types/auth";
 
 import {
+  buscarMeusAvisos,
   buscarMinhaViagem,
 } from "@/features/hospede/services/hospedeService";
+
+import type {
+  MeuAviso,
+} from "@/features/hospede/types/meuAviso";
 
 import type {
   MinhaViagem,
@@ -179,6 +184,11 @@ export default function AppHospedePage() {
     );
 
   const [
+    avisos,
+    setAvisos,
+  ] = useState<MeuAviso[]>([]);
+
+  const [
     carregando,
     setCarregando,
   ] = useState(true);
@@ -196,9 +206,11 @@ export default function AppHospedePage() {
         const [
           usuarioAutenticado,
           minhaViagem,
+          meusAvisos,
         ] = await Promise.all([
           buscarUsuarioAutenticado(),
           buscarMinhaViagem(),
+          buscarMeusAvisos(),
         ]);
 
         setUsuario(
@@ -207,6 +219,10 @@ export default function AppHospedePage() {
 
         setViagem(
           minhaViagem,
+        );
+
+        setAvisos(
+          meusAvisos,
         );
       } catch {
         setErro(
@@ -448,6 +464,63 @@ export default function AppHospedePage() {
                 </Link>
               ),
             )}
+          </div>
+        </section>
+      )}
+
+      {avisos.length > 0 && (
+        <section>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-foreground">
+              Avisos recentes
+            </h2>
+
+            <Link
+              href="/app/avisos"
+              className="text-xs font-medium text-primary"
+            >
+              Ver todos
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {avisos
+              .slice(0, 2)
+              .map((aviso) => (
+                <Link
+                  key={aviso.id}
+                  href="/app/avisos"
+                  className="block rounded-2xl border border-border bg-surface/60 p-4 shadow-soft transition-colors active:scale-[0.99]"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                      <Bell
+                        size={17}
+                        strokeWidth={1.9}
+                      />
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                        {aviso.tipo}
+                      </p>
+
+                      <h3 className="mt-1 truncate text-sm font-semibold text-foreground">
+                        {aviso.titulo}
+                      </h3>
+
+                      <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">
+                        {aviso.mensagem}
+                      </p>
+                    </div>
+
+                    <ChevronRight
+                      size={17}
+                      className="mt-1 shrink-0 text-muted"
+                    />
+                  </div>
+                </Link>
+              ))}
           </div>
         </section>
       )}
