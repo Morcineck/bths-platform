@@ -1,22 +1,56 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-import { cadastrarVeiculo } from "@/features/veiculo/services/veiculoService";
+import {
+  ArrowLeft,
+  Car,
+  Save,
+  Users,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+
+import {
+  cadastrarVeiculo,
+} from "@/features/veiculo/services/veiculoService";
 
 export default function NovoVeiculoPage() {
   const router = useRouter();
 
-  const [modelo, setModelo] = useState("");
-  const [placa, setPlaca] = useState("");
-  const [capacidadePassageiros, setCapacidadePassageiros] =
-    useState("");
-  const [observacao, setObservacao] = useState("");
+  const [
+    modelo,
+    setModelo,
+  ] = useState("");
 
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const [
+    placa,
+    setPlaca,
+  ] = useState("");
+
+  const [
+    capacidadePassageiros,
+    setCapacidadePassageiros,
+  ] = useState("");
+
+  const [
+    observacao,
+    setObservacao,
+  ] = useState("");
+
+  const [
+    salvando,
+    setSalvando,
+  ] = useState(false);
+
+  const [
+    erro,
+    setErro,
+  ] = useState<string | null>(
+    null,
+  );
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -29,17 +63,24 @@ export default function NovoVeiculoPage() {
 
       await cadastrarVeiculo({
         modelo: modelo.trim(),
-        placa: placa.trim().toUpperCase(),
-        capacidadePassageiros: Number(
-          capacidadePassageiros,
-        ),
+        placa:
+          placa
+            .trim()
+            .toUpperCase(),
+        capacidadePassageiros:
+          Number(
+            capacidadePassageiros,
+          ),
         observacao:
           observacao.trim() === ""
             ? null
             : observacao.trim(),
       });
 
-      router.push("/veiculos");
+      router.push(
+        "/veiculos",
+      );
+
       router.refresh();
     } catch (error) {
       setErro(
@@ -53,138 +94,166 @@ export default function NovoVeiculoPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-4">
         <Link
           href="/veiculos"
-          className="text-sm text-zinc-400 transition hover:text-white"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para veículos
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para veículos
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold text-white">
-          Novo veículo
-        </h1>
-
-        <p className="mt-1 text-sm text-zinc-400">
-          Cadastre um veículo disponível para a operação
-          de transporte.
-        </p>
+        <PageHeader
+          title="Novo veículo"
+          description="Cadastre um veículo disponível para a operação de transporte."
+        />
       </div>
 
       {erro && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           {erro}
         </div>
       )}
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-6 rounded-xl border border-zinc-800 bg-zinc-950 p-6"
+        className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
       >
-        <div className="space-y-2">
-          <label
-            htmlFor="modelo"
-            className="text-sm font-medium text-zinc-200"
-          >
-            Modelo
-          </label>
-
-          <input
-            id="modelo"
-            type="text"
-            value={modelo}
-            onChange={(event) =>
-              setModelo(event.target.value)
-            }
-            required
-            disabled={salvando}
-            placeholder="Ex.: Renault Duster"
-            className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-2">
+        <div className="space-y-5">
+          <div>
             <label
-              htmlFor="placa"
-              className="text-sm font-medium text-zinc-200"
+              htmlFor="modelo"
+              className="mb-2 block text-xs font-medium text-muted"
             >
-              Placa
+              Modelo
             </label>
 
-            <input
-              id="placa"
-              type="text"
-              value={placa}
-              onChange={(event) =>
-                setPlaca(
-                  event.target.value.toUpperCase(),
-                )
-              }
-              required
-              disabled={salvando}
-              maxLength={7}
-              placeholder="ABC1D23"
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm uppercase text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
-            />
+            <div className="relative">
+              <Car
+                size={17}
+                strokeWidth={1.9}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+              />
 
-            <p className="text-xs text-zinc-500">
-              Formato antigo ou Mercosul.
-            </p>
+              <input
+                id="modelo"
+                type="text"
+                value={modelo}
+                onChange={(event) =>
+                  setModelo(
+                    event.target.value,
+                  )
+                }
+                required
+                disabled={salvando}
+                placeholder="Ex.: Renault Duster"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="placa"
+                className="mb-2 block text-xs font-medium text-muted"
+              >
+                Placa
+              </label>
+
+              <input
+                id="placa"
+                type="text"
+                value={placa}
+                onChange={(event) =>
+                  setPlaca(
+                    event.target.value.toUpperCase(),
+                  )
+                }
+                required
+                disabled={salvando}
+                maxLength={7}
+                placeholder="ABC1D23"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm uppercase tracking-wide text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+              />
+
+              <p className="mt-1.5 text-[11px] text-muted">
+                Formato antigo ou Mercosul.
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="capacidadePassageiros"
+                className="mb-2 block text-xs font-medium text-muted"
+              >
+                Capacidade
+              </label>
+
+              <div className="relative">
+                <Users
+                  size={17}
+                  strokeWidth={1.9}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                />
+
+                <input
+                  id="capacidadePassageiros"
+                  type="number"
+                  min={1}
+                  value={
+                    capacidadePassageiros
+                  }
+                  onChange={(event) =>
+                    setCapacidadePassageiros(
+                      event.target.value,
+                    )
+                  }
+                  required
+                  disabled={salvando}
+                  placeholder="4"
+                  className="h-11 w-full rounded-xl border border-border bg-background/30 pl-11 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
             <label
-              htmlFor="capacidadePassageiros"
-              className="text-sm font-medium text-zinc-200"
+              htmlFor="observacao"
+              className="mb-2 block text-xs font-medium text-muted"
             >
-              Capacidade de passageiros
+              Observação
             </label>
 
-            <input
-              id="capacidadePassageiros"
-              type="number"
-              min={1}
-              value={capacidadePassageiros}
+            <textarea
+              id="observacao"
+              value={observacao}
               onChange={(event) =>
-                setCapacidadePassageiros(
+                setObservacao(
                   event.target.value,
                 )
               }
-              required
               disabled={salvando}
-              placeholder="4"
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+              rows={3}
+              placeholder="Informações adicionais sobre o veículo..."
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="observacao"
-            className="text-sm font-medium text-zinc-200"
-          >
-            Observação
-          </label>
-
-          <textarea
-            id="observacao"
-            value={observacao}
-            onChange={(event) =>
-              setObservacao(event.target.value)
-            }
-            disabled={salvando}
-            rows={4}
-            placeholder="Informações adicionais sobre o veículo..."
-            className="w-full resize-none rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="mt-5 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <Link
             href="/veiculos"
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-900"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
           >
             Cancelar
           </Link>
@@ -192,8 +261,13 @@ export default function NovoVeiculoPage() {
           <button
             type="submit"
             disabled={salvando}
-            className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
+            <Save
+              size={17}
+              strokeWidth={1.9}
+            />
+
             {salvando
               ? "Salvando..."
               : "Cadastrar veículo"}

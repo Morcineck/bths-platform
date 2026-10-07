@@ -3,9 +3,17 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  AlertTriangle,
+  BedDouble,
+  Bus,
+  CheckCircle2,
+  Clock3,
+  Users,
+} from "lucide-react";
+
 import { QuickActions } from "@/features/dashboard/components/QuickActions";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/Card";
 import { buscarDashboard } from "@/features/dashboard/services/dashboardService";
 import type { DashboardResponse } from "@/features/dashboard/types/dashboard";
 import { listarViagens } from "@/features/viagem/services/viagemService";
@@ -15,38 +23,51 @@ export default function DashboardPage() {
   const [dashboard, setDashboard] =
     useState<DashboardResponse | null>(null);
 
-  const [viagens, setViagens] = useState<Viagem[]>([]);
+  const [viagens, setViagens] =
+    useState<Viagem[]>([]);
+
   const [viagemAtivaId, setViagemAtivaId] =
     useState<number | null>(null);
 
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] =
+    useState(true);
+
+  const [erro, setErro] =
+    useState("");
 
   useEffect(() => {
     async function carregarViagens() {
       try {
         setErro("");
 
-        const dados = await listarViagens();
+        const dados =
+          await listarViagens();
 
         setViagens(dados);
 
         const viagemPreferencial =
           dados.find(
-            (viagem) => viagem.status === "EM_ANDAMENTO",
+            (viagem) =>
+              viagem.status ===
+              "EM_ANDAMENTO",
           ) ??
           dados.find(
-            (viagem) => viagem.status === "PLANEJADA",
+            (viagem) =>
+              viagem.status ===
+              "PLANEJADA",
           ) ??
           dados[0];
 
         if (viagemPreferencial) {
-          setViagemAtivaId(viagemPreferencial.id);
+          setViagemAtivaId(
+            viagemPreferencial.id,
+          );
         }
       } catch {
         setErro(
           "Não foi possível carregar as viagens.",
         );
+
         setCarregando(false);
       }
     }
@@ -64,9 +85,10 @@ export default function DashboardPage() {
         setCarregando(true);
         setErro("");
 
-        const dados = await buscarDashboard(
-          viagemAtivaId!,
-        );
+        const dados =
+          await buscarDashboard(
+            viagemAtivaId!,
+          );
 
         setDashboard(dados);
       } catch {
@@ -105,7 +127,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <PageHeader
           title="Dashboard"
@@ -122,22 +144,28 @@ export default function DashboardPage() {
 
           <select
             id="viagem"
-            value={viagemAtivaId ?? ""}
+            value={
+              viagemAtivaId ?? ""
+            }
             onChange={(event) =>
               setViagemAtivaId(
-                Number(event.target.value),
+                Number(
+                  event.target.value,
+                ),
               )
             }
-            className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+            className="h-11 w-full rounded-xl border border-border bg-surface/70 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
           >
-            {viagens.map((viagem) => (
-              <option
-                key={viagem.id}
-                value={viagem.id}
-              >
-                {viagem.nome}
-              </option>
-            ))}
+            {viagens.map(
+              (viagem) => (
+                <option
+                  key={viagem.id}
+                  value={viagem.id}
+                >
+                  {viagem.nome}
+                </option>
+              ),
+            )}
           </select>
         </div>
       </div>
@@ -151,206 +179,365 @@ export default function DashboardPage() {
         </p>
       )}
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <p className="text-sm text-muted">
+      <section className="grid grid-cols-3 gap-2.5 lg:grid-cols-6">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/20 to-transparent p-3 shadow-soft sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary sm:h-9 sm:w-9">
+              <Users
+                size={17}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
+              {
+                dashboard
+                  .hospedes.total
+              }
+            </p>
+          </div>
+
+          <p className="mt-3 text-xs font-medium text-foreground">
             Hóspedes
           </p>
 
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {dashboard.hospedes.total}
-          </p>
-
-          <p className="mt-2 text-sm text-muted">
-            {dashboard.hospedes.presentes} presentes
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Check-ins pendentes
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {dashboard.hospedes.pendentes}
-          </p>
-
-          <p className="mt-2 text-sm text-muted">
-            {dashboard.hospedes.taxaCheckIn.toFixed(1)}% realizados
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Vagas disponíveis
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {dashboard.hospedagem.disponiveis}
-          </p>
-
-          <p className="mt-2 text-sm text-muted">
-            {dashboard.hospedagem.ocupadas} de{" "}
-            {dashboard.hospedagem.vagasTotais} ocupadas
-          </p>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <p className="text-sm text-muted">
-            Traslados aguardando
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {dashboard.traslados.aguardando}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Em andamento
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {dashboard.traslados.emAndamento}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Concluídos
-          </p>
-
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {dashboard.traslados.concluidos}
-          </p>
-        </Card>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Atenção necessária
-          </h2>
-
-          <p className="mt-1 text-sm text-muted">
-            Situações operacionais que precisam de acompanhamento.
+          <p className="mt-1 truncate text-[11px] text-muted">
+            {
+              dashboard
+                .hospedes
+                .presentes
+            }{" "}
+            presentes
           </p>
         </div>
 
-        {dashboard.atencao.hospedesSemQuarto > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="border-red-500/30 bg-red-500/5">
-              <p className="text-sm font-medium text-red-400">
-                Hóspedes sem quarto
-              </p>
+        <div className="relative overflow-hidden rounded-2xl border border-warning/20 bg-gradient-to-br from-warning/15 to-transparent p-3 shadow-soft sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-warning/15 text-warning sm:h-9 sm:w-9">
+              <Clock3
+                size={17}
+                strokeWidth={1.9}
+              />
+            </span>
 
-              <p className="mt-2 text-3xl font-semibold text-foreground">
-                {dashboard.atencao.hospedesSemQuarto}
-              </p>
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
+              {
+                dashboard
+                  .hospedes
+                  .pendentes
+              }
+            </p>
+          </div>
 
-              <p className="mt-2 text-sm text-muted">
-                Hóspedes pendentes de check-in ainda não possuem quarto alocado.
-              </p>
+          <p className="mt-3 text-xs font-medium text-foreground">
+            Check-ins
+          </p>
 
-              <div className="mt-4 space-y-2">
+          <p className="mt-1 truncate text-[11px] text-warning">
+            {dashboard.hospedes.taxaCheckIn.toFixed(
+              1,
+            )}
+            % feitos
+          </p>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-electric/20 bg-gradient-to-br from-electric/15 to-transparent p-3 shadow-soft sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-electric/15 text-electric sm:h-9 sm:w-9">
+              <BedDouble
+                size={17}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
+              {
+                dashboard
+                  .hospedagem
+                  .disponiveis
+              }
+            </p>
+          </div>
+
+          <p className="mt-3 text-xs font-medium text-foreground">
+            Vagas
+          </p>
+
+          <p className="mt-1 truncate text-[11px] text-muted">
+            {
+              dashboard
+                .hospedagem
+                .ocupadas
+            }
+            /
+            {
+              dashboard
+                .hospedagem
+                .vagasTotais
+            }{" "}
+            ocupadas
+          </p>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-surface/60 p-3 shadow-soft sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted sm:h-9 sm:w-9">
+              <Bus
+                size={17}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
+              {
+                dashboard
+                  .traslados
+                  .aguardando
+              }
+            </p>
+          </div>
+
+          <p className="mt-3 text-xs font-medium text-foreground">
+            Aguardando
+          </p>
+
+          <p className="mt-1 text-[11px] text-muted">
+            Traslados
+          </p>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-magenta/20 bg-gradient-to-br from-magenta/15 to-transparent p-3 shadow-soft sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-magenta/15 text-magenta sm:h-9 sm:w-9">
+              <Bus
+                size={17}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
+              {
+                dashboard
+                  .traslados
+                  .emAndamento
+              }
+            </p>
+          </div>
+
+          <p className="mt-3 text-xs font-medium text-foreground">
+            Em andamento
+          </p>
+
+          <p className="mt-1 text-[11px] text-muted">
+            Traslados
+          </p>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-success/20 bg-gradient-to-br from-success/15 to-transparent p-3 shadow-soft sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-success/15 text-success sm:h-9 sm:w-9">
+              <CheckCircle2
+                size={17}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <p className="text-2xl font-semibold tracking-tight text-foreground">
+              {
+                dashboard
+                  .traslados
+                  .concluidos
+              }
+            </p>
+          </div>
+
+          <p className="mt-3 text-xs font-medium text-foreground">
+            Concluídos
+          </p>
+
+          <p className="mt-1 text-[11px] text-muted">
+            Traslados
+          </p>
+        </div>
+      </section>
+
+      <section
+        className={
+          dashboard.atencao
+            .hospedesSemQuarto > 0
+            ? "rounded-2xl border border-danger/25 bg-gradient-to-br from-danger/15 to-transparent p-4 shadow-soft"
+            : "rounded-2xl border border-success/20 bg-gradient-to-br from-success/10 to-transparent p-4 shadow-soft"
+        }
+      >
+        <div className="flex items-start gap-3">
+          <span
+            className={
+              dashboard
+                .atencao
+                .hospedesSemQuarto > 0
+                ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger/15 text-danger"
+                : "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/15 text-success"
+            }
+          >
+            {dashboard.atencao
+              .hospedesSemQuarto >
+            0 ? (
+              <AlertTriangle
+                size={19}
+                strokeWidth={1.9}
+              />
+            ) : (
+              <CheckCircle2
+                size={19}
+                strokeWidth={1.9}
+              />
+            )}
+          </span>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground">
+              {dashboard.atencao
+                .hospedesSemQuarto >
+              0
+                ? "Atenção necessária"
+                : "Operação sem pendências"}
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-muted">
+              {dashboard.atencao
+                .hospedesSemQuarto >
+              0
+                ? `${dashboard.atencao.hospedesSemQuarto} hóspede(s) pendente(s) de check-in ainda não possuem quarto alocado.`
+                : "Todos os hóspedes pendentes de check-in possuem quarto alocado."}
+            </p>
+
+            {dashboard.atencao
+              .hospedesSemQuarto >
+              0 && (
+              <div className="mt-3 space-y-2">
                 {dashboard.atencao.hospedesSemQuartoDetalhes.map(
                   (hospede) => (
                     <Link
-                      key={hospede.hospedeId}
+                      key={
+                        hospede.hospedeId
+                      }
                       href={`/hospedes/${hospede.hospedeId}`}
-                      className="flex items-center justify-between rounded-xl border border-border bg-background/40 px-4 py-3 transition-colors hover:border-primary"
+                      className="flex items-center justify-between rounded-xl border border-border bg-background/30 px-3 py-2.5 transition-all hover:border-primary/40 hover:bg-primary/5"
                     >
-                      <span className="font-medium text-foreground">
-                        {hospede.hospedeNome}
+                      <span className="truncate text-sm font-medium text-foreground">
+                        {
+                          hospede.hospedeNome
+                        }
                       </span>
 
-                      <span className="text-sm font-medium text-primary">
+                      <span className="ml-3 text-xs font-medium text-primary">
                         Abrir
                       </span>
                     </Link>
                   ),
                 )}
               </div>
-            </Card>
+            )}
           </div>
-        ) : (
-          <Card>
-            <p className="font-medium text-foreground">
-              Nenhuma pendência operacional identificada.
-            </p>
-
-            <p className="mt-2 text-sm text-muted">
-              Todos os hóspedes pendentes de check-in possuem quarto alocado.
-            </p>
-          </Card>
-        )}
+        </div>
       </section>
 
       <QuickActions />
 
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Próximos traslados
-          </h2>
+      <section className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-electric/15 text-electric">
+            <Bus
+              size={19}
+              strokeWidth={1.9}
+            />
+          </span>
 
-          <p className="mt-1 text-sm text-muted">
-            Próximos deslocamentos aguardando atendimento.
-          </p>
-        </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-foreground">
+                Próximos traslados
+              </p>
 
-        {dashboard.traslados.proximos.length === 0 ? (
-          <Card>
-            <p className="text-sm text-muted">
-              Nenhum traslado próximo encontrado.
-            </p>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {dashboard.traslados.proximos.map((traslado) => (
-              <Card key={traslado.id}>
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {traslado.hospedeNome}
-                    </p>
+              {dashboard
+                .traslados
+                .proximos.length >
+                0 && (
+                <Link
+                  href="/traslados"
+                  className="text-xs font-medium text-primary"
+                >
+                  Ver todos
+                </Link>
+              )}
+            </div>
 
-                    <p className="mt-1 text-sm text-muted">
-                      {traslado.localOrigem}
-                      {" → "}
-                      {traslado.localDestino}
-                    </p>
-                  </div>
+            {dashboard
+              .traslados
+              .proximos.length ===
+            0 ? (
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Nenhum deslocamento próximo.
+              </p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {dashboard.traslados.proximos
+                  .slice(0, 3)
+                  .map(
+                    (
+                      traslado,
+                    ) => (
+                      <Link
+                        key={
+                          traslado.id
+                        }
+                        href="/traslados"
+                        className="block rounded-xl border border-border bg-background/25 px-3 py-2.5 transition-all hover:border-primary/30"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {
+                                traslado.hospedeNome
+                              }
+                            </p>
 
-                  <div className="md:text-right">
-                    <p className="text-sm font-medium text-foreground">
-                      {new Date(
-                        traslado.dataHoraPrevista,
-                      ).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+                            <p className="mt-1 truncate text-xs text-muted">
+                              {
+                                traslado.localOrigem
+                              }
+                              {
+                                " → "
+                              }
+                              {
+                                traslado.localDestino
+                              }
+                            </p>
+                          </div>
 
-                    <p className="mt-1 text-xs text-muted">
-                      {traslado.tipo ===
-                      "AEROPORTO_PARA_HOSPEDAGEM"
-                        ? "Aeroporto → Hospedagem"
-                        : traslado.tipo ===
-                            "HOSPEDAGEM_PARA_AEROPORTO"
-                          ? "Hospedagem → Aeroporto"
-                          : "Outro traslado"}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                          <span className="shrink-0 text-xs font-medium text-electric">
+                            {new Date(
+                              traslado.dataHoraPrevista,
+                            ).toLocaleString(
+                              "pt-BR",
+                              {
+                                day: "2-digit",
+                                month:
+                                  "2-digit",
+                                hour: "2-digit",
+                                minute:
+                                  "2-digit",
+                              },
+                            )}
+                          </span>
+                        </div>
+                      </Link>
+                    ),
+                  )}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </section>
     </div>
   );

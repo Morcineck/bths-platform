@@ -1,63 +1,79 @@
 import Link from "next/link";
 
+import {
+  BedDouble,
+  Bus,
+  QrCode,
+  Users,
+} from "lucide-react";
+
 type QuickAction = {
   titulo: string;
-  descricao: string;
   href: string;
+  icon: typeof Users;
 };
 
 const acoes: QuickAction[] = [
   {
     titulo: "Hóspedes",
-    descricao: "Buscar e consultar hóspedes da viagem.",
     href: "/hospedes",
+    icon: Users,
   },
   {
     titulo: "Check-in",
-    descricao: "Identificar hóspedes e realizar check-ins.",
     href: "/check-in",
+    icon: QrCode,
   },
   {
     titulo: "Quartos",
-    descricao: "Consultar ocupação e alocações.",
     href: "/quartos",
+    icon: BedDouble,
   },
   {
     titulo: "Traslados",
-    descricao: "Acompanhar a operação de transporte.",
     href: "/traslados",
+    icon: Bus,
   },
 ];
 
 export function QuickActions() {
   return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">
+    <section className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+      <div className="mb-3">
+        <p className="text-sm font-semibold text-foreground">
           Ações rápidas
-        </h2>
+        </p>
 
-        <p className="mt-1 text-sm text-muted">
-          Acesse rapidamente as principais áreas da operação.
+        <p className="mt-1 text-xs text-muted">
+          Principais áreas da operação.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {acoes.map((acao) => (
-          <Link
-            key={acao.titulo}
-            href={acao.href}
-            className="rounded-2xl border border-border bg-surface p-5 text-left transition-colors hover:border-primary"
-          >
-            <p className="font-semibold text-foreground">
-              {acao.titulo}
-            </p>
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        {acoes.map(
+          ({
+            titulo,
+            href,
+            icon: Icon,
+          }) => (
+            <Link
+              key={titulo}
+              href={href}
+              className="group flex items-center gap-3 rounded-xl border border-border bg-background/25 p-3 transition-all hover:border-primary/30 hover:bg-primary/5"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform group-hover:scale-105">
+                <Icon
+                  size={18}
+                  strokeWidth={1.9}
+                />
+              </span>
 
-            <p className="mt-2 text-sm leading-6 text-muted">
-              {acao.descricao}
-            </p>
-          </Link>
-        ))}
+              <span className="text-sm font-medium text-foreground">
+                {titulo}
+              </span>
+            </Link>
+          ),
+        )}
       </div>
     </section>
   );

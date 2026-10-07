@@ -15,6 +15,16 @@ import {
 } from "next/navigation";
 
 import {
+  ArrowLeft,
+  BedDouble,
+  Link2,
+  Save,
+  Unlink,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+
+import {
   atualizarHospedagem,
   buscarHospedagemPorId,
 } from "@/features/hospedagem/services/hospedagemService";
@@ -139,7 +149,9 @@ export default function EditarHospedagemPage() {
   const [
     quartoAtualizandoId,
     setQuartoAtualizandoId,
-  ] = useState<number | null>(null);
+  ] = useState<number | null>(
+    null,
+  );
 
   const [
     erro,
@@ -313,7 +325,8 @@ export default function EditarHospedagemPage() {
         await atualizarHospedagem(
           hospedagem.id,
           {
-            nome: nome.trim(),
+            nome:
+              nome.trim(),
 
             endereco:
               normalizarOpcional(
@@ -409,20 +422,27 @@ export default function EditarHospedagemPage() {
       );
 
       setErro(null);
-      setErro(null);
+      setSucesso(null);
 
       const response =
         await atualizarQuarto(
           quarto.id,
           {
-            nome: quarto.nome,
-            tipo: quarto.tipo,
+            nome:
+              quarto.nome,
+
+            tipo:
+              quarto.tipo,
+
             capacidade:
               quarto.capacidade,
+
             status:
               quarto.status,
+
             viagemId:
               quarto.viagemId,
+
             hospedagemId:
               hospedagemId,
           },
@@ -432,7 +452,8 @@ export default function EditarHospedagemPage() {
         (atuais) =>
           atuais.map(
             (item) =>
-              item.id === response.id
+              item.id ===
+              response.id
                 ? response
                 : item,
           ),
@@ -469,14 +490,21 @@ export default function EditarHospedagemPage() {
         await atualizarQuarto(
           quarto.id,
           {
-            nome: quarto.nome,
-            tipo: quarto.tipo,
+            nome:
+              quarto.nome,
+
+            tipo:
+              quarto.tipo,
+
             capacidade:
               quarto.capacidade,
+
             status:
               quarto.status,
+
             viagemId:
               quarto.viagemId,
+
             hospedagemId:
               null,
           },
@@ -486,7 +514,8 @@ export default function EditarHospedagemPage() {
         (atuais) =>
           atuais.map(
             (item) =>
-              item.id === response.id
+              item.id ===
+              response.id
                 ? response
                 : item,
           ),
@@ -521,45 +550,58 @@ export default function EditarHospedagemPage() {
       <div className="space-y-4">
         <Link
           href="/hospedagens"
-          className="text-sm text-primary"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para hospedagens
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para hospedagens
         </Link>
 
-        <p className="text-sm text-red-400">
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           Hospedagem não encontrada.
-        </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="space-y-4">
         <Link
           href="/hospedagens"
-          className="text-sm text-muted transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para hospedagens
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para hospedagens
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold text-foreground">
-          Editar hospedagem
-        </h1>
-
-        <p className="mt-1 text-sm text-muted">
-          {hospedagem.viagemNome}
-        </p>
+        <PageHeader
+          title="Editar hospedagem"
+          description={hospedagem.viagemNome}
+        />
       </div>
 
       {erro && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           {erro}
         </div>
       )}
 
       {sucesso && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+        <div className="rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
           {sucesso}
         </div>
       )}
@@ -567,23 +609,23 @@ export default function EditarHospedagemPage() {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-8 rounded-2xl border border-border bg-surface p-6"
+        className="space-y-6 rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
       >
-        <section className="space-y-5">
+        <section className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Dados da hospedagem
+            <h2 className="text-sm font-semibold text-foreground">
+              Identificação
             </h2>
 
-            <p className="mt-1 text-sm text-muted">
-              Informações exibidas no App Hóspede.
+            <p className="mt-1 text-xs text-muted">
+              Informações principais da hospedagem.
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="nome"
-              className="text-sm font-medium text-foreground"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Nome
             </label>
@@ -598,14 +640,26 @@ export default function EditarHospedagemPage() {
               }
               required
               disabled={salvando}
-              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
+        </section>
 
-          <div className="space-y-2">
+        <section className="space-y-4 border-t border-border pt-5">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              Localização
+            </h2>
+
+            <p className="mt-1 text-xs text-muted">
+              Endereço e localização da hospedagem.
+            </p>
+          </div>
+
+          <div>
             <label
               htmlFor="endereco"
-              className="text-sm font-medium text-foreground"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Endereço
             </label>
@@ -619,15 +673,15 @@ export default function EditarHospedagemPage() {
                 )
               }
               disabled={salvando}
-              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="cidade"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Cidade
               </label>
@@ -641,14 +695,14 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="estado"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Estado
               </label>
@@ -663,15 +717,15 @@ export default function EditarHospedagemPage() {
                 }
                 maxLength={2}
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm uppercase text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm uppercase text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="localizacaoUrl"
-              className="text-sm font-medium text-foreground"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Link da localização
             </label>
@@ -686,14 +740,26 @@ export default function EditarHospedagemPage() {
                 )
               }
               disabled={salvando}
-              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
+        </section>
 
-          <div className="space-y-2">
+        <section className="space-y-4 border-t border-border pt-5">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              Experiência do hóspede
+            </h2>
+
+            <p className="mt-1 text-xs text-muted">
+              Dados exibidos no App Hóspede.
+            </p>
+          </div>
+
+          <div>
             <label
               htmlFor="imagemUrl"
-              className="text-sm font-medium text-foreground"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               URL da imagem
             </label>
@@ -708,15 +774,15 @@ export default function EditarHospedagemPage() {
                 )
               }
               disabled={salvando}
-              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="wifiNome"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Rede Wi-Fi
               </label>
@@ -730,14 +796,14 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="wifiSenha"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Senha Wi-Fi
               </label>
@@ -751,16 +817,16 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="horarioCheckIn"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Check-in
               </label>
@@ -775,14 +841,14 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="horarioCheckOut"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Check-out
               </label>
@@ -797,16 +863,16 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="contatoNome"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Nome do contato
               </label>
@@ -820,14 +886,14 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="contatoTelefone"
-                className="text-sm font-medium text-foreground"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Telefone
               </label>
@@ -841,15 +907,15 @@ export default function EditarHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="observacaoPublica"
-              className="text-sm font-medium text-foreground"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Informação pública
             </label>
@@ -863,18 +929,23 @@ export default function EditarHospedagemPage() {
                 )
               }
               disabled={salvando}
-              rows={4}
-              className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              rows={3}
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </section>
 
-        <div className="flex justify-end border-t border-border pt-6">
+        <div className="flex justify-end border-t border-border pt-4">
           <button
             type="submit"
             disabled={salvando}
-            className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
+            <Save
+              size={17}
+              strokeWidth={1.9}
+            />
+
             {salvando
               ? "Salvando..."
               : "Salvar alterações"}
@@ -882,44 +953,57 @@ export default function EditarHospedagemPage() {
         </div>
       </form>
 
-      <section className="space-y-5 rounded-2xl border border-border bg-surface p-6">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Quartos desta hospedagem
-          </h2>
+      <section className="space-y-4 rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <BedDouble
+              size={19}
+              strokeWidth={1.9}
+            />
+          </span>
 
-          <p className="mt-1 text-sm text-muted">
-            Vincule os quartos da viagem ao local onde eles
-            realmente estão.
-          </p>
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">
+              Quartos desta hospedagem
+            </h2>
+
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Gerencie os quartos vinculados a este local de hospedagem.
+            </p>
+          </div>
         </div>
 
-        {quartosDaHospedagem.length === 0 ? (
-          <div className="rounded-xl border border-border bg-background/40 p-4">
-            <p className="text-sm text-muted">
+        {quartosDaHospedagem.length ===
+        0 ? (
+          <div className="rounded-xl border border-border bg-background/25 px-3 py-3">
+            <p className="text-xs text-muted">
               Nenhum quarto vinculado a esta hospedagem.
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {quartosDaHospedagem.map(
               (quarto) => (
                 <div
                   key={quarto.id}
-                  className="flex flex-col gap-4 rounded-xl border border-border bg-background/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-xl border border-border bg-background/25 p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div>
-                    <p className="font-medium text-foreground">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {quarto.nome}
                     </p>
 
-                    <p className="mt-1 text-xs text-muted">
+                    <p className="mt-1 text-[11px] text-muted">
                       {quarto.tipo ===
                       "SUITE"
                         ? "Suíte"
                         : "Alojamento"}
-                      {" • "}
-                      {quarto.capacidade} hóspedes
+                      {" · "}
+                      {quarto.capacidade}{" "}
+                      {quarto.capacidade ===
+                      1
+                        ? "hóspede"
+                        : "hóspedes"}
                     </p>
                   </div>
 
@@ -934,8 +1018,13 @@ export default function EditarHospedagemPage() {
                         quarto,
                       )
                     }
-                    className="text-sm font-medium text-red-400 transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
                   >
+                    <Unlink
+                      size={14}
+                      strokeWidth={1.9}
+                    />
+
                     {quartoAtualizandoId ===
                     quarto.id
                       ? "Atualizando..."
@@ -947,43 +1036,44 @@ export default function EditarHospedagemPage() {
           </div>
         )}
 
-        <div className="border-t border-border pt-5">
+        <div className="border-t border-border pt-4">
           <h3 className="text-sm font-semibold text-foreground">
-            Quartos disponíveis para vínculo
+            Quartos disponíveis
           </h3>
 
-          <p className="mt-1 text-sm text-muted">
-            São exibidos os quartos da mesma viagem que ainda
-            não estão nesta hospedagem.
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Quartos da mesma viagem que podem ser vinculados a esta hospedagem.
           </p>
 
           {quartosDisponiveis.length ===
           0 ? (
-            <p className="mt-4 text-sm text-muted">
-              Nenhum outro quarto disponível.
-            </p>
+            <div className="mt-3 rounded-xl border border-border bg-background/25 px-3 py-3">
+              <p className="text-xs text-muted">
+                Nenhum outro quarto disponível.
+              </p>
+            </div>
           ) : (
-            <div className="mt-4 space-y-3">
+            <div className="mt-3 space-y-2">
               {quartosDisponiveis.map(
                 (quarto) => (
                   <div
                     key={quarto.id}
-                    className="flex flex-col gap-4 rounded-xl border border-border bg-background/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-xl border border-border bg-background/25 p-3 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div>
-                      <p className="font-medium text-foreground">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
                         {quarto.nome}
                       </p>
 
-                      <p className="mt-1 text-xs text-muted">
+                      <p className="mt-1 text-[11px] leading-5 text-muted">
                         {quarto.tipo ===
                         "SUITE"
                           ? "Suíte"
                           : "Alojamento"}
 
                         {quarto.hospedagemNome
-                          ? ` • Atualmente em ${quarto.hospedagemNome}`
-                          : " • Sem hospedagem"}
+                          ? ` · Atualmente em ${quarto.hospedagemNome}`
+                          : " · Sem hospedagem"}
                       </p>
                     </div>
 
@@ -998,8 +1088,13 @@ export default function EditarHospedagemPage() {
                           quarto,
                         )
                       }
-                      className="rounded-xl border border-primary/40 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-xl border border-primary/30 px-3 text-xs font-medium text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
                     >
+                      <Link2
+                        size={14}
+                        strokeWidth={1.9}
+                      />
+
                       {quartoAtualizandoId ===
                       quarto.id
                         ? "Vinculando..."
