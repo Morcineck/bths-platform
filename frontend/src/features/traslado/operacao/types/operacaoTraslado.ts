@@ -41,6 +41,7 @@ export type OperacaoTraslado = {
   vagasDisponiveis: number | null;
 
   observacao: string | null;
+  orientacaoHospede: string | null;
 };
 
 export type OperacaoTrasladoRequest = {
@@ -58,6 +59,7 @@ export type OperacaoTrasladoRequest = {
   veiculoId: number;
 
   observacao: string | null;
+  orientacaoHospede: string | null;
 };
 
 export type OperacaoTrasladoPassageiro = {

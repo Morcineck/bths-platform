@@ -121,7 +121,7 @@ public class OperacaoTrasladoMapper {
         );
 
         response.setOrientacaoHospede(
-                operacao.getObservacao()
+                operacao.getOrientacaoHospede()
         );
 
         return response;
