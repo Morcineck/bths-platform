@@ -118,6 +118,11 @@ export default function EditarOperacaoTrasladoPage() {
   ] = useState("");
 
   const [
+    orientacaoHospede,
+    setOrientacaoHospede,
+  ] = useState("");
+
+  const [
     viagemNome,
     setViagemNome,
   ] = useState("");
@@ -235,6 +240,11 @@ export default function EditarOperacaoTrasladoPage() {
 
         setObservacao(
           operacao.observacao ??
+            "",
+        );
+
+        setOrientacaoHospede(
+          operacao.orientacaoHospede ??
             "",
         );
 
@@ -420,6 +430,11 @@ export default function EditarOperacaoTrasladoPage() {
             observacao.trim() === ""
               ? null
               : observacao.trim(),
+
+          orientacaoHospede:
+            orientacaoHospede.trim() === ""
+              ? null
+              : orientacaoHospede.trim(),
         },
       );
 
@@ -746,7 +761,7 @@ export default function EditarOperacaoTrasladoPage() {
               htmlFor="observacao"
               className={labelClass}
             >
-              Observação
+              Observação interna
             </label>
 
             <textarea
@@ -758,8 +773,35 @@ export default function EditarOperacaoTrasladoPage() {
                 )
               }
               rows={3}
-              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+              placeholder="Informações internas sobre a operação."
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="orientacaoHospede"
+              className={labelClass}
+            >
+              Orientação ao hóspede
+            </label>
+
+            <textarea
+              id="orientacaoHospede"
+              value={orientacaoHospede}
+              onChange={(event) =>
+                setOrientacaoHospede(
+                  event.target.value,
+                )
+              }
+              rows={3}
+              placeholder="Ex.: O motorista estará aguardando próximo à saída H."
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+            />
+
+            <p className="mt-1.5 text-[11px] leading-5 text-muted">
+              Esta orientação será exibida ao hóspede no aplicativo.
+            </p>
           </div>
         </div>
 
