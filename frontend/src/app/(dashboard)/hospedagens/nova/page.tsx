@@ -14,6 +14,13 @@ import {
 } from "next/navigation";
 
 import {
+  ArrowLeft,
+  Save,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+
+import {
   cadastrarHospedagem,
 } from "@/features/hospedagem/services/hospedagemService";
 
@@ -37,6 +44,7 @@ function normalizarOpcional(
 
 export default function NovaHospedagemPage() {
   const router = useRouter();
+
   const searchParams =
     useSearchParams();
 
@@ -202,7 +210,8 @@ export default function NovaHospedagemPage() {
       setErro(null);
 
       await cadastrarHospedagem({
-        nome: nome.trim(),
+        nome:
+          nome.trim(),
 
         endereco:
           normalizarOpcional(
@@ -265,7 +274,9 @@ export default function NovaHospedagemPage() {
           ),
 
         viagemId:
-          Number(viagemId),
+          Number(
+            viagemId,
+          ),
       });
 
       router.push(
@@ -285,50 +296,55 @@ export default function NovaHospedagemPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
-      <div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div className="space-y-4">
         <Link
           href="/hospedagens"
-          className="text-sm text-zinc-400 transition hover:text-white"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para hospedagens
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para hospedagens
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold text-white">
-          Nova hospedagem
-        </h1>
-
-        <p className="mt-1 text-sm text-zinc-400">
-          Cadastre o local onde os hóspedes ficarão durante a viagem.
-        </p>
+        <PageHeader
+          title="Nova hospedagem"
+          description="Cadastre o local onde os hóspedes ficarão durante a viagem."
+        />
       </div>
 
       {erro && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           {erro}
         </div>
       )}
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-8 rounded-xl border border-zinc-800 bg-zinc-950 p-6"
+        className="space-y-6 rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
       >
-        <section className="space-y-5">
+        <section className="space-y-4">
           <div>
-            <h2 className="text-base font-semibold text-white">
+            <h2 className="text-sm font-semibold text-foreground">
               Identificação
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-xs text-muted">
               Informações principais da hospedagem.
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="viagem"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Viagem
               </label>
@@ -346,7 +362,7 @@ export default function NovaHospedagemPage() {
                   salvando ||
                   carregandoViagens
                 }
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">
                   Selecione uma viagem
@@ -365,10 +381,10 @@ export default function NovaHospedagemPage() {
               </select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="nome"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Nome
               </label>
@@ -385,27 +401,27 @@ export default function NovaHospedagemPage() {
                 required
                 disabled={salvando}
                 placeholder="Ex.: Villa Parateí — Beat House"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
         </section>
 
-        <section className="space-y-5 border-t border-zinc-800 pt-6">
+        <section className="space-y-4 border-t border-border pt-5">
           <div>
-            <h2 className="text-base font-semibold text-white">
+            <h2 className="text-sm font-semibold text-foreground">
               Localização
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
-              Endereço e link para localização da hospedagem.
+            <p className="mt-1 text-xs text-muted">
+              Endereço e localização da hospedagem.
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="endereco"
-              className="text-sm font-medium text-zinc-200"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Endereço
             </label>
@@ -421,15 +437,15 @@ export default function NovaHospedagemPage() {
               }
               disabled={salvando}
               placeholder="Rua, número, bairro..."
-              className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="cidade"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Cidade
               </label>
@@ -445,14 +461,14 @@ export default function NovaHospedagemPage() {
                 }
                 disabled={salvando}
                 placeholder="Ex.: Alumínio"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="estado"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Estado
               </label>
@@ -469,15 +485,15 @@ export default function NovaHospedagemPage() {
                 disabled={salvando}
                 maxLength={2}
                 placeholder="SP"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm uppercase text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm uppercase text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="localizacaoUrl"
-              className="text-sm font-medium text-zinc-200"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Link da localização
             </label>
@@ -493,26 +509,26 @@ export default function NovaHospedagemPage() {
               }
               disabled={salvando}
               placeholder="https://maps.google.com/..."
-              className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </section>
 
-        <section className="space-y-5 border-t border-zinc-800 pt-6">
+        <section className="space-y-4 border-t border-border pt-5">
           <div>
-            <h2 className="text-base font-semibold text-white">
+            <h2 className="text-sm font-semibold text-foreground">
               Experiência do hóspede
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-xs text-muted">
               Dados exibidos no App Hóspede.
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="imagemUrl"
-              className="text-sm font-medium text-zinc-200"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               URL da imagem
             </label>
@@ -528,15 +544,15 @@ export default function NovaHospedagemPage() {
               }
               disabled={salvando}
               placeholder="https://..."
-              className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="wifiNome"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Rede Wi-Fi
               </label>
@@ -552,14 +568,14 @@ export default function NovaHospedagemPage() {
                 }
                 disabled={salvando}
                 placeholder="Nome da rede"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="wifiSenha"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Senha Wi-Fi
               </label>
@@ -575,16 +591,16 @@ export default function NovaHospedagemPage() {
                 }
                 disabled={salvando}
                 placeholder="Senha da rede"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="horarioCheckIn"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Horário de check-in
               </label>
@@ -599,14 +615,14 @@ export default function NovaHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="horarioCheckOut"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Horário de check-out
               </label>
@@ -621,16 +637,16 @@ export default function NovaHospedagemPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="contatoNome"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Nome do contato
               </label>
@@ -646,14 +662,14 @@ export default function NovaHospedagemPage() {
                 }
                 disabled={salvando}
                 placeholder="Equipe Beat Trips"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="contatoTelefone"
-                className="text-sm font-medium text-zinc-200"
+                className="mb-2 block text-xs font-medium text-muted"
               >
                 Telefone do contato
               </label>
@@ -669,15 +685,15 @@ export default function NovaHospedagemPage() {
                 }
                 disabled={salvando}
                 placeholder="(11) 99999-9999"
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="observacaoPublica"
-              className="text-sm font-medium text-zinc-200"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Informação pública
             </label>
@@ -691,17 +707,17 @@ export default function NovaHospedagemPage() {
                 )
               }
               disabled={salvando}
-              rows={4}
+              rows={3}
               placeholder="Informações importantes que podem ser exibidas ao hóspede..."
-              className="w-full resize-none rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-zinc-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </section>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-zinc-800 pt-6 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <Link
             href="/hospedagens"
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-200 transition hover:bg-zinc-900"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
           >
             Cancelar
           </Link>
@@ -712,8 +728,13 @@ export default function NovaHospedagemPage() {
               salvando ||
               carregandoViagens
             }
-            className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
+            <Save
+              size={17}
+              strokeWidth={1.9}
+            />
+
             {salvando
               ? "Salvando..."
               : "Cadastrar hospedagem"}

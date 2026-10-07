@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 
-import { Card } from "@/components/ui/Card";
-
 import {
   alocarHospedeEmQuarto,
   buscarAlocacaoPorHospedeEViagem,
@@ -83,6 +81,13 @@ import type {
 import type {
   Traslado,
 } from "@/features/traslado/types/traslado";
+
+import {
+  ArrowLeft,
+  Pencil,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
 
 type HospedeDetalhePageProps = {
   params: Promise<{
@@ -1222,904 +1227,934 @@ export default function HospedeDetalhePage({
     }
   }
 
-  if (carregando) {
-    return (
-      <p className="text-sm text-muted">
-        Carregando hóspede...
-      </p>
-    );
-  }
-
-  if (
-    erro ||
-    !hospede
-  ) {
-    return (
-      <div className="space-y-4">
-        <p
-          role="alert"
-          className="text-sm text-red-400"
-        >
-          {erro ||
-            "Hóspede não encontrado."}
+    if (carregando) {
+      return (
+        <p className="text-sm text-muted">
+          Carregando hóspede...
         </p>
+      );
+    }
 
-        <Link
-          href="/hospedes"
-          className="text-sm font-medium text-primary"
-        >
-          ← Voltar para hóspedes
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      <header>
-        <Link
-          href="/hospedes"
-          className="text-sm font-medium text-primary"
-        >
-          ← Voltar para hóspedes
-        </Link>
-
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {hospede.nomeCompleto}
-            </h1>
-
-            <p className="mt-2 text-sm text-muted">
-              {hospede.viagemNome}
-            </p>
-          </div>
-
-          {isAdmin && (
-            <Link
-              href={`/hospedes/${id}/editar`}
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
-            >
-              Editar hóspede
-            </Link>
-          )}
-        </div>
-      </header>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <p className="text-sm text-muted">
-            E-mail
-          </p>
-
-          <p className="mt-2 font-medium text-foreground">
-            {hospede.email ??
-              "Não informado"}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Telefone
-          </p>
-
-          <p className="mt-2 font-medium text-foreground">
-            {hospede.telefone ??
-              "Não informado"}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            CPF
-          </p>
-
-          <p className="mt-2 font-medium text-foreground">
-            {hospede.cpf}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Data de nascimento
-          </p>
-
-          <p className="mt-2 font-medium text-foreground">
-            {hospede.dataNascimento
-              ? new Date(
-                  `${hospede.dataNascimento}T00:00:00`,
-                ).toLocaleDateString(
-                  "pt-BR",
-                )
-              : "Não informada"}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Check-in
-          </p>
-
-          <p className="mt-2 font-medium text-foreground">
-            {hospede.statusCheckIn ===
-            "REALIZADO"
-              ? "Realizado"
-              : hospede.statusCheckIn ===
-                  "NAO_COMPARECEU"
-                ? "Não compareceu"
-                : "Pendente"}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            Código de check-in
-          </p>
-
-          <p className="mt-2 break-all font-medium text-foreground">
-            {hospede.codigoCheckIn}
-          </p>
-        </Card>
-
-        <Card>
-          <p className="text-sm text-muted">
-            QR Code
-          </p>
-
-          <div className="mt-4 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`${process.env.NEXT_PUBLIC_API_URL}/api/check-in/qr/${encodeURIComponent(
-                hospede.codigoCheckIn,
-              )}/imagem`}
-              alt={`QR Code de check-in de ${hospede.nomeCompleto}`}
-              className="h-48 w-48 rounded-xl bg-white p-3"
+    if (
+      erro ||
+      !hospede
+    ) {
+      return (
+        <div className="space-y-4">
+          <Link
+            href="/hospedes"
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
+          >
+            <ArrowLeft
+              size={15}
+              strokeWidth={1.9}
             />
+
+            Voltar para hóspedes
+          </Link>
+
+          <div
+            role="alert"
+            className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+          >
+            {erro ||
+              "Hóspede não encontrado."}
           </div>
-        </Card>
+        </div>
+      );
+    }
 
-        <Card>
-          <p className="text-sm text-muted">
-            Chegada prevista
-          </p>
+    return (
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <Link
+            href="/hospedes"
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
+          >
+            <ArrowLeft
+              size={15}
+              strokeWidth={1.9}
+            />
 
-          <p className="mt-2 font-medium text-foreground">
-            {hospede.horarioPrevistoChegada
-              ? new Date(
-                  hospede.horarioPrevistoChegada,
-                ).toLocaleString(
-                  "pt-BR",
-                )
-              : "Não informada"}
-          </p>
-        </Card>
-      </section>
+            Voltar para hóspedes
+          </Link>
 
-      {isAdmin && (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Acesso BTHS
-            </h2>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <PageHeader
+              title={hospede.nomeCompleto}
+              description={hospede.viagemNome}
+            />
 
-            <p className="mt-1 text-sm text-muted">
-              Situação da conta utilizada pelo hóspede para acessar o aplicativo.
-            </p>
-          </div>
+            {isAdmin && (
+              <Link
+                href={`/hospedes/${id}/editar`}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-primary/30 px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+              >
+                <Pencil
+                  size={16}
+                  strokeWidth={1.9}
+                />
 
-          <Card className="space-y-5">
-            {acessoBths?.vinculado ? (
-              <>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-sm text-muted">
-                      Conta vinculada
-                    </p>
-
-                    <p className="mt-1 font-medium text-foreground">
-                      {acessoBths.email}
-                    </p>
-                  </div>
-
-                  <span
-                    className={
-                      acessoBths.ativo
-                        ? "inline-flex rounded-full border border-green-400/40 px-3 py-1 text-xs font-semibold text-green-400"
-                        : "inline-flex rounded-full border border-red-400/40 px-3 py-1 text-xs font-semibold text-red-400"
-                    }
-                  >
-                    {acessoBths.ativo
-                      ? "Ativa"
-                      : "Inativa"}
-                  </span>
-                </div>
-
-                <div className="rounded-xl border border-border bg-background/40 p-4">
-                  <p className="text-xs text-muted">
-                    ID da conta
-                  </p>
-
-                  <p className="mt-1 break-all text-sm font-medium text-foreground">
-                    {acessoBths.usuarioId}
-                  </p>
-                </div>
-                <div className="mt-5 border-t border-border pt-5">
-                  <p className="text-sm font-semibold text-foreground">
-                    Redefinir senha
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-muted">
-                    Defina uma nova senha temporária para o hóspede acessar o BTHS.
-                  </p>
-
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="novaSenhaBths"
-                        className="text-sm font-medium text-foreground"
-                      >
-                        Nova senha
-                      </label>
-
-                      <input
-                        id="novaSenhaBths"
-                        type="password"
-                        value={novaSenhaBths}
-                        onChange={(event) =>
-                          setNovaSenhaBths(
-                            event.target.value,
-                          )
-                        }
-                        disabled={
-                          redefinindoSenhaBths
-                        }
-                        placeholder="Mínimo de 8 caracteres"
-                        className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="confirmarNovaSenhaBths"
-                        className="text-sm font-medium text-foreground"
-                      >
-                        Confirmar nova senha
-                      </label>
-
-                      <input
-                        id="confirmarNovaSenhaBths"
-                        type="password"
-                        value={
-                          confirmarNovaSenhaBths
-                        }
-                        onChange={(event) =>
-                          setConfirmarNovaSenhaBths(
-                            event.target.value,
-                          )
-                        }
-                        disabled={
-                          redefinindoSenhaBths
-                        }
-                        placeholder="Repita a nova senha"
-                        className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                    </div>
-                  </div>
-
-                  {erroAcessoBths && (
-                    <p
-                      role="alert"
-                      className="mt-4 text-sm text-red-400"
-                    >
-                      {erroAcessoBths}
-                    </p>
-                  )}
-
-                  {sucessoAcessoBths && (
-                    <p className="mt-4 text-sm font-medium text-success">
-                      {sucessoAcessoBths}
-                    </p>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleRedefinirSenhaBths
-                    }
-                    disabled={
-                      redefinindoSenhaBths
-                    }
-                    className="mt-4 inline-flex h-11 items-center justify-center rounded-xl border border-primary px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {redefinindoSenhaBths
-                      ? "Redefinindo..."
-                      : "Redefinir senha"}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <p className="font-medium text-foreground">
-                    Nenhuma conta BTHS vinculada
-                  </p>
-
-                  <p className="mt-2 text-sm text-muted">
-                    Crie ou vincule uma conta para liberar o acesso do hóspede ao aplicativo.
-                  </p>
-                </div>
-
-                <div className="space-y-4 border-t border-border pt-5">
-                  <div>
-                    <label
-                      htmlFor="email-acesso-bths"
-                      className="mb-2 block text-sm font-medium text-foreground"
-                    >
-                      E-mail de acesso
-                    </label>
-
-                    <input
-                      id="email-acesso-bths"
-                      type="email"
-                      value={emailAcessoBths}
-                      onChange={(event) =>
-                        setEmailAcessoBths(
-                          event.target.value,
-                        )
-                      }
-                      placeholder="hospede@email.com"
-                      className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="senha-temporaria-bths"
-                      className="mb-2 block text-sm font-medium text-foreground"
-                    >
-                      Senha temporária
-                    </label>
-
-                    <input
-                      id="senha-temporaria-bths"
-                      type="password"
-                      value={senhaTemporariaBths}
-                      onChange={(event) =>
-                        setSenhaTemporariaBths(
-                          event.target.value,
-                        )
-                      }
-                      placeholder="Defina uma senha temporária"
-                      className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
-                    />
-                  </div>
-
-                  {erroAcessoBths && (
-                    <p
-                      role="alert"
-                      className="text-sm text-red-400"
-                    >
-                      {erroAcessoBths}
-                    </p>
-                  )}
-
-                  {sucessoAcessoBths && (
-                    <p className="text-sm text-green-400">
-                      {sucessoAcessoBths}
-                    </p>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={handleCriarAcessoBths}
-                    disabled={criandoAcessoBths}
-                    className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {criandoAcessoBths
-                      ? "Criando acesso..."
-                      : "Criar acesso BTHS"}
-                  </button>
-                </div>
-              </>
+                Editar hóspede
+              </Link>
             )}
-          </Card>
-        </section>
-      )}
-
-
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Check-in e hospedagem
-          </h2>
-
-          <p className="mt-1 text-sm text-muted">
-            Situação operacional do hóspede na viagem.
-          </p>
+          </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <p className="text-sm text-muted">
-              Status do check-in
+        <section className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              E-mail
             </p>
 
-            <p className="mt-2 font-medium text-foreground">
-              {checkIn?.statusCheckIn ===
-              "REALIZADO"
-                ? "Realizado"
-                : checkIn?.statusCheckIn ===
-                    "NAO_COMPARECEU"
-                  ? "Não compareceu"
-                  : "Pendente"}
+            <p className="mt-1.5 break-all text-sm font-medium text-foreground">
+              {hospede.email ??
+                "Não informado"}
             </p>
-          </Card>
+          </div>
 
-          <Card>
-            <p className="text-sm text-muted">
-              Quarto
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Telefone
             </p>
 
-            <p className="mt-2 font-medium text-foreground">
-              {checkIn?.quartoNome ??
-                "Ainda não alocado"}
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.telefone ??
+                "Não informado"}
             </p>
-          </Card>
+          </div>
 
-          <Card>
-            <p className="text-sm text-muted">
-              Data e hora do check-in
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              CPF
             </p>
 
-            <p className="mt-2 font-medium text-foreground">
-              {checkIn?.dataHoraCheckIn
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.cpf}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Data de nascimento
+            </p>
+
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.dataNascimento
                 ? new Date(
-                    checkIn.dataHoraCheckIn,
+                    `${hospede.dataNascimento}T00:00:00`,
+                  ).toLocaleDateString(
+                    "pt-BR",
+                  )
+                : "Não informada"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Check-in
+            </p>
+
+            <div className="mt-2">
+              <span
+                className={
+                  hospede.statusCheckIn ===
+                  "REALIZADO"
+                    ? "inline-flex rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                    : hospede.statusCheckIn ===
+                        "NAO_COMPARECEU"
+                      ? "inline-flex rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                      : "inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                }
+              >
+                {hospede.statusCheckIn ===
+                "REALIZADO"
+                  ? "Realizado"
+                  : hospede.statusCheckIn ===
+                      "NAO_COMPARECEU"
+                    ? "Não compareceu"
+                    : "Pendente"}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Código de check-in
+            </p>
+
+            <p className="mt-1.5 break-all text-sm font-medium text-foreground">
+              {hospede.codigoCheckIn}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Chegada prevista
+            </p>
+
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.horarioPrevistoChegada
+                ? new Date(
+                    hospede.horarioPrevistoChegada,
                   ).toLocaleString(
                     "pt-BR",
                   )
-                : "Ainda não realizado"}
+                : "Não informada"}
             </p>
-          </Card>
+          </div>
 
-          <Card>
-            <p className="text-sm text-muted">
-              Responsável
-            </p>
-
-            <p className="mt-2 font-medium text-foreground">
-              {checkIn?.responsavel ??
-                "Não informado"}
-            </p>
-          </Card>
-
-          <Card className="md:col-span-2">
-            <p className="text-sm text-muted">
-              Observação
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              QR Code
             </p>
 
-            <p className="mt-2 font-medium text-foreground">
-              {checkIn?.observacao ??
-                "Nenhuma observação registrada"}
-            </p>
-          </Card>
-        </div>
+            <div className="mt-3 flex justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${process.env.NEXT_PUBLIC_API_URL}/api/check-in/qr/${encodeURIComponent(
+                  hospede.codigoCheckIn,
+                )}/imagem`}
+                alt={`QR Code de check-in de ${hospede.nomeCompleto}`}
+                className="h-36 w-36 rounded-xl bg-white p-2.5"
+              />
+            </div>
+          </div>
+        </section>
 
-        {checkIn &&
-          checkIn.quartoId !==
-            null &&
-          alocacao && (
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="novo-quarto"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Trocar quarto
-                </label>
+            {isAdmin && (
+              <section className="space-y-4">
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">
+                    Acesso BTHS
+                  </h2>
 
-                <select
-                  id="novo-quarto"
-                  value={
-                    novoQuartoId
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setNovoQuartoId(
-                      event.target
-                        .value,
-                    )
-                  }
-                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-                >
-                  <option value="">
-                    Selecione o novo quarto
-                  </option>
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    Gerencie a conta utilizada pelo hóspede para acessar o aplicativo.
+                  </p>
+                </div>
 
-                  {quartos
-                    .filter(
-                      (quarto) =>
-                        quarto.id !==
-                        checkIn.quartoId,
-                    )
-                    .map(
-                      (quarto) => (
-                        <option
-                          key={
-                            quarto.id
-                          }
-                          value={
-                            quarto.id
+                <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5">
+                  {acessoBths?.vinculado ? (
+                    <>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-[11px] font-medium text-muted">
+                            Conta vinculada
+                          </p>
+
+                          <p className="mt-1.5 break-all text-sm font-semibold text-foreground">
+                            {acessoBths.email}
+                          </p>
+                        </div>
+
+                        <span
+                          className={
+                            acessoBths.ativo
+                              ? "inline-flex w-fit rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                              : "inline-flex w-fit rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
                           }
                         >
-                          {quarto.nome}{" "}
-                          —{" "}
-                          {quarto.tipo}
-                        </option>
-                      ),
-                    )}
-                </select>
-              </div>
+                          {acessoBths.ativo
+                            ? "Ativa"
+                            : "Inativa"}
+                        </span>
+                      </div>
 
+                      <div className="mt-4 rounded-xl border border-border bg-background/25 px-3 py-3">
+                        <p className="text-[11px] text-muted">
+                          ID da conta
+                        </p>
+
+                        <p className="mt-1 break-all text-xs font-medium text-foreground">
+                          {acessoBths.usuarioId}
+                        </p>
+                      </div>
+
+                      <div className="mt-5 border-t border-border pt-5">
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground">
+                            Redefinir senha
+                          </h3>
+
+                          <p className="mt-1 text-xs leading-5 text-muted">
+                            Defina uma nova senha temporária para o acesso do hóspede.
+                          </p>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                          <div>
+                            <label
+                              htmlFor="novaSenhaBths"
+                              className="mb-2 block text-xs font-medium text-muted"
+                            >
+                              Nova senha
+                            </label>
+
+                            <input
+                              id="novaSenhaBths"
+                              type="password"
+                              value={novaSenhaBths}
+                              onChange={(event) =>
+                                setNovaSenhaBths(
+                                  event.target.value,
+                                )
+                              }
+                              disabled={
+                                redefinindoSenhaBths
+                              }
+                              placeholder="Mínimo de 8 caracteres"
+                              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="confirmarNovaSenhaBths"
+                              className="mb-2 block text-xs font-medium text-muted"
+                            >
+                              Confirmar nova senha
+                            </label>
+
+                            <input
+                              id="confirmarNovaSenhaBths"
+                              type="password"
+                              value={
+                                confirmarNovaSenhaBths
+                              }
+                              onChange={(event) =>
+                                setConfirmarNovaSenhaBths(
+                                  event.target.value,
+                                )
+                              }
+                              disabled={
+                                redefinindoSenhaBths
+                              }
+                              placeholder="Repita a nova senha"
+                              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+
+                        {erroAcessoBths && (
+                          <div
+                            role="alert"
+                            className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                          >
+                            {erroAcessoBths}
+                          </div>
+                        )}
+
+                        {sucessoAcessoBths && (
+                          <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                            {sucessoAcessoBths}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={
+                            handleRedefinirSenhaBths
+                          }
+                          disabled={
+                            redefinindoSenhaBths
+                          }
+                          className="mt-4 inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {redefinindoSenhaBths
+                            ? "Redefinindo..."
+                            : "Redefinir senha"}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">
+                          Nenhuma conta BTHS vinculada
+                        </h3>
+
+                        <p className="mt-1 text-xs leading-5 text-muted">
+                          Crie uma conta para liberar o acesso deste hóspede ao aplicativo.
+                        </p>
+                      </div>
+
+                      <div className="mt-5 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor="email-acesso-bths"
+                            className="mb-2 block text-xs font-medium text-muted"
+                          >
+                            E-mail de acesso
+                          </label>
+
+                          <input
+                            id="email-acesso-bths"
+                            type="email"
+                            value={emailAcessoBths}
+                            onChange={(event) =>
+                              setEmailAcessoBths(
+                                event.target.value,
+                              )
+                            }
+                            placeholder="hospede@email.com"
+                            className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="senha-temporaria-bths"
+                            className="mb-2 block text-xs font-medium text-muted"
+                          >
+                            Senha temporária
+                          </label>
+
+                          <input
+                            id="senha-temporaria-bths"
+                            type="password"
+                            value={senhaTemporariaBths}
+                            onChange={(event) =>
+                              setSenhaTemporariaBths(
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Defina uma senha temporária"
+                            className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      {erroAcessoBths && (
+                        <div
+                          role="alert"
+                          className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                        >
+                          {erroAcessoBths}
+                        </div>
+                      )}
+
+                      {sucessoAcessoBths && (
+                        <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                          {sucessoAcessoBths}
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={
+                          handleCriarAcessoBths
+                        }
+                        disabled={
+                          criandoAcessoBths
+                        }
+                        className="gradient-brand mt-4 inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {criandoAcessoBths
+                          ? "Criando acesso..."
+                          : "Criar acesso BTHS"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </section>
+            )}
+
+            <section className="space-y-4">
               <div>
-                <label
-                  htmlFor="novo-tipo-cama"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Nova cama
-                </label>
+                <h2 className="text-base font-semibold text-foreground">
+                  Check-in e hospedagem
+                </h2>
 
-                <select
-                  id="novo-tipo-cama"
-                  value={novoTipoCama}
-                  onChange={(event) =>
-                    setNovoTipoCama(
-                      event.target.value as
-                        | TipoCama
-                        | "",
-                    )
-                  }
-                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-                >
-                  <option value="">
-                    Selecione o tipo de cama
-                  </option>
-
-                  <option value="CASAL">
-                    Casal
-                  </option>
-
-                  <option value="BELICHE">
-                    Beliche
-                  </option>
-                </select>
+                <p className="mt-1 text-xs leading-5 text-muted">
+                  Situação operacional do hóspede durante a viagem.
+                </p>
               </div>
 
-              {erroTrocaQuarto && (
-                <p
-                  role="alert"
-                  className="text-sm text-red-400"
-                >
-                  {
-                    erroTrocaQuarto
-                  }
-                </p>
-              )}
-
-              {sucessoTrocaQuarto && (
-                <p className="text-sm text-green-400">
-                  {
-                    sucessoTrocaQuarto
-                  }
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={
-                  handleTrocarQuarto
-                }
-                disabled={
-                  trocandoQuarto ||
-                  !novoQuartoId ||
-                  !novoTipoCama
-                }
-                className="rounded-xl border border-primary px-5 py-3 text-sm font-semibold text-primary transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {trocandoQuarto
-                  ? "Trocando quarto..."
-                  : "Trocar quarto"}
-              </button>
-            </div>
-          )}
-
-        {checkIn &&
-          checkIn.quartoId ===
-            null &&
-          checkIn.statusCheckIn !==
-            "NAO_COMPARECEU" && (
-            <div className="space-y-4">
-              {checkIn.statusCheckIn !==
-                "REALIZADO" && (
-                <div className="rounded-xl border border-border bg-surface p-4">
-                  <p className="text-sm font-medium text-foreground">
-                    Check-in indisponível
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Status
                   </p>
 
-                  <p className="mt-1 text-sm text-muted">
-                    Este hóspede precisa ser alocado em um quarto antes de realizar o check-in.
+                  <div className="mt-2">
+                    <span
+                      className={
+                        checkIn?.statusCheckIn ===
+                        "REALIZADO"
+                          ? "inline-flex rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                          : checkIn?.statusCheckIn ===
+                              "NAO_COMPARECEU"
+                            ? "inline-flex rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                            : "inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                      }
+                    >
+                      {checkIn?.statusCheckIn ===
+                      "REALIZADO"
+                        ? "Realizado"
+                        : checkIn?.statusCheckIn ===
+                            "NAO_COMPARECEU"
+                          ? "Não compareceu"
+                          : "Pendente"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Quarto
                   </p>
+
+                  <p className="mt-1.5 text-sm font-medium text-foreground">
+                    {checkIn?.quartoNome ??
+                      "Ainda não alocado"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Check-in realizado em
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-medium text-foreground">
+                    {checkIn?.dataHoraCheckIn
+                      ? new Date(
+                          checkIn.dataHoraCheckIn,
+                        ).toLocaleString(
+                          "pt-BR",
+                        )
+                      : "Ainda não realizado"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Responsável
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-medium text-foreground">
+                    {checkIn?.responsavel ??
+                      "Não informado"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-background/25 px-3.5 py-3">
+                <p className="text-[11px] text-muted">
+                  Observação registrada
+                </p>
+
+                <p className="mt-1.5 text-sm text-foreground">
+                  {checkIn?.observacao ??
+                    "Nenhuma observação registrada"}
+                </p>
+              </div>
+
+              {checkIn &&
+                checkIn.quartoId !== null &&
+                alocacao && (
+                  <div className="rounded-2xl border border-border bg-surface/50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Trocar quarto
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        Altere o quarto e o tipo de cama deste hóspede.
+                      </p>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="novo-quarto"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Novo quarto
+                        </label>
+
+                        <select
+                          id="novo-quarto"
+                          value={
+                            novoQuartoId
+                          }
+                          onChange={(event) =>
+                            setNovoQuartoId(
+                              event.target.value,
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione o novo quarto
+                          </option>
+
+                          {quartos
+                            .filter(
+                              (quarto) =>
+                                quarto.id !==
+                                checkIn.quartoId,
+                            )
+                            .map(
+                              (quarto) => (
+                                <option
+                                  key={quarto.id}
+                                  value={quarto.id}
+                                >
+                                  {quarto.nome} — {quarto.tipo}
+                                </option>
+                              ),
+                            )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="novo-tipo-cama"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Tipo de cama
+                        </label>
+
+                        <select
+                          id="novo-tipo-cama"
+                          value={novoTipoCama}
+                          onChange={(event) =>
+                            setNovoTipoCama(
+                              event.target.value as
+                                | TipoCama
+                                | "",
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione o tipo de cama
+                          </option>
+
+                          <option value="CASAL">
+                            Casal
+                          </option>
+
+                          <option value="BELICHE">
+                            Beliche
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {erroTrocaQuarto && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroTrocaQuarto}
+                      </div>
+                    )}
+
+                    {sucessoTrocaQuarto && (
+                      <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                        {sucessoTrocaQuarto}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleTrocarQuarto
+                      }
+                      disabled={
+                        trocandoQuarto ||
+                        !novoQuartoId ||
+                        !novoTipoCama
+                      }
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {trocandoQuarto
+                        ? "Trocando quarto..."
+                        : "Trocar quarto"}
+                    </button>
+                  </div>
+                )}
+
+              {checkIn &&
+                checkIn.quartoId === null &&
+                checkIn.statusCheckIn !==
+                  "NAO_COMPARECEU" && (
+                  <div className="rounded-2xl border border-border bg-surface/50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Alocar quarto
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        O hóspede precisa estar alocado antes da realização do check-in.
+                      </p>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="quarto"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Quarto
+                        </label>
+
+                        <select
+                          id="quarto"
+                          value={
+                            quartoSelecionadoId
+                          }
+                          onChange={(event) =>
+                            setQuartoSelecionadoId(
+                              event.target.value,
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione um quarto
+                          </option>
+
+                          {quartos.map(
+                            (quarto) => (
+                              <option
+                                key={quarto.id}
+                                value={quarto.id}
+                              >
+                                {quarto.nome} — {quarto.tipo}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="tipo-cama"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Tipo de cama
+                        </label>
+
+                        <select
+                          id="tipo-cama"
+                          value={
+                            tipoCamaSelecionado
+                          }
+                          onChange={(event) =>
+                            setTipoCamaSelecionado(
+                              event.target.value as
+                                | TipoCama
+                                | "",
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione o tipo de cama
+                          </option>
+
+                          <option value="CASAL">
+                            Casal
+                          </option>
+
+                          <option value="BELICHE">
+                            Beliche
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {erroAlocacao && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroAlocacao}
+                      </div>
+                    )}
+
+                    {sucessoAlocacao && (
+                      <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                        {sucessoAlocacao}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleAlocarQuarto
+                      }
+                      disabled={
+                        alocandoQuarto ||
+                        !quartoSelecionadoId
+                      }
+                      className="gradient-brand mt-4 inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {alocandoQuarto
+                        ? "Alocando..."
+                        : "Alocar quarto"}
+                    </button>
+                  </div>
+                )}
+
+              {checkIn &&
+                checkIn.statusCheckIn !==
+                  "REALIZADO" &&
+                checkIn.statusCheckIn !==
+                  "NAO_COMPARECEU" &&
+                checkIn.quartoId !== null && (
+                  <div className="rounded-2xl border border-border bg-surface/50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Realizar check-in
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        Confirme a chegada do hóspede e registre uma observação, se necessário.
+                      </p>
+                    </div>
+
+                    <div className="mt-4">
+                      <label
+                        htmlFor="observacao-checkin"
+                        className="mb-2 block text-xs font-medium text-muted"
+                      >
+                        Observação
+                      </label>
+
+                      <textarea
+                        id="observacao-checkin"
+                        value={
+                          observacaoCheckIn
+                        }
+                        onChange={(event) =>
+                          setObservacaoCheckIn(
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Adicione uma observação, se necessário."
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                      />
+                    </div>
+
+                    {erroCheckIn && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroCheckIn}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleRealizarCheckIn
+                      }
+                      disabled={
+                        realizandoCheckIn
+                      }
+                      className="gradient-brand mt-4 inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {realizandoCheckIn
+                        ? "Realizando check-in..."
+                        : "Realizar check-in"}
+                    </button>
+                  </div>
+                )}
+
+              {sucessoNaoComparecimento && (
+                <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                  {sucessoNaoComparecimento}
                 </div>
               )}
 
-              <div>
-                <label
-                  htmlFor="quarto"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Alocar quarto
-                </label>
+              {checkIn &&
+                checkIn.statusCheckIn ===
+                  "PENDENTE" && (
+                  <div className="rounded-2xl border border-danger/20 bg-danger/[0.03] p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Não comparecimento
+                      </h3>
 
-                <select
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        Utilize esta ação apenas quando estiver confirmado que o hóspede não compareceu.
+                      </p>
+                    </div>
 
-                  id="quarto"
-                  value={
-                    quartoSelecionadoId
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setQuartoSelecionadoId(
-                      event.target
-                        .value,
-                    )
-                  }
-                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-                >
-                  <option value="">
-                    Selecione um quarto
-                  </option>
-
-                  {quartos.map(
-                    (quarto) => (
-                      <option
-                        key={
-                          quarto.id
-                        }
-                        value={
-                          quarto.id
-                        }
+                    <div className="mt-4">
+                      <label
+                        htmlFor="motivo-nao-comparecimento"
+                        className="mb-2 block text-xs font-medium text-muted"
                       >
-                        {quarto.nome}{" "}
-                        —{" "}
-                        {quarto.tipo}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </div>
+                        Motivo
+                      </label>
 
-              <div>
-                <label
-                  htmlFor="tipo-cama"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Tipo de cama
-                </label>
+                      <textarea
+                        id="motivo-nao-comparecimento"
+                        value={
+                          motivoNaoComparecimento
+                        }
+                        onChange={(event) =>
+                          setMotivoNaoComparecimento(
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Informe o motivo do não comparecimento."
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-danger"
+                      />
+                    </div>
 
-                <select
-                  id="tipo-cama"
-                  value={tipoCamaSelecionado}
-                  onChange={(event) =>
-                    setTipoCamaSelecionado(
-                      event.target.value as
-                        | TipoCama
-                        | "",
-                    )
-                  }
-                  className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-                >
-                  <option value="">
-                    Selecione o tipo de cama
-                  </option>
+                    {erroNaoComparecimento && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroNaoComparecimento}
+                      </div>
+                    )}
 
-                  <option value="CASAL">
-                    Casal
-                  </option>
-
-                  <option value="BELICHE">
-                    Beliche
-                  </option>
-                </select>
-              </div>
-
-              {erroAlocacao && (
-                <p
-                  role="alert"
-                  className="text-sm text-red-400"
-                >
-                  {
-                    erroAlocacao
-                  }
-                </p>
-              )}
-
-              {sucessoAlocacao && (
-                <p className="text-sm text-green-400">
-                  {
-                    sucessoAlocacao
-                  }
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={
-                  handleAlocarQuarto
-                }
-                disabled={
-                  alocandoQuarto ||
-                  !quartoSelecionadoId
-                }
-                className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {alocandoQuarto
-                  ? "Alocando..."
-                  : "Alocar quarto"}
-              </button>
-            </div>
-          )}
-
-        {checkIn &&
-          checkIn.statusCheckIn !==
-            "REALIZADO" &&
-          checkIn.statusCheckIn !==
-            "NAO_COMPARECEU" &&
-          checkIn.quartoId !==
-            null && (
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="observacao-checkin"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Observação do check-in
-                </label>
-
-                <textarea
-                  id="observacao-checkin"
-                  value={
-                    observacaoCheckIn
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setObservacaoCheckIn(
-                      event.target
-                        .value,
-                    )
-                  }
-                  placeholder="Adicione uma observação, se necessário."
-                  rows={4}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
-                />
-              </div>
-
-              {erroCheckIn && (
-                <p
-                  role="alert"
-                  className="text-sm text-red-400"
-                >
-                  {
-                    erroCheckIn
-                  }
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={
-                  handleRealizarCheckIn
-                }
-                disabled={
-                  realizandoCheckIn
-                }
-                className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {realizandoCheckIn
-                  ? "Realizando check-in..."
-                  : "Realizar check-in"}
-              </button>
-            </div>
-          )}
-
-        {sucessoNaoComparecimento && (
-          <p className="text-sm text-green-400">
-            {
-              sucessoNaoComparecimento
-            }
-          </p>
-        )}
-
-        {checkIn &&
-          checkIn.statusCheckIn ===
-            "PENDENTE" && (
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="motivo-nao-comparecimento"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Motivo do não comparecimento
-                </label>
-
-                <textarea
-                  id="motivo-nao-comparecimento"
-                  value={
-                    motivoNaoComparecimento
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setMotivoNaoComparecimento(
-                      event.target
-                        .value,
-                    )
-                  }
-                  placeholder="Informe o motivo do não comparecimento."
-                  rows={4}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
-                />
-              </div>
-
-              {erroNaoComparecimento && (
-                <p
-                  role="alert"
-                  className="text-sm text-red-400"
-                >
-                  {
-                    erroNaoComparecimento
-                  }
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={
-                  handleRegistrarNaoComparecimento
-                }
-                disabled={
-                  registrandoNaoComparecimento
-                }
-                className="rounded-xl border border-red-400 px-5 py-3 text-sm font-semibold text-red-400 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {registrandoNaoComparecimento
-                  ? "Registrando..."
-                  : "Marcar como não compareceu"}
-              </button>
-            </div>
-          )}
-      </section>
+                    <button
+                      type="button"
+                      onClick={
+                        handleRegistrarNaoComparecimento
+                      }
+                      disabled={
+                        registrandoNaoComparecimento
+                      }
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-xl border border-danger/35 px-4 text-xs font-semibold text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {registrandoNaoComparecimento
+                        ? "Registrando..."
+                        : "Marcar como não compareceu"}
+                    </button>
+                  </div>
+                )}
+            </section>
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-base font-semibold text-foreground">
             Traslados
           </h2>
 
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-xs leading-5 text-muted">
             Deslocamentos vinculados a este hóspede.
           </p>
         </div>
 
         {traslados.length === 0 ? (
-          <Card>
-            <p className="text-sm text-muted">
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-xs text-muted">
               Nenhum traslado cadastrado para este hóspede.
             </p>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-4">
             {traslados.map(
@@ -2188,8 +2223,9 @@ export default function HospedeDetalhePage({
                   );
 
                 return (
-                  <Card
+                  <div
                     key={traslado.id}
+                    className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
                   >
                     <div className="space-y-4">
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -2215,27 +2251,34 @@ export default function HospedeDetalhePage({
                           </p>
                         </div>
 
-                        <p className="text-sm font-medium text-foreground">
-                          {traslado.status ===
-                          "AGUARDANDO"
+                        <span
+                          className={
+                            traslado.status === "CONCLUIDO"
+                              ? "inline-flex w-fit rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                              : traslado.status === "CANCELADO"
+                                ? "inline-flex w-fit rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                                : traslado.status === "EM_ANDAMENTO"
+                                  ? "inline-flex w-fit rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary"
+                                  : "inline-flex w-fit rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                          }
+                        >
+                          {traslado.status === "AGUARDANDO"
                             ? "Aguardando"
-                            : traslado.status ===
-                                "EM_ANDAMENTO"
+                            : traslado.status === "EM_ANDAMENTO"
                               ? "Em andamento"
-                              : traslado.status ===
-                                  "CONCLUIDO"
+                              : traslado.status === "CONCLUIDO"
                                 ? "Concluído"
                                 : "Cancelado"}
-                        </p>
+                        </span>
                       </div>
 
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                         <div>
-                          <p className="text-sm text-muted">
+                          <p className="text-[11px] text-muted">
                             Data e hora prevista
                           </p>
 
-                          <p className="mt-1 font-medium text-foreground">
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
                             {new Date(
                               traslado.dataHoraPrevista,
                             ).toLocaleString(
@@ -2245,33 +2288,33 @@ export default function HospedeDetalhePage({
                         </div>
 
                         <div>
-                          <p className="text-sm text-muted">
+                          <p className="text-[11px] text-muted">
                             Aeroporto
                           </p>
 
-                          <p className="mt-1 font-medium text-foreground">
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
                             {traslado.aeroporto ??
                               "Não informado"}
                           </p>
                         </div>
 
                         <div>
-                          <p className="text-sm text-muted">
+                          <p className="text-[11px] text-muted">
                             Voo
                           </p>
 
-                          <p className="mt-1 font-medium text-foreground">
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
                             {traslado.numeroVoo ??
                               "Não informado"}
                           </p>
                         </div>
 
                         <div>
-                          <p className="text-sm text-muted">
+                          <p className="text-[11px] text-muted">
                             Companhia aérea
                           </p>
 
-                          <p className="mt-1 font-medium text-foreground">
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
                             {traslado.companhiaAerea ??
                               "Não informada"}
                           </p>
@@ -2279,7 +2322,7 @@ export default function HospedeDetalhePage({
                       </div>
 
                       {!possuiOperacaoCompartilhada && (
-                        <div className="rounded-xl border border-border bg-background/40 p-4">
+                        <div className="rounded-2xl border border-border bg-background/20 p-4">
                           <div>
                             <p className="text-sm font-semibold text-foreground">
                               Traslado individual
@@ -2292,22 +2335,22 @@ export default function HospedeDetalhePage({
 
                           <div className="mt-4 grid gap-4 md:grid-cols-2">
                             <div>
-                              <p className="text-sm text-muted">
+                              <p className="text-[11px] text-muted">
                                 Motorista
                               </p>
 
-                              <p className="mt-1 font-medium text-foreground">
+                              <p className="mt-1.5 text-sm font-medium text-foreground">
                                 {traslado.motoristaNome ??
                                   "Ainda não definido"}
                               </p>
                             </div>
 
                             <div>
-                              <p className="text-sm text-muted">
+                              <p className="text-[11px] text-muted">
                                 Veículo
                               </p>
 
-                              <p className="mt-1 font-medium text-foreground">
+                              <p className="mt-1.5 text-sm font-medium text-foreground">
                                 {traslado.veiculoModelo
                                   ? `${traslado.veiculoModelo}${
                                       traslado.veiculoPlaca
@@ -2336,7 +2379,7 @@ export default function HospedeDetalhePage({
                                 <div>
                                   <label
                                     htmlFor={`motorista-${traslado.id}`}
-                                    className="mb-2 block text-sm font-medium text-foreground"
+                                    className="mb-2 block text-xs font-medium text-muted"
                                   >
                                     Motorista
                                   </label>
@@ -2370,7 +2413,7 @@ export default function HospedeDetalhePage({
                                         }),
                                       )
                                     }
-                                    className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                    className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
                                   >
                                     <option value="">
                                       Selecione o motorista
@@ -2400,7 +2443,7 @@ export default function HospedeDetalhePage({
                                 <div>
                                   <label
                                     htmlFor={`veiculo-${traslado.id}`}
-                                    className="mb-2 block text-sm font-medium text-foreground"
+                                    className="mb-2 block text-xs font-medium text-muted"
                                   >
                                     Veículo
                                   </label>
@@ -2434,7 +2477,7 @@ export default function HospedeDetalhePage({
                                         }),
                                       )
                                     }
-                                    className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                    className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
                                   >
                                     <option value="">
                                       Selecione o veículo
@@ -2474,28 +2517,28 @@ export default function HospedeDetalhePage({
                               {erroOperacao[
                                 traslado.id
                               ] && (
-                                <p
+                                <div
                                   role="alert"
-                                  className="text-sm text-red-400"
+                                  className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
                                 >
                                   {
                                     erroOperacao[
                                       traslado.id
                                     ]
                                   }
-                                </p>
+                                </div>
                               )}
 
                               {sucessoOperacao[
                                 traslado.id
                               ] && (
-                                <p className="text-sm text-green-400">
+                                <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
                                   {
                                     sucessoOperacao[
                                       traslado.id
                                     ]
                                   }
-                                </p>
+                                </div>
                               )}
 
                               <button
@@ -2509,7 +2552,7 @@ export default function HospedeDetalhePage({
                                   salvandoOperacaoId ===
                                   traslado.id
                                 }
-                                className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="gradient-brand inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 {salvandoOperacaoId ===
                                 traslado.id
@@ -2526,7 +2569,7 @@ export default function HospedeDetalhePage({
                         </div>
                       )}
 
-                      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                      <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
                         <div>
                           <p className="text-sm font-semibold text-foreground">
                             Operação compartilhada
@@ -2560,11 +2603,11 @@ export default function HospedeDetalhePage({
 
                             <div className="mt-4 grid gap-4 md:grid-cols-2">
                               <div>
-                                <p className="text-sm text-muted">
+                                <p className="text-[11px] text-muted">
                                   Origem
                                 </p>
 
-                                <p className="mt-1 font-medium text-foreground">
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
                                   {
                                     operacaoAtual.localOrigem
                                   }
@@ -2572,11 +2615,11 @@ export default function HospedeDetalhePage({
                               </div>
 
                               <div>
-                                <p className="text-sm text-muted">
+                                <p className="text-[11px] text-muted">
                                   Destino
                                 </p>
 
-                                <p className="mt-1 font-medium text-foreground">
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
                                   {
                                     operacaoAtual.localDestino
                                   }
@@ -2584,22 +2627,22 @@ export default function HospedeDetalhePage({
                               </div>
 
                               <div>
-                                <p className="text-sm text-muted">
+                                <p className="text-[11px] text-muted">
                                   Motorista
                                 </p>
 
-                                <p className="mt-1 font-medium text-foreground">
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
                                   {operacaoAtual.motoristaNome ??
                                     "Não definido"}
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-sm text-muted">
+                                <p className="text-[11px] text-muted">
                                   Veículo
                                 </p>
 
-                                <p className="mt-1 font-medium text-foreground">
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
                                   {operacaoAtual.veiculoModelo
                                     ? `${operacaoAtual.veiculoModelo}${
                                         operacaoAtual.veiculoPlaca
@@ -2611,11 +2654,11 @@ export default function HospedeDetalhePage({
                               </div>
 
                               <div>
-                                <p className="text-sm text-muted">
+                                <p className="text-[11px] text-muted">
                                   Ocupação
                                 </p>
 
-                                <p className="mt-1 font-medium text-foreground">
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
                                   {
                                     operacaoAtual.quantidadePassageiros
                                   }{" "}
@@ -2639,7 +2682,7 @@ export default function HospedeDetalhePage({
                               {operacoesCompativeis.length ===
                               0 ? (
                                 <div className="space-y-4">
-                                  <div className="rounded-xl border border-border bg-background/40 p-4">
+                                  <div className="rounded-2xl border border-border bg-background/20 p-4">
                                     <p className="text-sm font-semibold text-foreground">
                                       Nenhuma operação compatível disponível
                                     </p>
@@ -2693,7 +2736,7 @@ export default function HospedeDetalhePage({
                                   <div>
                                     <label
                                       htmlFor={`operacao-compartilhada-${traslado.id}`}
-                                      className="mb-2 block text-sm font-medium text-foreground"
+                                      className="mb-2 block text-xs font-medium text-muted"
                                     >
                                       Operação compartilhada
                                     </label>
@@ -2713,7 +2756,7 @@ export default function HospedeDetalhePage({
                                           }),
                                         )
                                       }
-                                      className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                      className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
                                     >
                                       <option value="">
                                         Selecione uma operação
@@ -2811,28 +2854,28 @@ export default function HospedeDetalhePage({
                                   {erroOperacaoCompartilhada[
                                     traslado.id
                                   ] && (
-                                    <p
+                                    <div
                                       role="alert"
-                                      className="text-sm text-red-400"
+                                      className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
                                     >
                                       {
                                         erroOperacaoCompartilhada[
                                           traslado.id
                                         ]
                                       }
-                                    </p>
+                                    </div>
                                   )}
 
                                   {sucessoOperacaoCompartilhada[
                                     traslado.id
                                   ] && (
-                                    <p className="text-sm text-green-400">
+                                    <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
                                       {
                                         sucessoOperacaoCompartilhada[
                                           traslado.id
                                         ]
                                       }
-                                    </p>
+                                    </div>
                                   )}
 
                                   <button
@@ -2847,7 +2890,7 @@ export default function HospedeDetalhePage({
                                         traslado.id ||
                                       !operacaoSelecionadaId
                                     }
-                                    className="rounded-xl border border-primary px-5 py-3 text-sm font-semibold text-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
                                   >
                                     {vinculandoOperacaoCompartilhadaId ===
                                     traslado.id
@@ -2870,7 +2913,7 @@ export default function HospedeDetalhePage({
                                     traslado,
                                   )
                                 }
-                                className="rounded-xl border border-primary px-5 py-3 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+                                className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5"
                               >
                                 Trocar operação compartilhada
                               </button>
@@ -2883,7 +2926,7 @@ export default function HospedeDetalhePage({
                             <div className="mt-5 space-y-4 border-t border-border pt-4">
                               {outrasOperacoesCompativeis.length === 0 ? (
                                 <>
-                                  <div className="rounded-xl border border-border bg-background/40 p-4">
+                                  <div className="rounded-2xl border border-border bg-background/20 p-4">
                                     <p className="text-sm font-semibold text-foreground">
                                       Nenhuma outra operação compatível disponível
                                     </p>
@@ -2939,7 +2982,7 @@ export default function HospedeDetalhePage({
                                           traslado,
                                         )
                                       }
-                                      className="rounded-xl border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+                                      className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
                                     >
                                       Cancelar
                                     </button>
@@ -2950,7 +2993,7 @@ export default function HospedeDetalhePage({
                                   <div>
                                     <label
                                       htmlFor={`operacao-compartilhada-${traslado.id}`}
-                                      className="mb-2 block text-sm font-medium text-foreground"
+                                      className="mb-2 block text-xs font-medium text-muted"
                                     >
                                       Nova operação
                                     </label>
@@ -2969,7 +3012,7 @@ export default function HospedeDetalhePage({
                                           }),
                                         )
                                       }
-                                      className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                      className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
                                     >
                                       <option value="">
                                         Selecione uma operação
@@ -3061,16 +3104,16 @@ export default function HospedeDetalhePage({
                                   {erroOperacaoCompartilhada[
                                     traslado.id
                                   ] && (
-                                    <p
+                                    <div
                                       role="alert"
-                                      className="text-sm text-red-400"
+                                      className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
                                     >
                                       {
                                         erroOperacaoCompartilhada[
                                           traslado.id
                                         ]
                                       }
-                                    </p>
+                                    </div>
                                   )}
 
                                   <div className="flex flex-col gap-3 sm:flex-row">
@@ -3086,7 +3129,7 @@ export default function HospedeDetalhePage({
                                           traslado.id ||
                                         !operacaoSelecionadaId
                                       }
-                                      className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                      className="gradient-brand inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                       {vinculandoOperacaoCompartilhadaId ===
                                       traslado.id
@@ -3105,7 +3148,7 @@ export default function HospedeDetalhePage({
                                         vinculandoOperacaoCompartilhadaId ===
                                         traslado.id
                                       }
-                                      className="rounded-xl border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                      className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                       Cancelar
                                     </button>
@@ -3120,23 +3163,23 @@ export default function HospedeDetalhePage({
                           traslado.id
                         ] &&
                           !editandoOperacaoCompartilhada && (
-                            <p className="mt-4 text-sm text-green-400">
+                            <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
                               {
                                 sucessoOperacaoCompartilhada[
                                   traslado.id
                                 ]
                               }
-                            </p>
+                            </div>
                           )}
                       </div>
 
                       {traslado.observacoes && (
-                        <div>
-                          <p className="text-sm text-muted">
+                        <div className="rounded-xl border border-border bg-background/25 px-3 py-2.5">
+                          <p className="text-[11px] text-muted">
                             Observações
                           </p>
 
-                          <p className="mt-1 font-medium text-foreground">
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
                             {
                               traslado.observacoes
                             }
@@ -3144,7 +3187,7 @@ export default function HospedeDetalhePage({
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 );
               },
             )}

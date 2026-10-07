@@ -3,8 +3,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  CheckCircle2,
+  Clock3,
+  Search,
+  UserPlus,
+  UserX,
+  Users,
+} from "lucide-react";
+
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { buscarUsuarioAutenticado } from "@/features/auth/services/authService";
 import { listarHospedesPorViagem } from "@/features/hospede/services/hospedeService";
@@ -13,16 +21,26 @@ import { listarViagens } from "@/features/viagem/services/viagemService";
 import type { Viagem } from "@/features/viagem/types/viagem";
 
 export default function HospedesPage() {
-  const [hospedes, setHospedes] = useState<Hospede[]>([]);
-  const [viagens, setViagens] = useState<Viagem[]>([]);
+  const [hospedes, setHospedes] =
+    useState<Hospede[]>([]);
+
+  const [viagens, setViagens] =
+    useState<Viagem[]>([]);
 
   const [viagemAtivaId, setViagemAtivaId] =
     useState<number | null>(null);
 
-  const [busca, setBusca] = useState("");
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [busca, setBusca] =
+    useState("");
+
+  const [carregando, setCarregando] =
+    useState(true);
+
+  const [erro, setErro] =
+    useState("");
+
+  const [isAdmin, setIsAdmin] =
+    useState(false);
 
   useEffect(() => {
     async function carregarPagina() {
@@ -36,18 +54,21 @@ export default function HospedesPage() {
           usuario.perfil === "ADMIN",
         );
 
-        const dados = await listarViagens();
+        const dados =
+          await listarViagens();
 
         setViagens(dados);
 
         const viagemPreferencial =
           dados.find(
             (viagem) =>
-              viagem.status === "EM_ANDAMENTO",
+              viagem.status ===
+              "EM_ANDAMENTO",
           ) ??
           dados.find(
             (viagem) =>
-              viagem.status === "PLANEJADA",
+              viagem.status ===
+              "PLANEJADA",
           ) ??
           dados[0];
 
@@ -60,6 +81,7 @@ export default function HospedesPage() {
         setErro(
           "Não foi possível carregar as viagens.",
         );
+
         setCarregando(false);
       }
     }
@@ -95,153 +117,305 @@ export default function HospedesPage() {
     carregarHospedes();
   }, [viagemAtivaId]);
 
-  const hospedesFiltrados = useMemo(() => {
-    const termo =
-      busca.trim().toLowerCase();
+  const hospedesFiltrados =
+    useMemo(() => {
+      const termo =
+        busca
+          .trim()
+          .toLowerCase();
 
-    if (!termo) {
-      return hospedes;
+      if (!termo) {
+        return hospedes;
+      }
+
+      return hospedes.filter(
+        (hospede) =>
+          hospede.nomeCompleto
+            .toLowerCase()
+            .includes(termo),
+      );
+    }, [busca, hospedes]);
+
+  function obterIniciais(
+    nome: string,
+  ) {
+    return nome
+      .trim()
+      .split(/\s+/)
+      .map((parte) => parte[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
+
+  function formatarTelefone(
+    telefone: string,
+  ) {
+    const numeros =
+      telefone.replace(/\D/g, "");
+
+    if (numeros.length === 11) {
+      return numeros.replace(
+        /(\d{2})(\d{5})(\d{4})/,
+        "($1) $2-$3",
+      );
     }
 
-    return hospedes.filter((hospede) =>
-      hospede.nomeCompleto
-        .toLowerCase()
-        .includes(termo),
-    );
-  }, [busca, hospedes]);
+    if (numeros.length === 10) {
+      return numeros.replace(
+        /(\d{2})(\d{4})(\d{4})/,
+        "($1) $2-$3",
+      );
+    }
+
+    return telefone;
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <PageHeader
           title="Hóspedes"
-          description="Consulte os hóspedes da viagem selecionada."
+          description="Consulte e acompanhe os hóspedes da viagem selecionada."
         />
 
-        <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
-          {isAdmin && (
-            <Link
-              href="/hospedes/novo"
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              Cadastrar hóspede
-            </Link>
-          )}
+        {isAdmin && (
+          <Link
+            href="/hospedes/novo"
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] md:shadow-none"
+          >
+            <UserPlus
+              size={18}
+              strokeWidth={1.9}
+            />
 
-          <div className="w-full md:w-80">
+            Cadastrar hóspede
+          </Link>
+        )}
+      </div>
+
+      <section className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div>
+            <label
+              htmlFor="busca"
+              className="mb-2 block text-xs font-medium text-muted"
+            >
+              Buscar hóspede
+            </label>
+
+            <div className="relative">
+              <Search
+                size={17}
+                strokeWidth={1.9}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+              />
+
+              <Input
+                id="busca"
+                name="busca"
+                type="search"
+                placeholder="Digite o nome do hóspede"
+                value={busca}
+                onChange={(event) =>
+                  setBusca(
+                    event.target.value,
+                  )
+                }
+                className="h-11 bg-background/30 pl-11"
+              />
+            </div>
+          </div>
+
+          <div>
             <label
               htmlFor="viagem"
-              className="mb-2 block text-sm font-medium text-foreground"
+              className="mb-2 block text-xs font-medium text-muted"
             >
               Viagem ativa
             </label>
 
             <select
               id="viagem"
-              value={viagemAtivaId ?? ""}
+              value={
+                viagemAtivaId ?? ""
+              }
               onChange={(event) =>
                 setViagemAtivaId(
-                  Number(event.target.value),
+                  Number(
+                    event.target.value,
+                  ),
                 )
               }
-              className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
             >
-              {viagens.map((viagem) => (
-                <option
-                  key={viagem.id}
-                  value={viagem.id}
-                >
-                  {viagem.nome}
-                </option>
-              ))}
+              {viagens.map(
+                (viagem) => (
+                  <option
+                    key={viagem.id}
+                    value={viagem.id}
+                  >
+                    {viagem.nome}
+                  </option>
+                ),
+              )}
             </select>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-md">
-        <label
-          htmlFor="busca"
-          className="mb-2 block text-sm font-medium text-foreground"
-        >
-          Buscar hóspede
-        </label>
+        <div className="mt-4 flex items-center gap-2 border-t border-border/70 pt-3">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <Users
+              size={16}
+              strokeWidth={1.9}
+            />
+          </span>
 
-        <Input
-          id="busca"
-          name="busca"
-          type="search"
-          placeholder="Digite o nome do hóspede"
-          value={busca}
-          onChange={(event) =>
-            setBusca(event.target.value)
-          }
-        />
-      </div>
+          <p className="text-xs text-muted">
+            <span className="font-semibold text-foreground">
+              {
+                hospedesFiltrados.length
+              }
+            </span>{" "}
+            {hospedesFiltrados.length ===
+            1
+              ? "hóspede encontrado"
+              : "hóspedes encontrados"}
+          </p>
+        </div>
+      </section>
 
       {erro && (
-        <p
+        <div
           role="alert"
-          className="text-sm text-red-400"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
         >
           {erro}
-        </p>
+        </div>
       )}
 
       {carregando ? (
-        <p className="text-sm text-muted">
-          Carregando hóspedes...
-        </p>
-      ) : hospedesFiltrados.length === 0 ? (
-        <Card>
+        <div className="rounded-2xl border border-border bg-surface/40 p-4">
           <p className="text-sm text-muted">
-            Nenhum hóspede encontrado.
+            Carregando hóspedes...
           </p>
-        </Card>
+        </div>
+      ) : hospedesFiltrados.length ===
+        0 ? (
+        <div className="rounded-2xl border border-border bg-surface/40 p-5 shadow-soft">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted">
+              <Users
+                size={19}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Nenhum hóspede encontrado
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Tente ajustar a busca ou selecionar outra viagem.
+              </p>
+            </div>
+          </div>
+        </div>
       ) : (
-        <section className="space-y-3">
+        <section className="space-y-2">
           {hospedesFiltrados.map(
-            (hospede) => (
-              <Link
-                key={hospede.id}
-                href={`/hospedes/${hospede.id}`}
-                className="block"
-              >
-                <Card className="transition-colors hover:border-primary">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">
-                        {hospede.nomeCompleto}
-                      </p>
+            (hospede) => {
+              const realizado =
+                hospede.statusCheckIn ===
+                "REALIZADO";
 
-                      <p className="mt-1 text-sm text-muted">
-                        {hospede.email}
-                      </p>
+              const naoCompareceu =
+                hospede.statusCheckIn ===
+                "NAO_COMPARECEU";
 
-                      <p className="mt-1 text-sm text-muted">
-                        {hospede.telefone}
-                      </p>
-                    </div>
+              return (
+                <Link
+                  key={hospede.id}
+                  href={`/hospedes/${hospede.id}`}
+                  className="group block rounded-2xl border border-border bg-surface/50 px-3 py-2.5 shadow-soft transition-all hover:border-primary/30 hover:bg-primary/5 sm:p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-xs font-semibold text-primary sm:h-11 sm:w-11 sm:text-sm">
+                      {obterIniciais(
+                        hospede.nomeCompleto,
+                      )}
+                    </span>
 
-                    <div className="md:text-right">
-                      <p className="text-sm font-medium text-foreground">
-                        {hospede.statusCheckIn ===
-                        "REALIZADO"
-                          ? "Check-in realizado"
-                          : hospede.statusCheckIn ===
-                              "NAO_COMPARECEU"
-                            ? "Não compareceu"
-                            : "Check-in pendente"}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {
+                              hospede.nomeCompleto
+                            }
+                          </p>
 
-                      <p className="mt-1 text-xs text-muted">
-                        {hospede.viagemNome}
-                      </p>
+                          <div className="mt-1 flex flex-col gap-0.5 text-xs text-muted sm:flex-row sm:items-center sm:gap-3">
+                            <span className="truncate">
+                              {
+                                hospede.email
+                              }
+                            </span>
+
+                            <span className="hidden sm:inline">
+                              •
+                            </span>
+
+                            <span className="whitespace-nowrap">
+                              {formatarTelefone(
+                                hospede.telefone,
+                              )}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center md:justify-end">
+                          <span
+                            className={
+                              realizado
+                                ? "inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                                : naoCompareceu
+                                  ? "inline-flex items-center gap-1.5 rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                                  : "inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                            }
+                          >
+                            {realizado ? (
+                              <CheckCircle2
+                                size={13}
+                                strokeWidth={2}
+                              />
+                            ) : naoCompareceu ? (
+                              <UserX
+                                size={13}
+                                strokeWidth={2}
+                              />
+                            ) : (
+                              <Clock3
+                                size={13}
+                                strokeWidth={2}
+                              />
+                            )}
+
+                            {realizado
+                              ? "Check-in realizado"
+                              : naoCompareceu
+                                ? "Não compareceu"
+                                : "Check-in pendente"}
+                          </span>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
-                </Card>
-              </Link>
-            ),
+                </Link>
+              );
+            },
           )}
         </section>
       )}

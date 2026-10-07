@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   FormEvent,
   use,
@@ -8,17 +9,29 @@ import {
   useState,
 } from "react";
 
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+} from "next/navigation";
 
+import {
+  ArrowLeft,
+  Save,
+} from "lucide-react";
 
-import { buscarUsuarioAutenticado } from "@/features/auth/services/authService";
+import { PageHeader } from "@/components/layout/PageHeader";
+
+import {
+  buscarUsuarioAutenticado,
+} from "@/features/auth/services/authService";
 
 import {
   atualizarMotorista,
   buscarMotoristaPorId,
 } from "@/features/motorista/services/motoristaService";
 
-import type { Motorista } from "@/features/motorista/types/motorista";
+import type {
+  Motorista,
+} from "@/features/motorista/types/motorista";
 
 type EditarMotoristaPageProps = {
   params: Promise<{
@@ -29,36 +42,58 @@ type EditarMotoristaPageProps = {
 export default function EditarMotoristaPage({
   params,
 }: EditarMotoristaPageProps) {
-  const { id } = use(params);
+  const { id } = use(
+    params,
+  );
 
   const router = useRouter();
 
-  const [motorista, setMotorista] =
-    useState<Motorista | null>(null);
+  const [
+    motorista,
+    setMotorista,
+  ] = useState<Motorista | null>(
+    null,
+  );
 
-  const [carregando, setCarregando] =
-    useState(true);
+  const [
+    carregando,
+    setCarregando,
+  ] = useState(true);
 
-  const [acessoPermitido, setAcessoPermitido] =
-    useState(false);
+  const [
+    acessoPermitido,
+    setAcessoPermitido,
+  ] = useState(false);
 
-  const [nomeCompleto, setNomeCompleto] =
-    useState("");
+  const [
+    nomeCompleto,
+    setNomeCompleto,
+  ] = useState("");
 
-  const [telefone, setTelefone] =
-    useState("");
+  const [
+    telefone,
+    setTelefone,
+  ] = useState("");
 
-  const [observacao, setObservacao] =
-    useState("");
+  const [
+    observacao,
+    setObservacao,
+  ] = useState("");
 
-  const [salvando, setSalvando] =
-    useState(false);
+  const [
+    salvando,
+    setSalvando,
+  ] = useState(false);
 
-  const [erro, setErro] =
-    useState("");
+  const [
+    erro,
+    setErro,
+  ] = useState("");
 
-  const [sucesso, setSucesso] =
-    useState("");
+  const [
+    sucesso,
+    setSucesso,
+  ] = useState("");
 
   useEffect(() => {
     async function carregarPagina() {
@@ -68,7 +103,10 @@ export default function EditarMotoristaPage({
         const usuario =
           await buscarUsuarioAutenticado();
 
-        if (usuario.perfil !== "ADMIN") {
+        if (
+          usuario.perfil !==
+          "ADMIN"
+        ) {
           setAcessoPermitido(false);
           return;
         }
@@ -80,7 +118,9 @@ export default function EditarMotoristaPage({
             Number(id),
           );
 
-        setMotorista(dados);
+        setMotorista(
+          dados,
+        );
 
         setNomeCompleto(
           dados.nomeCompleto ?? "",
@@ -120,6 +160,7 @@ export default function EditarMotoristaPage({
       setErro(
         "Informe o nome do motorista.",
       );
+
       return;
     }
 
@@ -134,14 +175,20 @@ export default function EditarMotoristaPage({
           {
             nomeCompleto:
               nomeCompleto.trim(),
+
             telefone:
-              telefone.trim() || undefined,
+              telefone.trim() ||
+              undefined,
+
             observacao:
-              observacao.trim() || undefined,
+              observacao.trim() ||
+              undefined,
           },
         );
 
-      setMotorista(atualizado);
+      setMotorista(
+        atualizado,
+      );
 
       setSucesso(
         "Motorista atualizado com sucesso.",
@@ -170,36 +217,52 @@ export default function EditarMotoristaPage({
   if (!acessoPermitido) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-400">
-          Você não possui permissão para editar motoristas.
-        </p>
-
         <Link
           href="/motoristas"
-          className="text-sm font-medium text-primary"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para motoristas
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para motoristas
         </Link>
+
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
+          Você não possui permissão para editar motoristas.
+        </div>
       </div>
     );
   }
 
-  if (erro && !motorista) {
+  if (
+    erro &&
+    !motorista
+  ) {
     return (
       <div className="space-y-4">
-        <p
-          role="alert"
-          className="text-sm text-red-400"
-        >
-          {erro}
-        </p>
-
         <Link
           href="/motoristas"
-          className="text-sm font-medium text-primary"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para motoristas
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para motoristas
         </Link>
+
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
+          {erro}
+        </div>
       </div>
     );
   }
@@ -209,119 +272,136 @@ export default function EditarMotoristaPage({
   }
 
   return (
-    <div className="space-y-8">
-      <header>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-4">
         <Link
           href="/motoristas"
-          className="text-sm font-medium text-primary"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para motoristas
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para motoristas
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
-          Editar motorista
-        </h1>
+        <PageHeader
+          title="Editar motorista"
+          description="Atualize os dados cadastrais do motorista."
+        />
+      </div>
 
-        <p className="mt-2 text-sm text-muted">
-          Atualize os dados cadastrais do motorista.
-        </p>
-      </header>
+      {erro && (
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
+          {erro}
+        </div>
+      )}
+
+      {sucesso && (
+        <div className="rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
+          {sucesso}
+        </div>
+      )}
 
       <form
         onSubmit={handleSalvar}
-        className="space-y-5"
+        className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
       >
-        <div>
-          <label
-            htmlFor="nome-completo"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Nome completo
-          </label>
+        <div className="space-y-5">
+          <div>
+            <label
+              htmlFor="nome-completo"
+              className="mb-2 block text-xs font-medium text-muted"
+            >
+              Nome completo
+            </label>
 
-          <input
-            id="nome-completo"
-            type="text"
-            value={nomeCompleto}
-            onChange={(event) =>
-              setNomeCompleto(event.target.value)
-            }
-            className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          />
+            <input
+              id="nome-completo"
+              type="text"
+              value={nomeCompleto}
+              onChange={(event) =>
+                setNomeCompleto(
+                  event.target.value,
+                )
+              }
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="telefone"
+              className="mb-2 block text-xs font-medium text-muted"
+            >
+              Telefone
+            </label>
+
+            <input
+              id="telefone"
+              type="text"
+              value={telefone}
+              onChange={(event) =>
+                setTelefone(
+                  event.target.value,
+                )
+              }
+              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="observacao"
+              className="mb-2 block text-xs font-medium text-muted"
+            >
+              Observação
+            </label>
+
+            <textarea
+              id="observacao"
+              value={observacao}
+              onChange={(event) =>
+                setObservacao(
+                  event.target.value,
+                )
+              }
+              rows={3}
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+            />
+          </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="telefone"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Telefone
-          </label>
-
-          <input
-            id="telefone"
-            type="text"
-            value={telefone}
-            onChange={(event) =>
-              setTelefone(event.target.value)
-            }
-            className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="observacao"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Observação
-          </label>
-
-          <textarea
-            id="observacao"
-            value={observacao}
-            onChange={(event) =>
-              setObservacao(event.target.value)
-            }
-            rows={4}
-            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          />
-        </div>
-
-        {erro && (
-          <p
-            role="alert"
-            className="text-sm text-red-400"
-          >
-            {erro}
-          </p>
-        )}
-
-        {sucesso && (
-          <p className="text-sm text-green-400">
-            {sucesso}
-          </p>
-        )}
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            disabled={salvando}
-            className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {salvando
-              ? "Salvando..."
-              : "Salvar alterações"}
-          </button>
-
+        <div className="mt-5 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={() =>
-              router.push("/motoristas")
+              router.push(
+                "/motoristas",
+              )
             }
-            className="rounded-xl border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
           >
             Cancelar
+          </button>
+
+          <button
+            type="submit"
+            disabled={salvando}
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Save
+              size={17}
+              strokeWidth={1.9}
+            />
+
+            {salvando
+              ? "Salvando..."
+              : "Salvar alterações"}
           </button>
         </div>
       </form>

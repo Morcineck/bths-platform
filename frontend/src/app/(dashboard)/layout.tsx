@@ -84,27 +84,37 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-surface">
-        <div className="mx-auto flex w-full items-center justify-between px-6 py-4">
-          <div>
-            <p className="text-sm font-semibold text-primary">
-              Beat Trips
-            </p>
+    <div className="min-h-screen">
+      <header className="glass sticky top-0 z-40 border-b border-border">
+        <div className="flex w-full items-center justify-between gap-4 px-5 py-3 md:px-6">
+          <div className="flex items-center gap-3">
+            <span className="gradient-brand shadow-glow flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-bold text-white">
+              B
+            </span>
 
-            <p className="text-lg font-semibold text-foreground">
-              BTHS
-            </p>
+            <div>
+              <p className="text-sm font-semibold tracking-tight text-foreground">
+                BTHS
+              </p>
+
+              <p className="text-xs text-muted">
+                {usuario.perfil === "ADMIN"
+                  ? "Administração"
+                  : "Operação"}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right sm:block">
               <p className="text-sm font-medium text-foreground">
                 {usuario.nome}
               </p>
 
               <p className="text-xs text-muted">
-                {usuario.perfil}
+                {usuario.perfil === "ADMIN"
+                  ? "Administrador"
+                  : "Staff"}
               </p>
             </div>
 
@@ -112,7 +122,7 @@ export default function DashboardLayout({
               type="button"
               onClick={handleLogout}
               disabled={saindo}
-              className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-border bg-surface/50 px-4 py-2 text-sm font-medium text-muted transition-all hover:border-primary/50 hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saindo ? "Saindo..." : "Sair"}
             </button>
@@ -121,23 +131,23 @@ export default function DashboardLayout({
       </header>
 
       {erroLogout && (
-        <div className="px-6 pt-4">
-          <p
+        <div className="mx-auto w-full max-w-7xl px-5 pt-4 md:px-6">
+          <div
             role="alert"
-            className="text-sm text-red-400"
+            className="rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
           >
             {erroLogout}
-          </p>
+          </div>
         </div>
       )}
 
-      <div className="flex min-h-[calc(100vh-73px)]">
+      <div className="mx-auto flex min-h-[calc(100vh-65px)] w-full max-w-[1600px]">
         <OperationalNavigation
           perfil={usuario.perfil}
         />
 
-        <main className="w-full min-w-0 px-6 py-8 pb-24 md:pb-8">
-          <div className="mx-auto w-full max-w-6xl">
+        <main className="w-full min-w-0 px-4 py-6 pb-24 sm:px-5 md:px-7 md:py-8 md:pb-10 lg:px-8">
+          <div className="mx-auto w-full max-w-7xl">
             {children}
           </div>
         </main>

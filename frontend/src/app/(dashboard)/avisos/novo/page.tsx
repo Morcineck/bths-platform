@@ -13,6 +13,13 @@ import {
 } from "next/navigation";
 
 import {
+  ArrowLeft,
+  Save,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+
+import {
   cadastrarAviso,
 } from "@/features/aviso/services/avisoService";
 
@@ -165,7 +172,6 @@ export default function NovoAvisoPage() {
       setErro(
         "Selecione uma viagem.",
       );
-
       return;
     }
 
@@ -173,7 +179,6 @@ export default function NovoAvisoPage() {
       setErro(
         "Informe o título do aviso.",
       );
-
       return;
     }
 
@@ -181,7 +186,6 @@ export default function NovoAvisoPage() {
       setErro(
         "Informe a mensagem do aviso.",
       );
-
       return;
     }
 
@@ -189,7 +193,6 @@ export default function NovoAvisoPage() {
       setErro(
         "Informe a data e hora de publicação.",
       );
-
       return;
     }
 
@@ -211,7 +214,9 @@ export default function NovoAvisoPage() {
         ativo,
 
         viagemId:
-          Number(viagemId),
+          Number(
+            viagemId,
+          ),
       });
 
       router.push(
@@ -240,29 +245,37 @@ export default function NovoAvisoPage() {
     );
   }
 
+  const inputClass =
+    "h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50";
+
+  const labelClass =
+    "mb-2 block text-xs font-medium text-muted";
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div>
+      <div className="space-y-4">
         <Link
           href="/avisos"
-          className="text-sm text-muted transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
         >
-          ← Voltar para avisos
+          <ArrowLeft
+            size={15}
+            strokeWidth={1.9}
+          />
+
+          Voltar para avisos
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold text-foreground">
-          Novo aviso
-        </h1>
-
-        <p className="mt-1 text-sm text-muted">
-          Publique um comunicado para os hóspedes de uma viagem.
-        </p>
+        <PageHeader
+          title="Novo aviso"
+          description="Publique um comunicado para os hóspedes de uma viagem."
+        />
       </div>
 
       {erro && (
         <div
           role="alert"
-          className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
         >
           {erro}
         </div>
@@ -270,24 +283,24 @@ export default function NovoAvisoPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-8 rounded-2xl border border-border bg-surface p-6"
+        className="space-y-6 rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
       >
-        <section className="space-y-5">
+        <section className="space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-sm font-semibold text-foreground">
               Comunicado
             </h2>
 
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-xs text-muted">
               Defina o conteúdo e a categoria do aviso.
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label
                 htmlFor="viagem"
-                className="text-sm font-medium text-foreground"
+                className={labelClass}
               >
                 Viagem
               </label>
@@ -302,7 +315,7 @@ export default function NovoAvisoPage() {
                 }
                 required
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                className={inputClass}
               >
                 <option value="">
                   Selecione uma viagem
@@ -321,10 +334,10 @@ export default function NovoAvisoPage() {
               </select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <label
                 htmlFor="tipo"
-                className="text-sm font-medium text-foreground"
+                className={labelClass}
               >
                 Tipo
               </label>
@@ -339,7 +352,7 @@ export default function NovoAvisoPage() {
                   )
                 }
                 disabled={salvando}
-                className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                className={inputClass}
               >
                 <option value="INFORMATIVO">
                   Informativo
@@ -364,10 +377,10 @@ export default function NovoAvisoPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="titulo"
-              className="text-sm font-medium text-foreground"
+              className={labelClass}
             >
               Título
             </label>
@@ -384,14 +397,14 @@ export default function NovoAvisoPage() {
               required
               disabled={salvando}
               placeholder="Ex.: Horário do transporte atualizado"
-              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className={inputClass}
             />
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="mensagem"
-              className="text-sm font-medium text-foreground"
+              className={labelClass}
             >
               Mensagem
             </label>
@@ -406,28 +419,28 @@ export default function NovoAvisoPage() {
               }
               required
               disabled={salvando}
-              rows={6}
+              rows={5}
               placeholder="Escreva o comunicado que será exibido aos hóspedes."
-              className="w-full rounded-xl border border-border bg-background px-3 py-3 text-sm text-foreground outline-none placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </section>
 
-        <section className="space-y-5 border-t border-border pt-6">
+        <section className="space-y-4 border-t border-border pt-5">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-sm font-semibold text-foreground">
               Publicação
             </h2>
 
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-xs text-muted">
               Controle quando o aviso foi publicado e se ele ficará visível no App Hóspede.
             </p>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <label
               htmlFor="dataPublicacao"
-              className="text-sm font-medium text-foreground"
+              className={labelClass}
             >
               Data e hora de publicação
             </label>
@@ -443,17 +456,17 @@ export default function NovoAvisoPage() {
               }
               required
               disabled={salvando}
-              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+              className={inputClass}
             />
           </div>
 
-          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-border bg-background/40 p-4">
+          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-background/25 p-3">
             <div>
               <p className="text-sm font-medium text-foreground">
                 Aviso publicado
               </p>
 
-              <p className="mt-1 text-xs text-muted">
+              <p className="mt-1 text-[11px] leading-5 text-muted">
                 Quando ativo, o aviso ficará disponível no App Hóspede.
               </p>
             </div>
@@ -472,10 +485,10 @@ export default function NovoAvisoPage() {
           </label>
         </section>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <Link
             href="/avisos"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-background"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
           >
             Cancelar
           </Link>
@@ -483,8 +496,13 @@ export default function NovoAvisoPage() {
           <button
             type="submit"
             disabled={salvando}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
           >
+            <Save
+              size={17}
+              strokeWidth={1.9}
+            />
+
             {salvando
               ? "Publicando..."
               : "Publicar aviso"}

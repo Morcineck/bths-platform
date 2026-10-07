@@ -11,6 +11,10 @@ import {
   useRouter,
 } from "next/navigation";
 
+import {
+  Save,
+} from "lucide-react";
+
 import { PageHeader } from "@/components/layout/PageHeader";
 
 import {
@@ -59,7 +63,9 @@ export default function EditarOperacaoTrasladoPage() {
     Number(params.id);
 
   const operacaoIdValido =
-    !Number.isNaN(operacaoId);
+    !Number.isNaN(
+      operacaoId,
+    );
 
   const [
     motoristas,
@@ -74,16 +80,12 @@ export default function EditarOperacaoTrasladoPage() {
   const [
     tipo,
     setTipo,
-  ] = useState<
-    TipoTraslado | ""
-  >("");
+  ] = useState<TipoTraslado | "">("");
 
   const [
     aeroporto,
     setAeroporto,
-  ] = useState<
-    Aeroporto | ""
-  >("");
+  ] = useState<Aeroporto | "">("");
 
   const [
     dataHoraPrevista,
@@ -287,10 +289,7 @@ export default function EditarOperacaoTrasladoPage() {
       setLocalDestino("");
     }
 
-    setTipo(
-      novoTipo,
-    );
-
+    setTipo(novoTipo);
     setAeroporto("");
 
     if (
@@ -418,8 +417,7 @@ export default function EditarOperacaoTrasladoPage() {
             ),
 
           observacao:
-            observacao.trim() ===
-            ""
+            observacao.trim() === ""
               ? null
               : observacao.trim(),
         },
@@ -443,12 +441,12 @@ export default function EditarOperacaoTrasladoPage() {
 
   if (!operacaoIdValido) {
     return (
-      <p
+      <div
         role="alert"
-        className="text-sm text-red-400"
+        className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
       >
         Identificador da operação inválido.
-      </p>
+      </div>
     );
   }
 
@@ -460,393 +458,312 @@ export default function EditarOperacaoTrasladoPage() {
     );
   }
 
+  const inputClass =
+    "h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60";
+
+  const labelClass =
+    "mb-2 block text-xs font-medium text-muted";
+
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
         title="Editar operação de traslado"
         description="Atualize o trajeto e os recursos responsáveis pela operação."
       />
 
+      {erro && (
+        <div
+          role="alert"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
+          {erro}
+        </div>
+      )}
+
       <form
-        onSubmit={
-          handleSubmit
-        }
-        className="max-w-2xl space-y-6 rounded-2xl border border-border bg-surface p-6"
+        onSubmit={handleSubmit}
+        className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
       >
-        <div>
-          <label
-            htmlFor="viagem"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Viagem
-          </label>
+        <div className="space-y-5">
+          <div>
+            <label
+              htmlFor="viagem"
+              className={labelClass}
+            >
+              Viagem
+            </label>
 
-          <input
-            id="viagem"
-            type="text"
-            value={
-              viagemNome
-            }
-            disabled
-            className="h-12 w-full cursor-not-allowed rounded-xl border border-border bg-background px-4 text-sm text-muted opacity-70"
-          />
-        </div>
+            <input
+              id="viagem"
+              type="text"
+              value={viagemNome}
+              disabled
+              className={inputClass}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="tipo"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Tipo de traslado
-          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="tipo"
+                className={labelClass}
+              >
+                Tipo de traslado
+              </label>
 
-          <select
-            id="tipo"
-            value={
-              tipo
-            }
-            onChange={(
-              event,
-            ) =>
-              handleTipoChange(
-                event.target
-                  .value as
-                  | TipoTraslado
-                  | "",
-              )
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          >
-            <option value="">
-              Selecione o tipo
-            </option>
+              <select
+                id="tipo"
+                value={tipo}
+                onChange={(event) =>
+                  handleTipoChange(
+                    event.target.value as
+                      | TipoTraslado
+                      | "",
+                  )
+                }
+                className={inputClass}
+              >
+                <option value="">
+                  Selecione o tipo
+                </option>
 
-            <option value="AEROPORTO_PARA_HOSPEDAGEM">
-              Aeroporto → Hospedagem
-            </option>
+                <option value="AEROPORTO_PARA_HOSPEDAGEM">
+                  Aeroporto → Hospedagem
+                </option>
 
-            <option value="HOSPEDAGEM_PARA_AEROPORTO">
-              Hospedagem → Aeroporto
-            </option>
+                <option value="HOSPEDAGEM_PARA_AEROPORTO">
+                  Hospedagem → Aeroporto
+                </option>
 
-            <option value="OUTRO">
-              Outro
-            </option>
-          </select>
-        </div>
+                <option value="OUTRO">
+                  Outro
+                </option>
+              </select>
+            </div>
 
-        <div>
-          <label
-            htmlFor="aeroporto"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Aeroporto
-          </label>
+            <div>
+              <label
+                htmlFor="aeroporto"
+                className={labelClass}
+              >
+                Aeroporto
+              </label>
 
-          <select
-            id="aeroporto"
-            value={
-              aeroporto
-            }
-            onChange={(
-              event,
-            ) =>
-              handleAeroportoChange(
-                event.target
-                  .value as
-                  | Aeroporto
-                  | "",
-              )
-            }
-            disabled={
-              tipo === "" ||
-              tipo ===
-                "OUTRO"
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <option value="">
-              {tipo === ""
-                ? "Selecione o tipo primeiro"
-                : tipo ===
-                    "OUTRO"
-                  ? "Não se aplica"
-                  : "Selecione o aeroporto"}
-            </option>
+              <select
+                id="aeroporto"
+                value={aeroporto}
+                onChange={(event) =>
+                  handleAeroportoChange(
+                    event.target.value as
+                      | Aeroporto
+                      | "",
+                  )
+                }
+                disabled={
+                  tipo === "" ||
+                  tipo === "OUTRO"
+                }
+                className={inputClass}
+              >
+                <option value="">
+                  {tipo === ""
+                    ? "Selecione o tipo primeiro"
+                    : tipo === "OUTRO"
+                      ? "Não se aplica"
+                      : "Selecione o aeroporto"}
+                </option>
 
-            <option value="GRU">
-              GRU - Guarulhos
-            </option>
+                <option value="GRU">
+                  GRU — Guarulhos
+                </option>
 
-            <option value="CGH">
-              CGH - Congonhas
-            </option>
+                <option value="CGH">
+                  CGH — Congonhas
+                </option>
 
-            <option value="VCP">
-              VCP - Viracopos
-            </option>
-          </select>
+                <option value="VCP">
+                  VCP — Viracopos
+                </option>
+              </select>
+            </div>
+          </div>
 
           {tipo !== "" &&
-            tipo !==
-              "OUTRO" && (
-              <p className="mt-2 text-xs text-muted">
+            tipo !== "OUTRO" && (
+              <p className="-mt-2 text-[11px] leading-5 text-muted">
                 O aeroporto selecionado define automaticamente o local correspondente do trajeto.
               </p>
             )}
-        </div>
 
-        <div>
-          <label
-            htmlFor="dataHoraPrevista"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Data e hora prevista
-          </label>
+          <div>
+            <label
+              htmlFor="dataHoraPrevista"
+              className={labelClass}
+            >
+              Data e hora prevista
+            </label>
 
-          <input
-            id="dataHoraPrevista"
-            type="datetime-local"
-            value={
-              dataHoraPrevista
-            }
-            onChange={(
-              event,
-            ) =>
-              setDataHoraPrevista(
-                event.target
-                  .value,
-              )
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          />
-        </div>
+            <input
+              id="dataHoraPrevista"
+              type="datetime-local"
+              value={dataHoraPrevista}
+              onChange={(event) =>
+                setDataHoraPrevista(
+                  event.target.value,
+                )
+              }
+              className={inputClass}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="localOrigem"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Origem
-          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="localOrigem"
+                className={labelClass}
+              >
+                Origem
+              </label>
 
-          <input
-            id="localOrigem"
-            type="text"
-            value={
-              localOrigem
-            }
-            onChange={(
-              event,
-            ) =>
-              setLocalOrigem(
-                event.target
-                  .value,
-              )
-            }
-            readOnly={
-              tipo ===
-              "AEROPORTO_PARA_HOSPEDAGEM"
-            }
-            placeholder={
-              tipo ===
-              "AEROPORTO_PARA_HOSPEDAGEM"
-                ? "Definido automaticamente pelo aeroporto"
-                : "Ex.: Hospedagem Beat Trips"
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary read-only:cursor-not-allowed read-only:opacity-70"
-          />
-        </div>
+              <input
+                id="localOrigem"
+                type="text"
+                value={localOrigem}
+                onChange={(event) =>
+                  setLocalOrigem(
+                    event.target.value,
+                  )
+                }
+                readOnly={
+                  tipo ===
+                  "AEROPORTO_PARA_HOSPEDAGEM"
+                }
+                className={`${inputClass} read-only:cursor-not-allowed read-only:opacity-70`}
+              />
+            </div>
 
-        <div>
-          <label
-            htmlFor="localDestino"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Destino
-          </label>
+            <div>
+              <label
+                htmlFor="localDestino"
+                className={labelClass}
+              >
+                Destino
+              </label>
 
-          <input
-            id="localDestino"
-            type="text"
-            value={
-              localDestino
-            }
-            onChange={(
-              event,
-            ) =>
-              setLocalDestino(
-                event.target
-                  .value,
-              )
-            }
-            readOnly={
-              tipo ===
-              "HOSPEDAGEM_PARA_AEROPORTO"
-            }
-            placeholder={
-              tipo ===
-              "HOSPEDAGEM_PARA_AEROPORTO"
-                ? "Definido automaticamente pelo aeroporto"
-                : "Ex.: Hospedagem Beat Trips"
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary read-only:cursor-not-allowed read-only:opacity-70"
-          />
-        </div>
+              <input
+                id="localDestino"
+                type="text"
+                value={localDestino}
+                onChange={(event) =>
+                  setLocalDestino(
+                    event.target.value,
+                  )
+                }
+                readOnly={
+                  tipo ===
+                  "HOSPEDAGEM_PARA_AEROPORTO"
+                }
+                className={`${inputClass} read-only:cursor-not-allowed read-only:opacity-70`}
+              />
+            </div>
+          </div>
 
-        <div>
-          <label
-            htmlFor="motorista"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Motorista
-          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="motorista"
+                className={labelClass}
+              >
+                Motorista
+              </label>
 
-          <select
-            id="motorista"
-            value={
-              motoristaId
-            }
-            onChange={(
-              event,
-            ) =>
-              setMotoristaId(
-                event.target
-                  .value,
-              )
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          >
-            <option value="">
-              Selecione o motorista
-            </option>
-
-            {motoristas.map(
-              (
-                motorista,
-              ) => (
-                <option
-                  key={
-                    motorista.id
-                  }
-                  value={
-                    motorista.id
-                  }
-                >
-                  {
-                    motorista.nomeCompleto
-                  }
+              <select
+                id="motorista"
+                value={motoristaId}
+                onChange={(event) =>
+                  setMotoristaId(
+                    event.target.value,
+                  )
+                }
+                className={inputClass}
+              >
+                <option value="">
+                  Selecione o motorista
                 </option>
-              ),
-            )}
-          </select>
-        </div>
 
-        <div>
-          <label
-            htmlFor="veiculo"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Veículo
-          </label>
+                {motoristas.map(
+                  (motorista) => (
+                    <option
+                      key={motorista.id}
+                      value={motorista.id}
+                    >
+                      {motorista.nomeCompleto}
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
 
-          <select
-            id="veiculo"
-            value={
-              veiculoId
-            }
-            onChange={(
-              event,
-            ) =>
-              setVeiculoId(
-                event.target
-                  .value,
-              )
-            }
-            className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          >
-            <option value="">
-              Selecione o veículo
-            </option>
+            <div>
+              <label
+                htmlFor="veiculo"
+                className={labelClass}
+              >
+                Veículo
+              </label>
 
-            {veiculos.map(
-              (
-                veiculo,
-              ) => (
-                <option
-                  key={
-                    veiculo.id
-                  }
-                  value={
-                    veiculo.id
-                  }
-                >
-                  {
-                    veiculo.modelo
-                  }
-                  {" | "}
-                  {
-                    veiculo.placa
-                  }
-                  {" | "}
-                  {
-                    veiculo.capacidadePassageiros
-                  }{" "}
-                  passageiros
+              <select
+                id="veiculo"
+                value={veiculoId}
+                onChange={(event) =>
+                  setVeiculoId(
+                    event.target.value,
+                  )
+                }
+                className={inputClass}
+              >
+                <option value="">
+                  Selecione o veículo
                 </option>
-              ),
-            )}
-          </select>
+
+                {veiculos.map(
+                  (veiculo) => (
+                    <option
+                      key={veiculo.id}
+                      value={veiculo.id}
+                    >
+                      {veiculo.modelo} | {veiculo.placa} |{" "}
+                      {veiculo.capacidadePassageiros} passageiros
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="observacao"
+              className={labelClass}
+            >
+              Observação
+            </label>
+
+            <textarea
+              id="observacao"
+              value={observacao}
+              onChange={(event) =>
+                setObservacao(
+                  event.target.value,
+                )
+              }
+              rows={3}
+              className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+            />
+          </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="observacao"
-            className="mb-2 block text-sm font-medium text-foreground"
-          >
-            Observação
-          </label>
-
-          <textarea
-            id="observacao"
-            value={
-              observacao
-            }
-            onChange={(
-              event,
-            ) =>
-              setObservacao(
-                event.target
-                  .value,
-              )
-            }
-            rows={4}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
-          />
-        </div>
-
-        {erro && (
-          <p
-            role="alert"
-            className="text-sm text-red-400"
-          >
-            {erro}
-          </p>
-        )}
-
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <button
-            type="submit"
-            disabled={
-              salvando
-            }
-            className="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {salvando
-              ? "Salvando..."
-              : "Salvar alterações"}
-          </button>
-
+        <div className="mt-5 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={() =>
@@ -854,12 +771,25 @@ export default function EditarOperacaoTrasladoPage() {
                 "/traslados",
               )
             }
-            disabled={
-              salvando
-            }
-            className="rounded-xl border border-border px-5 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={salvando}
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cancelar
+          </button>
+
+          <button
+            type="submit"
+            disabled={salvando}
+            className="gradient-brand inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Save
+              size={17}
+              strokeWidth={1.9}
+            />
+
+            {salvando
+              ? "Salvando..."
+              : "Salvar alterações"}
           </button>
         </div>
       </form>

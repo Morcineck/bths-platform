@@ -3,8 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import {
+  Clock3,
+  Hotel,
+  MapPin,
+  Pencil,
+  Plus,
+} from "lucide-react";
+
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/Card";
 
 import {
   listarHospedagensPorViagem,
@@ -145,15 +152,22 @@ export default function HospedagensPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <PageHeader
           title="Hospedagens"
           description="Cadastre e gerencie os locais de hospedagem de cada viagem."
         />
 
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-          <div className="relative w-full sm:w-[260px]">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end lg:w-auto">
+          <div className="w-full sm:w-[260px]">
+            <label
+              htmlFor="viagem"
+              className="mb-2 block text-xs font-medium text-muted"
+            >
+              Viagem ativa
+            </label>
+
             <select
               id="viagem"
               value={
@@ -170,30 +184,7 @@ export default function HospedagensPage() {
               disabled={
                 viagens.length === 0
               }
-              aria-label="Selecionar viagem"
-              className="
-                h-12
-                w-full
-                appearance-none
-                rounded-xl
-                border
-                border-border
-                bg-surface
-                px-4
-                pr-11
-                text-sm
-                font-medium
-                text-foreground
-                outline-none
-                transition-all
-                duration-200
-                hover:border-primary/60
-                focus:border-primary
-                focus:ring-2
-                focus:ring-primary/20
-                disabled:cursor-not-allowed
-                disabled:opacity-50
-              "
+              className="h-11 w-full rounded-xl border border-border bg-surface/70 px-4 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             >
               {viagens.length === 0 ? (
                 <option value="">
@@ -212,30 +203,18 @@ export default function HospedagensPage() {
                 )
               )}
             </select>
-
-            <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                aria-hidden="true"
-                className="h-4 w-4 text-muted"
-              >
-                <path
-                  d="M6 8L10 12L14 8"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
           </div>
 
           {viagemSelecionadaId && (
             <Link
               href={`/hospedagens/nova?viagemId=${viagemSelecionadaId}`}
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
             >
+              <Plus
+                size={18}
+                strokeWidth={1.9}
+              />
+
               Nova hospedagem
             </Link>
           )}
@@ -243,89 +222,132 @@ export default function HospedagensPage() {
       </div>
 
       {erro && (
-        <p
+        <div
           role="alert"
-          className="text-sm text-red-400"
+          className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
         >
           {erro}
-        </p>
+        </div>
       )}
 
       {carregandoHospedagens ? (
-        <Card>
+        <div className="rounded-2xl border border-border bg-surface/40 p-4">
           <p className="text-sm text-muted">
             Carregando hospedagens da viagem...
           </p>
-        </Card>
+        </div>
       ) : hospedagens.length === 0 ? (
-        <Card>
-          <p className="font-medium text-foreground">
-            Nenhuma hospedagem cadastrada.
-          </p>
+        <div className="rounded-2xl border border-border bg-surface/40 p-5 shadow-soft">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted">
+              <Hotel
+                size={19}
+                strokeWidth={1.9}
+              />
+            </span>
 
-          <p className="mt-2 text-sm text-muted">
-            Cadastre a primeira hospedagem desta viagem para
-            começar a vincular os quartos.
-          </p>
-        </Card>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Nenhuma hospedagem cadastrada
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Cadastre a primeira hospedagem desta viagem para começar a vincular os quartos.
+              </p>
+            </div>
+          </div>
+        </div>
       ) : (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Hospedagens da viagem
-            </h2>
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">
+                Hospedagens da viagem
+              </h2>
 
-            <p className="mt-1 text-sm text-muted">
-              Cada quarto pode ser associado a uma dessas
-              hospedagens.
-            </p>
+              <p className="mt-1 text-xs text-muted">
+                Locais disponíveis para associação com os quartos.
+              </p>
+            </div>
+
+            <span className="rounded-full border border-border bg-surface/50 px-3 py-1 text-xs font-medium text-muted">
+              {hospedagens.length}{" "}
+              {hospedagens.length === 1
+                ? "hospedagem"
+                : "hospedagens"}
+            </span>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {hospedagens.map(
               (hospedagem) => (
-                <Card
+                <article
                   key={hospedagem.id}
-                  className="space-y-5"
+                  className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft"
                 >
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                      Hospedagem
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                      <Hotel
+                        size={18}
+                        strokeWidth={1.9}
+                      />
+                    </span>
 
-                    <h3 className="mt-1 text-lg font-semibold text-foreground">
-                      {hospedagem.nome}
-                    </h3>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
+                        Hospedagem
+                      </p>
 
-                    <p className="mt-2 text-sm text-muted">
-                      {[
-                        hospedagem.cidade,
-                        hospedagem.estado,
-                      ]
-                        .filter(Boolean)
-                        .join(" / ") ||
-                        "Localização a definir"}
-                    </p>
+                      <h3 className="mt-1 truncate text-base font-semibold text-foreground">
+                        {hospedagem.nome}
+                      </h3>
+
+                      <div className="mt-2 flex items-center gap-2 text-xs text-muted">
+                        <MapPin
+                          size={14}
+                          strokeWidth={1.9}
+                          className="shrink-0"
+                        />
+
+                        <span className="truncate">
+                          {[
+                            hospedagem.cidade,
+                            hospedagem.estado,
+                          ]
+                            .filter(Boolean)
+                            .join(" / ") ||
+                            "Localização a definir"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="rounded-xl border border-border bg-background/40 p-4">
-                    <p className="text-xs text-muted">
+                  <div className="mt-4 rounded-xl border border-border bg-background/25 px-3 py-2.5">
+                    <p className="text-[11px] text-muted">
                       Endereço
                     </p>
 
-                    <p className="mt-1 text-sm font-medium leading-6 text-foreground">
+                    <p className="mt-1 text-sm font-medium leading-5 text-foreground">
                       {hospedagem.endereco ??
                         "A definir"}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-border bg-background/40 p-3">
-                      <p className="text-xs text-muted">
-                        Check-in
-                      </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl border border-border bg-background/25 px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Clock3
+                          size={14}
+                          strokeWidth={1.9}
+                          className="text-success"
+                        />
 
-                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        <p className="text-[11px] text-muted">
+                          Check-in
+                        </p>
+                      </div>
+
+                      <p className="mt-1.5 text-sm font-semibold text-foreground">
                         {hospedagem.horarioCheckIn
                           ? hospedagem.horarioCheckIn.slice(
                               0,
@@ -335,12 +357,20 @@ export default function HospedagensPage() {
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-border bg-background/40 p-3">
-                      <p className="text-xs text-muted">
-                        Check-out
-                      </p>
+                    <div className="rounded-xl border border-border bg-background/25 px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Clock3
+                          size={14}
+                          strokeWidth={1.9}
+                          className="text-warning"
+                        />
 
-                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        <p className="text-[11px] text-muted">
+                          Check-out
+                        </p>
+                      </div>
+
+                      <p className="mt-1.5 text-sm font-semibold text-foreground">
                         {hospedagem.horarioCheckOut
                           ? hospedagem.horarioCheckOut.slice(
                               0,
@@ -351,15 +381,20 @@ export default function HospedagensPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end border-t border-border pt-4">
+                  <div className="mt-3 border-t border-border pt-3">
                     <Link
                       href={`/hospedagens/${hospedagem.id}/editar`}
-                      className="text-sm font-medium text-primary transition-opacity hover:opacity-80"
+                      className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
                     >
+                      <Pencil
+                        size={14}
+                        strokeWidth={1.9}
+                      />
+
                       Editar hospedagem
                     </Link>
                   </div>
-                </Card>
+                </article>
               ),
             )}
           </div>
