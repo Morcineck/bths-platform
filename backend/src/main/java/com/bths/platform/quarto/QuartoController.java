@@ -3,6 +3,7 @@ package com.bths.platform.quarto;
 import com.bths.platform.quarto.dto.QuartoOcupacaoResponse;
 import com.bths.platform.quarto.dto.QuartoRequest;
 import com.bths.platform.quarto.dto.QuartoResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Quartos", description = "Gestão dos quartos, capacidades e disponibilidade das hospedagens.")
 @RestController
 @RequestMapping("/api/quartos")
 public class QuartoController {

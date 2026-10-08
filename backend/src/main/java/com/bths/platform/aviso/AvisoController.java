@@ -2,6 +2,7 @@ package com.bths.platform.aviso;
 
 import com.bths.platform.aviso.dto.AvisoRequest;
 import com.bths.platform.aviso.dto.AvisoResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Avisos", description = "Gestão dos comunicados e avisos destinados aos hóspedes.")
 @RestController
 @RequestMapping("/api/avisos")
 public class AvisoController {

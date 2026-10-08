@@ -1,5 +1,6 @@
 package com.bths.platform.security;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -70,6 +71,16 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/logout",
                                 "/api/auth/csrf"
+                        )
+                        .permitAll()
+
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+
+                        .requestMatchers(
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
                         )
                         .permitAll()
 

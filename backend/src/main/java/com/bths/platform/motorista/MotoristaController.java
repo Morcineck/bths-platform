@@ -2,6 +2,7 @@ package com.bths.platform.motorista;
 
 import com.bths.platform.motorista.dto.MotoristaRequest;
 import com.bths.platform.motorista.dto.MotoristaResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Motoristas", description = "Gestão administrativa dos motoristas utilizados nas operações de transporte.")
 @RestController
 @RequestMapping("/api/motoristas")
 public class MotoristaController {

@@ -2,6 +2,7 @@ package com.bths.platform.usuario;
 
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Tag(name = "Usuários", description = "Gestão administrativa das contas de acesso e perfis do BTHS.")
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -21,7 +23,7 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioResponse> cadastrarUsuario(
-           @Valid @RequestBody UsuarioRequest request
+            @Valid @RequestBody UsuarioRequest request
     ) {
 
         UsuarioResponse response =

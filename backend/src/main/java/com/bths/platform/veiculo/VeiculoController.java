@@ -2,6 +2,7 @@ package com.bths.platform.veiculo;
 
 import com.bths.platform.veiculo.dto.VeiculoRequest;
 import com.bths.platform.veiculo.dto.VeiculoResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Veículos", description = "Gestão administrativa dos veículos utilizados nas operações de transporte.")
 @RestController
 @RequestMapping("/api/veiculos")
 public class VeiculoController {
