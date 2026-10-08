@@ -8,6 +8,7 @@ import com.bths.platform.checkin.exception.HospedeJaRealizouCheckInException;
 import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
 import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoException;
 import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
+import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
 import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
 import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
 import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
@@ -492,6 +493,21 @@ public class GlobalExceptionHandler {
                 .status(
                         HttpStatus.CONFLICT
                 )
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeJaVinculadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeJaVinculado(
+            HospedeJaVinculadoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(erro);
     }
 

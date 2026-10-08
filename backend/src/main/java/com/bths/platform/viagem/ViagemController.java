@@ -2,6 +2,7 @@ package com.bths.platform.viagem;
 
 import com.bths.platform.viagem.dto.ViagemRequest;
 import com.bths.platform.viagem.dto.ViagemResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Viagens", description = "Gestão administrativa das viagens e eventos operados pela Beat Trips.")
 @RestController
 @RequestMapping("/api/viagens")
 public class ViagemController {

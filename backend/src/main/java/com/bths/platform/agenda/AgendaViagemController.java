@@ -2,6 +2,7 @@ package com.bths.platform.agenda;
 
 import com.bths.platform.agenda.dto.AgendaViagemRequest;
 import com.bths.platform.agenda.dto.AgendaViagemResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Agenda", description = "Gestão da agenda e da timeline operacional das viagens.")
 @RestController
 @RequestMapping("/api/agenda-viagem")
 public class AgendaViagemController {

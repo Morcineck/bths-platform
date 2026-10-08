@@ -2,6 +2,7 @@ package com.bths.platform.hospedagem;
 
 import com.bths.platform.hospedagem.dto.HospedagemRequest;
 import com.bths.platform.hospedagem.dto.HospedagemResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Hospedagens", description = "Gestão das hospedagens vinculadas às viagens da Beat Trips.")
 @RestController
 @RequestMapping("/api/hospedagens")
 public class HospedagemController {

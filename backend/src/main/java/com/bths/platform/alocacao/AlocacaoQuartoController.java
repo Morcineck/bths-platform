@@ -4,6 +4,7 @@ import com.bths.platform.alocacao.dto.AlocacaoQuartoRequest;
 import com.bths.platform.alocacao.dto.AlocacaoQuartoResponse;
 import com.bths.platform.alocacao.dto.OcupacaoQuartoResponse;
 import com.bths.platform.alocacao.dto.TrocarQuartoRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Alocações de quartos", description = "Gestão da alocação, troca e ocupação dos quartos dos hóspedes.")
 @RestController
 @RequestMapping("/api/alocacoes-quartos")
 public class AlocacaoQuartoController {
