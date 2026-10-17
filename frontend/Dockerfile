@@ -19,6 +19,10 @@ COPY . .
 ARG NEXT_PUBLIC_API_URL=""
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
+# Destino interno da API utilizado nos rewrites
+ARG BTHS_INTERNAL_API_URL="http://localhost:8080"
+ENV BTHS_INTERNAL_API_URL=${BTHS_INTERNAL_API_URL}
+
 RUN npm run build
 
 # Etapa 3: Imagem de execução

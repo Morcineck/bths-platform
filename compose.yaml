@@ -1,0 +1,63 @@
+name: bths-compose
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: bths_compose
+      MYSQL_USER: bths_compose
+      MYSQL_PASSWORD: ${BTHS_COMPOSE_DB_PASSWORD:?Defina a senha do banco Compose}
+      MYSQL_ROOT_PASSWORD: ${BTHS_COMPOSE_ROOT_PASSWORD:?Defina a senha root do Compose}
+    volumes:
+      - bths_mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mysql --protocol=tcp -h 127.0.0.1 -u "$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1'
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 40s
+    networks:
+      - bths_internal
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: staging
+      BTHS_DB_URL: jdbc:mysql://mysql:3306/bths_compose
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bths_compose
+      DB_USERNAME: bths_compose
+      DB_PASSWORD: ${BTHS_COMPOSE_DB_PASSWORD:?Defina a senha do banco Compose}
+      JWT_SECRET: ${BTHS_COMPOSE_JWT_SECRET:?Defina o segredo JWT do Compose}
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+    networks:
+      - bths_internal
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ""
+        BTHS_INTERNAL_API_URL: http://backend:8080
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - bths_internal
+
+networks:
+  bths_internal:
+    driver: bridge
+
+volumes:
+  bths_mysql_data:
