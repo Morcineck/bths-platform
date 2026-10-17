@@ -1,0 +1,41 @@
+# Git e ferramentas de desenvolvimento
+.git
+.github
+.gitignore
+.idea
+.vscode
+
+# Dependências e artefatos de build
+node_modules/
+.next/
+out/
+build/
+coverage/
+.turbo/
+.vercel/
+
+# Variáveis de ambiente e credenciais
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.bak
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos locais do TypeScript
+*.tsbuildinfo
