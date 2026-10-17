@@ -1,0 +1,23 @@
+# Git e ferramentas de desenvolvimento
+.git
+.gitignore
+.idea
+.vscode
+
+# Variáveis de ambiente e credenciais
+.env
+.env.*
+*.pem
+*.key
+
+# Arquivos gerados pelo Maven
+target/
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.bak
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
