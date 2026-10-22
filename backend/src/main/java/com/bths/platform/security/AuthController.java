@@ -55,7 +55,7 @@ public class AuthController {
                 .secure(autenticacaoProperties.cookieSecure())
                 .sameSite(autenticacaoProperties.cookieSameSite())
                 .path("/")
-                .maxAge(60 * 60)
+                .maxAge(autenticacaoProperties.duracaoSessao())
                 .build();
         httpResponse.addHeader(
                 HttpHeaders.SET_COOKIE,

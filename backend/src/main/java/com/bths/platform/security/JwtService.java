@@ -15,16 +15,21 @@ import java.util.Date;
 public class JwtService {
 
     private final SecretKey chave;
+    private final AutenticacaoProperties autenticacaoProperties;
 
-    public JwtService(@Value("${JWT_SECRET}") String secret) {
+    public JwtService(
+            @Value("${JWT_SECRET}") String secret,
+            AutenticacaoProperties autenticacaoProperties
+    ) {
         byte[] chaveDecodificada = Base64.getDecoder().decode(secret);
         this.chave = Keys.hmacShaKeyFor(chaveDecodificada);
+        this.autenticacaoProperties = autenticacaoProperties;
     }
 
     public String gerarToken(UserDetails usuario) {
 
         long agora = System.currentTimeMillis();
-        long expiracao = agora + (60 * 60 * 1000);
+        long expiracao = agora + autenticacaoProperties.duracaoSessao().toMillis();
 
         return Jwts.builder()
                 .subject(usuario.getUsername())
