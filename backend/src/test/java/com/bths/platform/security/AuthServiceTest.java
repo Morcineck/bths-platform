@@ -17,6 +17,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +53,22 @@ class AuthServiceTest {
 
     @InjectMocks
     private AuthService authService;
+
+    private ListAppender<ILoggingEvent> appender;
+    private Logger loggerDoServico;
+
+    @BeforeEach
+    void capturarLogs() {
+        loggerDoServico = (Logger) LoggerFactory.getLogger(AuthService.class);
+        appender = new ListAppender<>();
+        appender.start();
+        loggerDoServico.addAppender(appender);
+    }
+
+    @AfterEach
+    void liberarLogs() {
+        loggerDoServico.detachAppender(appender);
+    }
 
     @Test
     void deveRealizarLoginEGerarToken() {
@@ -149,5 +173,48 @@ class AuthServiceTest {
 
         verify(usuarioRepository)
                 .findByEmail("admin@beattrips.com");
+    }
+
+    @Test
+    void deveRegistrarErroQuandoFalharInfraestruturaNoLogin() {
+
+        LoginRequest request = new LoginRequest();
+        request.setEmail("admin@beattrips.com");
+        request.setSenha("senha123");
+
+        when(authenticationManager.authenticate(
+                any(UsernamePasswordAuthenticationToken.class)
+        )).thenThrow(
+                new InternalAuthenticationServiceException("banco fora do ar")
+        );
+
+        assertThrows(
+                CredenciaisInvalidasException.class,
+                () -> authService.login(request)
+        );
+
+        assertEquals(1, appender.list.size());
+        assertEquals(Level.ERROR, appender.list.get(0).getLevel());
+        assertNotNull(appender.list.get(0).getThrowableProxy());
+        assertFalse(appender.list.get(0).getFormattedMessage().contains("senha123"));
+    }
+
+    @Test
+    void naoDeveRegistrarErroQuandoCredenciaisForemApenasInvalidas() {
+
+        LoginRequest request = new LoginRequest();
+        request.setEmail("admin@beattrips.com");
+        request.setSenha("senha-errada");
+
+        when(authenticationManager.authenticate(
+                any(UsernamePasswordAuthenticationToken.class)
+        )).thenThrow(new BadCredentialsException("credenciais invalidas"));
+
+        assertThrows(
+                CredenciaisInvalidasException.class,
+                () -> authService.login(request)
+        );
+
+        assertTrue(appender.list.isEmpty());
     }
 }

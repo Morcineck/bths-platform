@@ -12,10 +12,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(AuthService.class);
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -36,31 +42,37 @@ public class AuthService {
 
         try {
 
-        Authentication  authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getSenha()
-                )
-        );
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getSenha()
+                    )
+            );
 
-        UserDetails usuario =
-                (UserDetails) authentication.getPrincipal();
+            UserDetails usuario =
+                    (UserDetails) authentication.getPrincipal();
 
-        String token = jwtService.gerarToken(usuario);
+            String token = jwtService.gerarToken(usuario);
 
-        return new LoginResponse(token);
+            return new LoginResponse(token);
 
-    } catch (AuthenticationException exception) {
-        throw new CredenciaisInvalidasException(
-                "E-mail ou senha inválidos!"
-        );
+        } catch (InternalAuthenticationServiceException exception) {
+            log.error("Falha interna ao autenticar o usuário.", exception);
+            throw new CredenciaisInvalidasException(
+                    "E-mail ou senha inválidos!"
+            );
+
+        } catch (AuthenticationException exception) {
+            throw new CredenciaisInvalidasException(
+                    "E-mail ou senha inválidos!"
+            );
         }
     }
 
     public UsuarioAutenticadoResponse buscarUsuarioAutenticado(String email) {
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsuarioNaoEncontradoException("Usuário não encontrado!")
                 );
 
