@@ -1,13 +1,18 @@
 package com.bths.platform.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -15,6 +20,9 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final UsuarioDetailsService usuarioDetailsService;
@@ -64,8 +72,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .setAuthentication(autenticacao);
                 }
             }
+
+        } catch (ExpiredJwtException exception) {
+            SecurityContextHolder.clearContext();
+            log.info("Token JWT expirado.");
+
+        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException exception) {
+            SecurityContextHolder.clearContext();
+
+            log.warn("Token JWT rejeitado: {}.", exception.getClass().getSimpleName());
         } catch (Exception exception) {
             SecurityContextHolder.clearContext();
+
+            log.error("Falha inesperada ao autenticar a requisição por JWT.", exception);
         }
 
         filterChain.doFilter(request, response);
