@@ -75,7 +75,7 @@ Nunca conectar testes Docker ao MySQL local original.
 O valor vazio produz chamadas relativas a `/api`, conforme a implementação atual.
 
 ```powershell
-docker build --build-arg NEXT_PUBLIC_API_URL="" -t bths-frontend:issue-65 .\frontend
+docker build --build-arg NEXT_PUBLIC_API_URL="" --build-arg BTHS_INTERNAL_API_URL="http://backend:8080" -t bths-frontend:issue-65 .\frontend
 ```
 
 Para funcionar com URL relativa, o ambiente precisa encaminhar `/api` ao backend.
@@ -83,6 +83,9 @@ Para funcionar com URL relativa, o ambiente precisa encaminhar `/api` ao backend
 Esse reverse proxy ainda não foi implementado nesta issue.
 
 Variáveis `NEXT_PUBLIC_*` não devem conter segredos.
+
+`BTHS_INTERNAL_API_URL` é obrigatório no build (issue #69). O build falha sem ele
+ou se qualquer um dos dois argumentos apontar para localhost.
 
 ## 5. Teste isolado do frontend
 
