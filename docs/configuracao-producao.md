@@ -61,11 +61,11 @@ sem ela a aplicação não inicia, para nunca herdar a origem de desenvolvimento
 Exemplo para produção:
 
 ```text
-BTHS_CORS_ALLOWED_ORIGINS=https://www.beattrips.com.br
+BTHS_CORS_ALLOWED_ORIGINS=https://app.beattrips.com.br
 ```
 
-A decisão sobre o domínio raiz (`beattrips.com.br` sem `www`) e a topologia
-pública pertence à issue #70.
+O endereço do app foi definido na issue #70: `app.beattrips.com.br`.
+Ver `docs/topologia-publica.md`.
 
 ## Travas de build e inicialização
 
