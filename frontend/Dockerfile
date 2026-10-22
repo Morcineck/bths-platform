@@ -15,13 +15,23 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# URL pública definida durante o build
+# URL pública definida durante o build. Vazia significa mesma origem (recomendado).
 ARG NEXT_PUBLIC_API_URL=""
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
-# Destino interno da API utilizado nos rewrites
-ARG BTHS_INTERNAL_API_URL="http://localhost:8080"
+# Destino interno da API utilizado nos rewrites. Sem valor padrão: precisa ser informado.
+ARG BTHS_INTERNAL_API_URL
 ENV BTHS_INTERNAL_API_URL=${BTHS_INTERNAL_API_URL}
+
+# Impede uma imagem de produção que dependa de localhost
+RUN [ -n "${BTHS_INTERNAL_API_URL}" ] \
+    || { echo "ERRO: informe --build-arg BTHS_INTERNAL_API_URL (endereco interno do backend)." >&2; exit 1; }; \
+    for valor in "${NEXT_PUBLIC_API_URL}" "${BTHS_INTERNAL_API_URL}"; do \
+      case "$valor" in \
+        *localhost*|*127.0.0.1*|*0.0.0.0*|*"[::1]"*) \
+          echo "ERRO: o build do frontend nao pode apontar para localhost ($valor)." >&2; exit 1;; \
+      esac; \
+    done
 
 RUN npm run build
 
