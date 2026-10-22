@@ -26,9 +26,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final AutenticacaoProperties autenticacaoProperties;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            AutenticacaoProperties autenticacaoProperties
+    ) {
         this.authService = authService;
+        this.autenticacaoProperties = autenticacaoProperties;
     }
 
     @Operation(summary = "Realizar login",
@@ -47,8 +52,8 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie
                 .from("BTHS_TOKEN", response.getToken())
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(autenticacaoProperties.cookieSecure())
+                .sameSite(autenticacaoProperties.cookieSameSite())
                 .path("/")
                 .maxAge(60 * 60)
                 .build();
@@ -93,8 +98,8 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie
                 .from("BTHS_TOKEN", "")
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(autenticacaoProperties.cookieSecure())
+                .sameSite(autenticacaoProperties.cookieSameSite())
                 .path("/")
                 .maxAge(0)
                 .build();

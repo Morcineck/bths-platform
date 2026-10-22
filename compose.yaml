@@ -38,6 +38,7 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: staging
+      BTHS_AUTH_COOKIE_SECURE: "false"
       BTHS_DB_URL: jdbc:mysql://mysql:3306/bths_compose
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bths_compose
       DB_USERNAME: bths_compose
