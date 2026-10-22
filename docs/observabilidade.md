@@ -92,6 +92,12 @@ sendo 401 com "E-mail ou senha inválidos!".
 - query string;
 - código de check-in do QR Code.
 
+- **Valores rejeitados em validações.** O log do Spring para erros de validação
+  (`DefaultHandlerExceptionResolver`) inclui o valor enviado pelo cliente, o que
+  expõe senha, CPF e e-mail. Esse logger está configurado em `ERROR` em staging e
+  prod, então os 400 comuns aparecem apenas na linha por requisição
+  (`POST /api/auth/login -> 400`).
+
 Atenção: a mensagem de algumas exceções, principalmente de banco
 de dados, pode conter valores de dados. Como logs de ERROR
 incluem a stack trace, o acesso aos logs deve ser restrito.
@@ -137,3 +143,6 @@ docker compose --env-file .env.compose -f compose.yaml logs --no-log-prefix back
 - O login com falha de infraestrutura ainda responde 401.
 - O header `X-Request-Id` só é legível pelo navegador em
   chamadas de mesma origem. O CORS atual não o expõe.
+- O motivo detalhado de um 400 (qual campo falhou) não aparece nos logs, só na
+  resposta HTTP. Para diagnosticar, use o `requestId` para localizar a requisição
+  e reproduza com o payload de teste.
