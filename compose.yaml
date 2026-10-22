@@ -1,9 +1,15 @@
 name: bths-compose
+x-logging: &padrao-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
 
 services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
+    logging: *padrao-logging
     environment:
       MYSQL_DATABASE: bths_compose
       MYSQL_USER: bths_compose
@@ -26,6 +32,7 @@ services:
     build:
       context: ./backend
     restart: unless-stopped
+    logging: *padrao-logging
     depends_on:
       mysql:
         condition: service_healthy
@@ -58,6 +65,7 @@ services:
         NEXT_PUBLIC_API_URL: ""
         BTHS_INTERNAL_API_URL: http://backend:8080
     restart: unless-stopped
+    logging: *padrao-logging
     depends_on:
       backend:
         condition: service_healthy
