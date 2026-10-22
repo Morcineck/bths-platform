@@ -50,12 +50,16 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
         long inicio = System.nanoTime();
         int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        Throwable falha = null;
 
         try {
             chain.doFilter(request, response);
             status = response.getStatus();
+        } catch (ServletException | IOException | RuntimeException | Error excecao) {
+            falha = excecao;
+            throw excecao;
         } finally {
-            registrar(request, status, inicio);
+            registrar(request, status, inicio, falha);
             MDC.remove(MDC_KEY);
         }
     }
@@ -67,7 +71,12 @@ public class RequestIdFilter extends OncePerRequestFilter {
         return UUID.randomUUID().toString();
     }
 
-    private static void registrar(HttpServletRequest request, int status, long inicio) {
+    private static void registrar(
+            HttpServletRequest request,
+            int status,
+            long inicio,
+            Throwable falha
+    ) {
         String uri = request.getRequestURI();
 
         if (uri.startsWith(PREFIXO_HEALTH)) {
@@ -77,7 +86,9 @@ public class RequestIdFilter extends OncePerRequestFilter {
         long duracaoMs = (System.nanoTime() - inicio) / 1_000_000;
         String caminho = caminhoSeguro(uri);
 
-        if (status >= 500) {
+        if (falha != null) {
+            log.error("{} {} -> {} ({} ms)", request.getMethod(), caminho, status, duracaoMs, falha);
+        } else if (status >= 500) {
             log.error("{} {} -> {} ({} ms)", request.getMethod(), caminho, status, duracaoMs);
         } else {
             log.info("{} {} -> {} ({} ms)", request.getMethod(), caminho, status, duracaoMs);

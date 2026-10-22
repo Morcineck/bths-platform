@@ -111,6 +111,8 @@ class RequestIdFilterTest {
         assertThat(appender.list).hasSize(1);
         assertThat(appender.list.get(0).getLevel()).isEqualTo(Level.ERROR);
         assertThat(appender.list.get(0).getFormattedMessage()).contains("-> 500");
+        assertThat(appender.list.get(0).getThrowableProxy()).isNotNull();
+        assertThat(appender.list.get(0).getThrowableProxy().getMessage()).isEqualTo("falha simulada");
     }
 
     @Test
