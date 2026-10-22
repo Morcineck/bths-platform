@@ -146,12 +146,15 @@ docker compose --env-file .env.compose -f compose.yaml logs --tail=100 backend
 - O MySQL original localhost:3306/bths_platform
   não deve ser utilizado ou modificado.
 - O ambiente não representa homologação de produção.
-- HTTPS e cookies Secure ainda exigem configuração.
+- Cookies Secure dependem de HTTPS. O Compose roda em HTTP e, por isso,
+  define `BTHS_AUTH_COOKIE_SECURE=false`. As origens CORS do Compose vêm de
+  `BTHS_CORS_ALLOWED_ORIGINS`. Ver [configuracao-producao.md](configuracao-producao.md).
 - O login autenticado completo ainda não foi
   homologado nesta stack.
 - NEXT_PUBLIC_API_URL é definida no build.
 - BTHS_INTERNAL_API_URL determina o destino dos
-  rewrites durante o build do Next.js.
+  rewrites durante o build do Next.js. É obrigatória: o build
+  falha sem ela ou se apontar para localhost.
 - O frontend ainda não aguarda um healthcheck HTTP
   do backend para iniciar.
 

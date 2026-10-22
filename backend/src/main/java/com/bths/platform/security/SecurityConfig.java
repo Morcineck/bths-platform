@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.bths.platform.observabilidade.RequestIdFilter;
 
 import java.util.List;
 
@@ -38,15 +39,16 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            JwtAccessDeniedHandler jwtAccessDeniedHandler
+            JwtAccessDeniedHandler jwtAccessDeniedHandler,
+            CorsConfigurationSource corsConfigurationSource
     ) throws Exception {
 
         http
                 .csrf(csrf -> csrf.spa())
                 .cors(cors ->
                         cors.configurationSource(
-                                corsConfigurationSource()
-                        )
+                                corsConfigurationSource)
+
                 )
 
                 .sessionManagement(session ->
@@ -202,15 +204,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            CorsProperties corsProperties
+    ) {
 
         CorsConfiguration configuration =
                 new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:3000"
-                )
+                corsProperties.allowedOrigins()
         );
 
         configuration.setAllowedMethods(
@@ -229,6 +231,12 @@ public class SecurityConfig {
                         "Content-Type",
                         "Authorization",
                         "X-XSRF-TOKEN"
+                )
+        );
+
+        configuration.setExposedHeaders(
+                List.of(
+                        RequestIdFilter.HEADER
                 )
         );
 

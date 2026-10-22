@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 
@@ -24,7 +25,9 @@ class JwtServiceTest {
         String secret =
                 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
-        jwtService = new JwtService(secret);
+        jwtService = new JwtService(
+                secret,
+                new AutenticacaoProperties(true, "Lax", Duration.ofHours(1)));
 
         userDetails = mock(UserDetails.class);
     }
@@ -110,5 +113,40 @@ class JwtServiceTest {
         assertFalse(
                 jwtService.tokenValido(tokenExpirado, userDetails)
         );
+    }
+
+    @Test
+    void deveGerarTokenComExpiracaoIgualADuracaoConfigurada() {
+
+        String secret =
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+
+        JwtService servico = new JwtService(
+                secret,
+                new AutenticacaoProperties(true, "Lax", Duration.ofMinutes(30))
+        );
+
+        when(userDetails.getUsername())
+                .thenReturn("admin@beattrips.com");
+
+        long antes = System.currentTimeMillis();
+        String token = servico.gerarToken(userDetails);
+        long depois = System.currentTimeMillis();
+
+        SecretKey chave =
+                Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+
+        Date expiracao = Jwts.parser()
+                .verifyWith(chave)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+
+        long trintaMinutos = Duration.ofMinutes(30).toMillis();
+
+        // O JWT guarda a expiração em segundos, então há até 1 s de tolerância.
+        assertTrue(expiracao.getTime() >= antes + trintaMinutos - 1000);
+        assertTrue(expiracao.getTime() <= depois + trintaMinutos);
     }
 }
