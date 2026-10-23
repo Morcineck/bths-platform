@@ -40,7 +40,8 @@ public class AuthController {
             description = "Autentica o usuário por e-mail e senha e grava o JWT no cookie HttpOnly BTHS_TOKEN.")
     @ApiResponses({@ApiResponse(responseCode = "200",
             description = "Login realizado com sucesso. O JWT é enviado no cookie BTHS_TOKEN."),
-            @ApiResponse(responseCode = "401", description = "E-mail ou senha inválidos.")})
+            @ApiResponse(responseCode = "401", description = "E-mail ou senha inválidos."),
+            @ApiResponse(responseCode = "429", description = "Muitas tentativas de login. Veja o header Retry-After.")})
     @PostMapping("/login")
     public ResponseEntity<Void> login(
             @RequestBody LoginRequest request,

@@ -18,12 +18,14 @@ import com.bths.platform.quarto.exception.QuartoIndisponivelException;
 import com.bths.platform.quarto.exception.QuartoLotadoException;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.security.exception.CredenciaisInvalidasException;
+import com.bths.platform.security.exception.LoginBloqueadoException;
 import com.bths.platform.traslado.exception.*;
 import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.veiculo.exception.VeiculoJaCadastradoException;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
 import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -300,6 +302,28 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
+                .body(erro);
+    }
+
+    @ExceptionHandler(LoginBloqueadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarLoginBloqueado(
+            LoginBloqueadoException exception
+    ) {
+
+        long segundos = Math.max(
+                1,
+                (exception.getTempoRestante().toMillis() + 999) / 1000
+        );
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Too Many Requests");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.TOO_MANY_REQUESTS.value());
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(segundos))
                 .body(erro);
     }
 
