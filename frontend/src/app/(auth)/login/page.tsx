@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 
 import {
+  LoginBloqueadoError,
   buscarUsuarioAutenticado,
   login,
 } from "@/features/auth/services/authService";
@@ -58,10 +59,14 @@ function LoginContent() {
       }
 
       router.replace("/dashboard");
-    } catch {
-      setErro(
-        "Não foi possível entrar. Verifique suas credenciais e tente novamente.",
-      );
+    } catch (error) {
+      if (error instanceof LoginBloqueadoError) {
+        setErro(error.mensagemParaUsuario());
+      } else {
+        setErro(
+          "Não foi possível entrar. Verifique suas credenciais e tente novamente.",
+        );
+      }
     } finally {
       setCarregando(false);
     }

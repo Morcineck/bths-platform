@@ -4,6 +4,7 @@ import com.bths.platform.security.dto.UsuarioAutenticadoResponse;
 import com.bths.platform.security.exception.CredenciaisInvalidasException;
 import com.bths.platform.security.dto.LoginRequest;
 import com.bths.platform.security.dto.LoginResponse;
+import com.bths.platform.security.exception.LoginBloqueadoException;
 import com.bths.platform.usuario.Usuario;
 import com.bths.platform.usuario.UsuarioRepository;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
@@ -26,19 +27,29 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
+    private final LimiteTentativasLogin limiteTentativasLogin;
 
     public AuthService(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
-            UsuarioRepository usuarioRepository
+            UsuarioRepository usuarioRepository,
+            LimiteTentativasLogin limiteTentativasLogin
     ) {
 
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.usuarioRepository = usuarioRepository;
+        this.limiteTentativasLogin = limiteTentativasLogin;
     }
 
     public LoginResponse login(LoginRequest request) {
+
+        String chave = LimiteTentativasLogin.normalizarChave(request.getEmail());
+
+        limiteTentativasLogin.tempoRestanteDeBloqueio(chave)
+                .ifPresent(tempoRestante -> {
+                    throw new LoginBloqueadoException(tempoRestante);
+                });
 
         try {
 
@@ -54,6 +65,8 @@ public class AuthService {
 
             String token = jwtService.gerarToken(usuario);
 
+            limiteTentativasLogin.registrarSucesso(chave);
+
             return new LoginResponse(token);
 
         } catch (InternalAuthenticationServiceException exception) {
@@ -63,10 +76,25 @@ public class AuthService {
             );
 
         } catch (AuthenticationException exception) {
+            limiteTentativasLogin.registrarFalha(chave).ifPresent(bloqueio ->
+                    log.warn(
+                            "Login bloqueado por excesso de tentativas falhas: conta={}, bloqueioSegundos={}.",
+                            mascarar(chave),
+                            bloqueio.toSeconds()
+                    )
+            );
             throw new CredenciaisInvalidasException(
                     "E-mail ou senha inválidos!"
             );
         }
+    }
+
+    private String mascarar(String chave) {
+        int arroba = chave.indexOf('@');
+        if (arroba < 1) {
+            return "***";
+        }
+        return chave.charAt(0) + "***" + chave.substring(arroba);
     }
 
     public UsuarioAutenticadoResponse buscarUsuarioAutenticado(String email) {
