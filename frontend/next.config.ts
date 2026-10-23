@@ -1,7 +1,27 @@
 import type { NextConfig } from "next";
 
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${
+    process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"
+  }`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://i0.wp.com",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "media-src 'self' blob:",
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
 const nextConfig: NextConfig = {
   output: "standalone",
+
+  // Não revela a tecnologia do servidor.
+  poweredByHeader: false,
 
   images: {
     remotePatterns: [
@@ -10,6 +30,32 @@ const nextConfig: NextConfig = {
         hostname: "i0.wp.com",
       },
     ],
+  },
+
+  async headers() {
+    return [
+      {
+        // Todas as rotas, exceto /api: os headers da API são do backend.
+        source: "/((?!api/).*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            // A câmera é necessária para a leitura de QR Code no check-in.
+            key: "Permissions-Policy",
+            value: "camera=(self), microphone=(), geolocation=(), payment=()",
+          },
+          {
+            key: "Content-Security-Policy-Report-Only",
+            value: contentSecurityPolicy,
+          },
+        ],
+      },
+    ];
   },
 
   async rewrites() {
