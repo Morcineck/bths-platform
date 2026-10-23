@@ -76,11 +76,25 @@ public class AuthService {
             );
 
         } catch (AuthenticationException exception) {
-            limiteTentativasLogin.registrarFalha(chave);
+            limiteTentativasLogin.registrarFalha(chave).ifPresent(bloqueio ->
+                    log.warn(
+                            "Login bloqueado por excesso de tentativas falhas: conta={}, bloqueioSegundos={}.",
+                            mascarar(chave),
+                            bloqueio.toSeconds()
+                    )
+            );
             throw new CredenciaisInvalidasException(
                     "E-mail ou senha inválidos!"
             );
         }
+    }
+
+    private String mascarar(String chave) {
+        int arroba = chave.indexOf('@');
+        if (arroba < 1) {
+            return "***";
+        }
+        return chave.charAt(0) + "***" + chave.substring(arroba);
     }
 
     public UsuarioAutenticadoResponse buscarUsuarioAutenticado(String email) {

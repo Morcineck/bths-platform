@@ -323,4 +323,52 @@ class AuthServiceTest {
         verify(limiteTentativasLogin).tempoRestanteDeBloqueio("admin@beattrips.com");
         verify(limiteTentativasLogin).registrarFalha("admin@beattrips.com");
     }
+
+    @Test
+    void deveRegistrarAuditoriaMascaradaQuandoUmaFalhaProvocarBloqueio() {
+
+        LoginRequest request = new LoginRequest();
+        request.setEmail("admin@beattrips.com");
+        request.setSenha("senha-errada");
+
+        when(authenticationManager.authenticate(
+                any(UsernamePasswordAuthenticationToken.class)
+        )).thenThrow(new BadCredentialsException("credenciais invalidas"));
+
+        when(limiteTentativasLogin.registrarFalha("admin@beattrips.com"))
+                .thenReturn(Optional.of(Duration.ofMinutes(5)));
+
+        assertThrows(
+                CredenciaisInvalidasException.class,
+                () -> authService.login(request)
+        );
+
+        assertEquals(1, appender.list.size());
+        assertEquals(Level.WARN, appender.list.get(0).getLevel());
+
+        String mensagem = appender.list.get(0).getFormattedMessage();
+        assertTrue(mensagem.contains("a***@beattrips.com"));
+        assertTrue(mensagem.contains("300"));
+        assertFalse(mensagem.contains("admin@beattrips.com"));
+        assertFalse(mensagem.contains("senha-errada"));
+    }
+
+    @Test
+    void naoDeveRegistrarAuditoriaQuandoAFalhaNaoProvocarBloqueio() {
+
+        LoginRequest request = new LoginRequest();
+        request.setEmail("admin@beattrips.com");
+        request.setSenha("senha-errada");
+
+        when(authenticationManager.authenticate(
+                any(UsernamePasswordAuthenticationToken.class)
+        )).thenThrow(new BadCredentialsException("credenciais invalidas"));
+
+        assertThrows(
+                CredenciaisInvalidasException.class,
+                () -> authService.login(request)
+        );
+
+        assertTrue(appender.list.isEmpty());
+    }
 }
