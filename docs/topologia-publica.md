@@ -94,7 +94,7 @@ A escolha fica para a issue #75 (staging).
 - Que o cookie `XSRF-TOKEN` recebe o atributo `Secure` atrás do proxy. O Spring decide esse atributo pelo esquema que o backend enxerga; com o proxy falando HTTP com o backend, ele precisa receber o esquema original por cabeçalhos de encaminhamento (`X-Forwarded-Proto`). Possível ajuste: `server.forward-headers-strategy`.
 - Que o `X-Forwarded-Proto` chega íntegro pelas duas camadas (proxy e Next.js).
 - Login completo no navegador, em desktop, Android e iPhone (issue #77).
-- HSTS e demais cabeçalhos de segurança (issue #73) apenas depois que o HTTPS estiver estável no endereço.
+- HSTS no proxy com TLS e ativação do CSP (issue #73), apenas depois que o HTTPS estiver estável no endereço. Ver `docs/headers-seguranca.md`.
 
 ## Critérios de aceite da #70
 
