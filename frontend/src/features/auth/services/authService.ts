@@ -12,6 +12,28 @@ import type {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export class LoginBloqueadoError extends Error {
+  readonly segundos: number | null;
+
+  constructor(segundos: number | null) {
+    super("Muitas tentativas de login.");
+    this.name = "LoginBloqueadoError";
+    this.segundos = segundos;
+  }
+
+  mensagemParaUsuario(): string {
+    if (this.segundos === null) {
+      return "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.";
+    }
+
+    const minutos = Math.max(1, Math.ceil(this.segundos / 60));
+
+    return `Muitas tentativas de login. Tente novamente em ${minutos} ${
+      minutos === 1 ? "minuto" : "minutos"
+    }.`;
+  }
+}
+
 export async function login(
   dados: LoginRequest,
 ): Promise<void> {
@@ -28,6 +50,14 @@ export async function login(
     credentials: "include",
     body: JSON.stringify(dados),
   });
+
+  if (response.status === 429) {
+    const retryAfter = Number(response.headers.get("Retry-After"));
+
+    throw new LoginBloqueadoError(
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null,
+    );
+  }
 
   if (!response.ok) {
     throw new Error(

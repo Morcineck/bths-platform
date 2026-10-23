@@ -11,6 +11,7 @@ Documento da issue #72. Descreve como o `POST /api/auth/login` se protege contra
 - Falha durante um bloqueio não estende o bloqueio. Login com sucesso zera a contagem do e-mail.
 - Falha de infraestrutura (por exemplo, banco fora do ar) **não conta** como falha do usuário.
 - Com o e-mail bloqueado, o login responde `429 Too Many Requests` com o header `Retry-After` (segundos) e **não consulta a senha**, nem a correta.
+- O formulário de login mostra o tempo de espera, arredondado para cima em minutos, a partir do `Retry-After` (por exemplo, "Tente novamente em 5 minutos"). Sem o header, mostra uma mensagem genérica de espera.
 
 ## Não vaza a existência do usuário
 
@@ -44,7 +45,6 @@ Login bloqueado por excesso de tentativas falhas: conta=a***@beattrips.com, bloq
 - **Bloqueio por e-mail.** Quem souber o e-mail de uma conta pode bloqueá-la por alguns minutos errando a senha de propósito. É o custo de limitar por e-mail; o teto de 1 hora limita o efeito.
 - **Sem limite por IP.** Atrás do proxy do Next, o backend vê o IP do container do frontend, não o do cliente. Limitar por IP agora bloquearia todos juntos. O limite por IP entra depois que o proxy real encaminhar o IP do cliente de forma confiável (issue #75, `X-Forwarded-For` com proxy confiável).
 - **Só o login.** Outros endpoints não têm limite nesta issue.
-- **Frontend.** O formulário de login ainda mostra a mensagem genérica para o `429`, sem informar o tempo de espera.
 
 ## Como validar manualmente
 
