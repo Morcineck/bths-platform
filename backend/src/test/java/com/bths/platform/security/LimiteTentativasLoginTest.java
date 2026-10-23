@@ -173,4 +173,11 @@ class LimiteTentativasLoginTest {
             return instante;
         }
     }
+
+    @Test
+    void deveLimitarOTamanhoDaChave() {
+        String enorme = "a".repeat(5_000) + "@exemplo.com";
+
+        assertThat(LimiteTentativasLogin.normalizarChave(enorme)).hasSize(254);
+    }
 }

@@ -44,6 +44,10 @@ Login bloqueado por excesso de tentativas falhas: conta=a***@beattrips.com, bloq
 - **Estado em memória.** Reiniciar a aplicação zera as contagens, e o limite não é compartilhado entre instâncias. Hoje o BTHS roda em uma instância. Com mais de uma, o estado deve ir para um armazenamento compartilhado (por exemplo, o MySQL).
 - **Bloqueio por e-mail.** Quem souber o e-mail de uma conta pode bloqueá-la por alguns minutos errando a senha de propósito. É o custo de limitar por e-mail; o teto de 1 hora limita o efeito.
 - **Sem limite por IP.** Atrás do proxy do Next, o backend vê o IP do container do frontend, não o do cliente. Limitar por IP agora bloquearia todos juntos. O limite por IP entra depois que o proxy real encaminhar o IP do cliente de forma confiável (issue #75, `X-Forwarded-For` com proxy confiável).
+- **Chave limitada a 254 caracteres.** O e-mail normalizado é cortado em 254 caracteres (tamanho máximo de um e-mail válido) para que chaves enormes não ocupem memória.
+- **Muitos e-mails diferentes.** Um atacante ainda pode criar muitos registros com e-mails distintos. Os registros antigos são limpos quando o mapa passa de 10.000 entradas, e o limite por IP (#75) deve fechar esse caso.
+- **Rajada paralela.** A consulta do bloqueio e o registro da falha não são atômicos. Uma rajada de requisições simultâneas pode ultrapassar o limite antes de o bloqueio valer, no máximo até o número de threads do servidor.
+- **`Retry-After` em desenvolvimento.** O header só fica visível ao JavaScript quando frontend e API estão na mesma origem (produção, com o proxy `/api`). Em desenvolvimento, com origens diferentes, o formulário mostra a mensagem genérica de espera.
 - **Só o login.** Outros endpoints não têm limite nesta issue.
 
 ## Como validar manualmente

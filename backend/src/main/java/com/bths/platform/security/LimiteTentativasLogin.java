@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class LimiteTentativasLogin {
 
     private static final int LIMITE_DE_REGISTROS_PARA_LIMPEZA = 10_000;
+    private static final int TAMANHO_MAXIMO_DA_CHAVE = 254;
 
     private final LimiteLoginProperties propriedades;
     private final Clock relogio;
@@ -34,7 +35,12 @@ public class LimiteTentativasLogin {
         if (email == null) {
             return "";
         }
-        return email.trim().toLowerCase(Locale.ROOT);
+
+        String normalizada = email.trim().toLowerCase(Locale.ROOT);
+
+        return normalizada.length() > TAMANHO_MAXIMO_DA_CHAVE
+                ? normalizada.substring(0, TAMANHO_MAXIMO_DA_CHAVE)
+                : normalizada;
     }
 
     public Optional<Duration> tempoRestanteDeBloqueio(String chave) {
