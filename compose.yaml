@@ -12,15 +12,20 @@ services:
     logging: *padrao-logging
     environment:
       MYSQL_DATABASE: bths_compose
-      MYSQL_USER: bths_compose
-      MYSQL_PASSWORD: ${BTHS_COMPOSE_DB_PASSWORD:?Defina a senha do banco Compose}
       MYSQL_ROOT_PASSWORD: ${BTHS_COMPOSE_ROOT_PASSWORD:?Defina a senha root do Compose}
+      # #71: usuarios criados pelo script criar-usuarios.sh, com privilegios minimos
+      BTHS_DB_NAME: bths_compose
+      BTHS_APP_USER: bths_compose
+      BTHS_APP_PASSWORD: ${BTHS_COMPOSE_DB_PASSWORD:?Defina a senha do banco Compose}
+      BTHS_MIGRACAO_USER: bths_compose_migracao
+      BTHS_MIGRACAO_PASSWORD: ${BTHS_COMPOSE_MIGRACAO_PASSWORD:?Defina a senha de migracao do Compose}
     volumes:
       - bths_mysql_data:/var/lib/mysql
+      - ./docker/mysql/criar-usuarios.sh:/docker-entrypoint-initdb.d/criar-usuarios.sh:ro
     healthcheck:
       test:
         - CMD-SHELL
-        - 'mysql --protocol=tcp -h 127.0.0.1 -u "$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1'
+        - 'mysql --protocol=tcp -h 127.0.0.1 -u "$$BTHS_APP_USER" -p"$$BTHS_APP_PASSWORD" "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1'
       interval: 10s
       timeout: 5s
       retries: 15
@@ -44,6 +49,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bths_compose
       DB_USERNAME: bths_compose
       DB_PASSWORD: ${BTHS_COMPOSE_DB_PASSWORD:?Defina a senha do banco Compose}
+      # #71: usuario exclusivo das migracoes do Flyway
+      BTHS_DB_MIGRACAO_USUARIO: bths_compose_migracao
+      BTHS_DB_MIGRACAO_SENHA: ${BTHS_COMPOSE_MIGRACAO_PASSWORD:?Defina a senha de migracao do Compose}
       JWT_SECRET: ${BTHS_COMPOSE_JWT_SECRET:?Defina o segredo JWT do Compose}
       SPRING_FLYWAY_ENABLED: "true"
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
