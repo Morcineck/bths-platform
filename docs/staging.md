@@ -66,3 +66,27 @@ Frontend (`bths-staging-frontend`): `BTHS_INTERNAL_API_URL` (URL pública do bac
 - O dashboard fica em "Carregando dashboard..." quando não existe nenhuma viagem cadastrada (estado vazio sem tratamento no frontend). Aparece no staging por causa do banco vazio.
 - Domínio próprio (por exemplo `app-staging.beattrips.com.br`) ainda não configurado; o staging usa o domínio `onrender.com`.
 - Sem backup/restore testado do banco.
+
+## Validação de CSRF, cookies e sessão (#76)
+
+Verificado em 24/10/2026 pelo domínio do frontend, com o usuário ADMIN de teste.
+
+| Verificação | Resultado |
+|---|---|
+| Cookie `BTHS_TOKEN` | `HttpOnly; Secure; SameSite=Lax`, host-only, validade de 1 h |
+| `GET /api/auth/csrf` | 200; cookie `XSRF-TOKEN` com `Secure` |
+| POST sem `X-XSRF-TOKEN` | 403 |
+| POST com `X-XSRF-TOKEN` errado | 403 |
+| POST, PUT e PATCH com o token igual ao cookie | 201, 200 e 200 |
+| PUT sem `X-XSRF-TOKEN` | 403 |
+| Requisição sem cookie | 401 |
+| Requisição com cookie `BTHS_TOKEN` inválido | 401 |
+| Logout | 204, `Clear-Site-Data: "cache", "storage"` e cookie zerado |
+| Requisição após o logout (sem o cookie) | 401 |
+| Navegador: F5 logado, Voltar após sair, rota interna deslogado | sessão mantida; redireciona para `/login` |
+
+JWT expirado retorna 401; a cobertura está nos testes do backend (`JwtServiceTest`, `JwtAuthenticationFilterTest` e `AuthCsrfIntegrationTest`), e não foi esperada ao vivo (a sessão dura 1 h).
+
+### Limitação conhecida: JWT sem revogação
+
+O logout apaga o cookie no navegador, mas o servidor não invalida o JWT: reenviar o token antigo continua retornando 200 até ele expirar (1 h). Só tem efeito se o token vazar, e o cookie é `HttpOnly` e `Secure`. Possíveis mitigações futuras: lista de revogação no servidor ou expiração mais curta.
