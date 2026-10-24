@@ -139,12 +139,24 @@ WHERE TABLE_SCHEMA = DATABASE()
 
 **Limites das evidências:** os testes não constituem deploy de produção; o banco local original `bths_platform` **não foi migrado**. O backup usado representa o estado de 11/10/2026, não alterações posteriores. Uma implantação real precisa repetir verificações, backup, simulação e aprovação no destino efetivo.
 
+### 6.1. Homologação em staging (Aiven) - 24/10/2026
+
+| Cenário | Resultado observado |
+|---|---|
+| MySQL 8.4 gerenciado no Aiven, schema vazio, `sslMode=REQUIRED` | Flyway validou 2 migrações e criou `flyway_schema_history` |
+| V1 e V2 pelo usuário de migração (DDL), deploy no Render | Aplicadas do zero em cerca de 3,5 s; "now at version v2" |
+| Aplicação com o usuário de runtime (só DML) e `ddl-auto=validate` | Subiu normalmente; readiness `UP` e login funcionando |
+
+O processo foi o mesmo planejado para produção: banco próprio, dois usuários com privilégio mínimo (migração e aplicação) e Flyway no startup do backend.
+
+**Limites:** o staging usa o plano grátis do Aiven; a restauração de backup não foi testada, e as contagens de tabelas e FKs não foram conferidas diretamente no Aiven.
+
 ## 7. Checklist de PR e release
 
 - [ ] `pom.xml`, perfis e migrações V1/V2 revisados no diff completo.
 - [ ] `git diff --check` sem erros.
 - [ ] `./mvnw clean test` verde (546 testes na execução registrada).
-- [ ] Staging testado com o mesmo processo planejado para produção; **banco próprio**.
+- [x] Staging testado com o mesmo processo planejado para produção; **banco próprio** (ver 6.1).
 - [ ] Evidências MySQL de schema vazio e de baseline legado anexadas à issue/PR, sem dados sensíveis.
 - [ ] Processo de backup, recuperação e correção progressiva revisado.
 - [ ] Nenhuma credencial ou backup de dados incorporado ao Git.
