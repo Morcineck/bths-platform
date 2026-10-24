@@ -31,6 +31,7 @@ Criar na raiz do projeto um arquivo `.env.compose`
 com as seguintes variáveis:
 
 BTHS_COMPOSE_DB_PASSWORD
+BTHS_COMPOSE_MIGRACAO_PASSWORD
 BTHS_COMPOSE_ROOT_PASSWORD
 BTHS_COMPOSE_JWT_SECRET
 
@@ -39,6 +40,12 @@ exclusivos deste ambiente.
 
 BTHS_COMPOSE_JWT_SECRET deve conter uma chave aleatória de pelo menos 256 bits, codificada em Base64.
 O Docker Compose repassa seu valor ao backend pela variável JWT_SECRET.
+
+O MySQL do Compose tem dois usuários, criados por docker/mysql/criar-usuarios.sh:
+bths_compose (aplicação, só SELECT, INSERT, UPDATE e DELETE) e
+bths_compose_migracao (Flyway, com permissão de DDL).
+BTHS_COMPOSE_DB_PASSWORD é a senha da aplicação e BTHS_COMPOSE_MIGRACAO_PASSWORD, a da migração.
+Em um volume que já existe, aplique o script manualmente (ver docs/segredos.md).
 
 O arquivo `.env.compose` é ignorado pelo Git.
 
