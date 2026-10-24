@@ -19,8 +19,14 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/hospedes/:path*",
-    "/motorista/:path*",
+    "/motoristas/:path*",
     "/veiculos/:path*",
+    "/avisos/:path*",
+    "/traslados/:path*",
+    "/agenda-viagem/:path*",
+    "/check-in/:path*",
+    "/hospedagens/:path*",
+    "/quartos/:path*",
     "/app/:path*",
   ],
 };

@@ -55,6 +55,15 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Páginas (HTML): nada de cache compartilhado nem reaproveitamento
+        // após logout. Ficam de fora a API, os arquivos de /_next (que o Next
+        // já controla com cache imutável) e qualquer arquivo com extensão.
+        source: "/((?!api/|_next/|.*\\..*).*)",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
+      },
     ];
   },
 
