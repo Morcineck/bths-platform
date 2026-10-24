@@ -1,6 +1,5 @@
 package com.bths.platform.security;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,7 @@ public class ValidadorSegredoJwt {
         try {
             bytes = Base64.getDecoder().decode(segredoBase64);
 
-        }catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException exception) {
             throw new IllegalStateException(
                     "JWT_SECRET deve estar codificado em Base64."
             );
