@@ -110,6 +110,14 @@ public class AuthController {
                 cookie.toString()
         );
 
+        // Pede ao navegador que apague caches e armazenamento local (inclui
+        // service workers) deste site, para nada de uma sessão encerrada
+        // sobrar no aparelho. Só é aplicado em HTTPS ou localhost.
+        httpResponse.addHeader(
+                "Clear-Site-Data",
+                "\"cache\", \"storage\""
+        );
+
         return ResponseEntity.noContent().build();
     }
 

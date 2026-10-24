@@ -55,6 +55,21 @@ class AuthControllerTest {
     }
 
     @Test
+    void deveLimparCacheEArmazenamentoDoNavegadorNoLogout()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/api/auth/logout")
+                                .with(csrf())
+                )
+                .andExpect(status().isNoContent())
+                .andExpect(header().string(
+                        "Clear-Site-Data",
+                        "\"cache\", \"storage\""
+                ));
+    }
+
+    @Test
     void deveRemoverCookieMesmoSemUsuarioAutenticado()
             throws Exception {
 
