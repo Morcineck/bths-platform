@@ -148,11 +148,15 @@ export default function HospedesPage() {
       .toUpperCase();
   }
 
-  function formatarTelefone(
-    telefone: string,
-  ) {
-    const numeros =
-      telefone.replace(/\D/g, "");
+    function formatarTelefone(
+      telefone?: string | null,
+    ) {
+      if (!telefone) {
+        return "Telefone não informado";
+      }
+
+      const numeros =
+        telefone.replace(/\D/g, "");
 
     if (numeros.length === 11) {
       return numeros.replace(
