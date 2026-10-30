@@ -7,7 +7,7 @@ export type Hospede = {
   id: number;
   nomeCompleto: string;
   cpf: string;
-  telefone: string;
+  telefone: string | null;
   email: string;
   dataNascimento: string;
   horarioPrevistoChegada: string;

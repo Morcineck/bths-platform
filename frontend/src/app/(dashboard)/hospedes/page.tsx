@@ -149,8 +149,12 @@ export default function HospedesPage() {
   }
 
   function formatarTelefone(
-    telefone: string,
+    telefone?: string | null,
   ) {
+    if (!telefone) {
+      return "Telefone não informado";
+    }
+
     const numeros =
       telefone.replace(/\D/g, "");
 
