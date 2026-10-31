@@ -13,6 +13,9 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
+# Fuso horário de operação da Beat Trips (horários gerados pelo servidor)
+ENV TZ=America/Sao_Paulo
+
 # Usuário sem privilégios de root
 RUN groupadd --system bths \
     && useradd --system --gid bths --no-create-home bths
