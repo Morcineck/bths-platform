@@ -8,6 +8,7 @@ import com.bths.platform.usuario.UsuarioService;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.enums.PerfilUsuario;
 import com.bths.platform.viagem.ViagemService;
+import com.bths.platform.viagem.dto.ViagemResponse;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -19,6 +20,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -576,4 +579,155 @@ class SecurityAuthorizationTest {
                 .andExpect(content().json("[]"));
     }
 
+    @Test
+    void devePermitirAdminListarViagens()
+            throws Exception {
+
+        autenticar("token-admin", "admin@beattrips.com", "ADMIN");
+
+        when(viagemService.listarViagens())
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(
+                        get("/api/viagens")
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void devePermitirAdminCriarViagem()
+            throws Exception {
+
+        autenticar("token-admin", "admin@beattrips.com", "ADMIN");
+
+        ViagemResponse response = new ViagemResponse();
+        response.setId(1L);
+        response.setNome("Tomorrowland Brasil 2027");
+
+        when(viagemService.cadastrarViagem(any()))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        post("/api/viagens")
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(VIAGEM_JSON)
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id")
+                        .value(1));
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffCriarViagem()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        post("/api/viagens")
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(VIAGEM_JSON)
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status")
+                        .value(403));
+
+        verify(viagemService, never())
+                .cadastrarViagem(any());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffAtualizarViagem()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        put("/api/viagens/{id}", 1L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(VIAGEM_JSON)
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status")
+                        .value(403));
+
+        verify(viagemService, never())
+                .atualizarViagem(any(), any());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffExcluirViagem()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        delete("/api/viagens/{id}", 1L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status")
+                        .value(403));
+
+        verify(viagemService, never())
+                .deletarViagem(any());
+    }
+
+    private static final String VIAGEM_JSON = """
+            {
+              "nome": "Tomorrowland Brasil 2027",
+              "evento": "Tomorrowland Brasil",
+              "dataInicio": "2027-10-08",
+              "dataFim": "2027-10-11",
+              "cidade": "Itu",
+              "estado": "SP",
+              "status": "PLANEJADA"
+            }
+            """;
+
+    private void autenticar(
+            String token,
+            String email,
+            String perfil
+    ) {
+
+        UserDetails usuario = User
+                .withUsername(email)
+                .password("senha")
+                .roles(perfil)
+                .build();
+
+        when(jwtService.extrairEmail(token))
+                .thenReturn(email);
+
+        when(usuarioDetailsService.loadUserByUsername(email))
+                .thenReturn(usuario);
+
+        when(jwtService.tokenValido(token, usuario))
+                .thenReturn(true);
+    }
 }

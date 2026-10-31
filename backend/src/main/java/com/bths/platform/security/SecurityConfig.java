@@ -174,8 +174,25 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+                        // Consulta de viagens:
+                        // ADMIN e STAFF podem visualizar.
                         .requestMatchers(
-                                "/api/viagens/**",
+                                HttpMethod.GET,
+                                "/api/viagens/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação, edição e exclusão de viagens:
+                        // somente ADMIN
+                        .requestMatchers(
+                                "/api/viagens/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
                                 "/api/hospedes/**",
                                 "/api/quartos/**",
                                 "/api/hospedagens/**",
@@ -185,7 +202,6 @@ public class SecurityConfig {
                                 "/api/traslados/**",
                                 "/api/check-in/qr/**",
                                 "/api/dashboard/**"
-
                         )
                         .hasAnyRole(
                                 "ADMIN",
