@@ -12,6 +12,7 @@ import {
   Ellipsis,
   Hotel,
   LayoutDashboard,
+  MapPinned,
   QrCode,
   Users,
   CalendarDays,
@@ -67,6 +68,11 @@ const itensBase = [
 
 const itensAdmin = [
   {
+    href: "/viagens",
+    label: "Viagens",
+    icon: MapPinned,
+  },
+  {
     href: "/motoristas",
     label: "Motoristas",
     icon: UserRoundCog,
@@ -100,7 +106,8 @@ export function OperationalNavigation({
     isActive("/agenda-viagem") ||
     isActive("/avisos") ||
     (perfil === "ADMIN" &&
-      (isActive("/motoristas") ||
+      (isActive("/viagens") ||
+        isActive("/motoristas") ||
         isActive("/veiculos")));
 
   return (

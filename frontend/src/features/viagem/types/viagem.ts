@@ -10,8 +10,19 @@ export type Viagem = {
   evento: string;
   dataInicio: string;
   dataFim: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
+  endereco?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  status: StatusViagem;
+};
+
+export type ViagemRequest = {
+  nome: string;
+  evento: string;
+  dataInicio: string;
+  dataFim: string;
+  endereco?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
   status: StatusViagem;
 };
