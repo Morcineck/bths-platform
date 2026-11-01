@@ -159,3 +159,62 @@ body {
       ) + 0.5rem
     );
 }
+
+.aurora-bg {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--background);
+}
+
+.aurora-bg::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background:
+    radial-gradient(40% 35% at 20% 25%, oklch(0.66 0.26 340 / 38%), transparent 70%),
+    radial-gradient(45% 40% at 80% 20%, oklch(0.62 0.24 305 / 40%), transparent 70%),
+    radial-gradient(40% 35% at 70% 80%, oklch(0.85 0.14 175 / 26%), transparent 70%),
+    radial-gradient(35% 30% at 25% 85%, oklch(0.88 0.17 115 / 18%), transparent 70%),
+    radial-gradient(30% 30% at 50% 50%, oklch(0.62 0.24 305 / 22%), transparent 70%);
+  filter: blur(40px);
+  animation: aurora-deriva 24s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-deriva {
+  from {
+    transform: translate3d(-3%, -2%, 0) rotate(0deg);
+  }
+
+  to {
+    transform: translate3d(3%, 2%, 0) rotate(6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-bg::before {
+    animation: none;
+  }
+}
+
+.brand-glow {
+  filter:
+    drop-shadow(0 0 1px oklch(1 0 0 / 90%))
+    drop-shadow(0 0 6px oklch(1 0 0 / 35%));
+}
+
+.glass-login {
+  background:
+    color-mix(
+      in oklab,
+      var(--surface) 28%,
+      transparent
+    );
+
+  backdrop-filter:
+    blur(8px);
+
+  border:
+    1px solid oklch(1 0 0 / 14%);
+}
