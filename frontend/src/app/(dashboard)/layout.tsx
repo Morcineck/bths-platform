@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { OperationalNavigation } from "@/components/layout/OperationalNavigation";
 
@@ -88,9 +89,14 @@ export default function DashboardLayout({
       <header className="glass sticky top-0 z-40 border-b border-border">
         <div className="flex w-full items-center justify-between gap-4 px-5 py-3 md:px-6">
           <div className="flex items-center gap-3">
-            <span className="gradient-brand shadow-glow flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-bold text-white">
-              B
-            </span>
+            <Image
+              src="/brand/beat-trips-simbolo.webp"
+              alt="Beat Trips"
+              width={40}
+              height={40}
+              priority
+              className="brand-glow h-10 w-10"
+            />
 
             <div>
               <p className="text-sm font-semibold tracking-tight text-foreground">
