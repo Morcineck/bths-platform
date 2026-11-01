@@ -12,6 +12,7 @@ import {
 } from "next/navigation";
 
 import Image from "next/image";
+
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -74,39 +75,39 @@ function LoginContent() {
   }
 
   return (
-        <Card className="glass-login shadow-soft">
-          <header>
-            <div className="flex flex-col items-center text-center">
-              <Image
-                src="/brand/beat-trips-simbolo.webp"
-                alt="Beat Trips"
-                width={96}
-                height={96}
-                priority
-                className="brand-glow h-24 w-24"
-              />
+    <Card className="glass-login shadow-soft">
+      <header>
+        <div className="flex flex-col items-center text-center">
+          <Image
+            src="/brand/beat-trips-simbolo.webp"
+            alt="Beat Trips"
+            width={96}
+            height={96}
+            priority
+            className="brand-glow h-24 w-24"
+          />
 
-              <p className="mt-4 text-sm font-medium text-primary">
-                Beat Trips
-              </p>
+          <p className="mt-4 text-sm font-medium text-primary">
+            Beat Trips
+          </p>
 
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                Acesse o BTHS
-              </h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            Acesse o BTHS
+          </h1>
 
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Entre com suas credenciais para acessar a plataforma.
-              </p>
-            </div>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Entre com suas credenciais para acessar a plataforma.
+          </p>
+        </div>
 
-            {sessaoExpirada && (
-              <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3">
-                <p className="text-sm text-amber-300">
-                  Sua sessão expirou. Faça login novamente.
-                </p>
-              </div>
-            )}
-          </header>
+        {sessaoExpirada && (
+          <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3">
+            <p className="text-sm text-amber-300">
+              Sua sessão expirou. Faça login novamente.
+            </p>
+          </div>
+        )}
+      </header>
 
       <form
         className="mt-8 space-y-5"
