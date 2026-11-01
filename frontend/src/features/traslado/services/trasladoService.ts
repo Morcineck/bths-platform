@@ -8,6 +8,7 @@ import {
 import type {
   Traslado,
   TrasladoOperacaoRequest,
+  TrasladoRequest,
   TrasladoUpdateRequest,
 } from "../types/traslado";
 
@@ -97,4 +98,52 @@ export async function atualizarTraslado(
   return response.json();
 }
 
+export async function listarTrasladosPorViagem(
+  viagemId: number,
+): Promise<Traslado[]> {
+  const response = await authFetch(
+    `${API_URL}/api/traslados/viagem/${viagemId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar os traslados da viagem.",
+    );
+  }
+
+  return response.json();
+}
+
+export async function criarTraslado(
+  dados: TrasladoRequest,
+): Promise<Traslado> {
+  await inicializarCsrf();
+
+  const csrfToken =
+    buscarCsrfTokenDoCookie();
+
+  const response = await authFetch(
+    `${API_URL}/api/traslados`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": csrfToken,
+      },
+      body: JSON.stringify(dados),
+    },
+  );
+
+  if (!response.ok) {
+    const erro =
+      await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ??
+        "Não foi possível criar o traslado do hóspede.",
+    );
+  }
+
+  return response.json();
+}
 

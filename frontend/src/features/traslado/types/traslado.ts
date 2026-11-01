@@ -67,3 +67,21 @@ export type TrasladoUpdateRequest = {
 
   observacoes: string | null;
 };
+
+export type TrasladoRequest = {
+  hospedeId: number;
+  viagemId: number;
+
+  tipo: TipoTraslado;
+  aeroporto: Aeroporto | null;
+
+  dataHoraPrevista: string;
+
+  numeroVoo?: string | null;
+  companhiaAerea?: string | null;
+
+  localOrigem: string;
+  localDestino: string;
+
+  observacoes?: string | null;
+};

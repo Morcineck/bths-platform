@@ -37,6 +37,8 @@ import type {
   StatusTraslado,
 } from "@/features/traslado/operacao/types/operacaoTraslado";
 
+import { AdicionarPassageiroOperacao } from "@/features/traslado/operacao/components/AdicionarPassageiroOperacao";
+
 import {
   listarViagens,
 } from "@/features/viagem/services/viagemService";
@@ -991,6 +993,37 @@ export default function TrasladosPage() {
                               </div>
                             ),
                           )
+                        )}
+
+                        {isAdmin && (
+                          <AdicionarPassageiroOperacao
+                            operacao={operacao}
+                            onAdicionado={(
+                              operacaoAtualizada,
+                              passageiro,
+                            ) => {
+                              setOperacoes((atuais) =>
+                                atuais.map((item) =>
+                                  item.id ===
+                                  operacaoAtualizada.id
+                                    ? operacaoAtualizada
+                                    : item,
+                                ),
+                              );
+
+                              setPassageirosPorOperacao(
+                                (atuais) => ({
+                                  ...atuais,
+                                  [operacaoAtualizada.id]: [
+                                    ...(atuais[
+                                      operacaoAtualizada.id
+                                    ] ?? []),
+                                    passageiro,
+                                  ],
+                                }),
+                              );
+                            }}
+                          />
                         )}
                       </div>
                     )}
