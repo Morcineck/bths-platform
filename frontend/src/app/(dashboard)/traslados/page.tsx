@@ -610,17 +610,19 @@ export default function TrasladosPage() {
             </select>
           </div>
 
-          <Link
-            href="/traslados/nova"
-            className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
-          >
-            <Bus
-              size={18}
-              strokeWidth={1.9}
-            />
+          {isAdmin && (
+            <Link
+              href="/traslados/nova"
+              className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
+            >
+              <Bus
+                size={18}
+                strokeWidth={1.9}
+              />
 
-            Nova operação
-          </Link>
+              Nova operação
+            </Link>
+          )}
         </div>
       </div>
 
@@ -1295,43 +1297,45 @@ export default function TrasladosPage() {
                           )}
                       </div>
 
-                      <div className="mt-2 flex gap-2">
-                        <Link
-                          href={`/traslados/${operacao.id}/editar`}
-                          className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-foreground transition-colors hover:border-primary/30 hover:text-primary"
-                        >
-                          <Pencil
-                            size={14}
-                            strokeWidth={1.9}
-                          />
+                      {isAdmin && (
+                        <div className="mt-2 flex gap-2">
+                          <Link
+                            href={`/traslados/${operacao.id}/editar`}
+                            className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-foreground transition-colors hover:border-primary/30 hover:text-primary"
+                          >
+                            <Pencil
+                              size={14}
+                              strokeWidth={1.9}
+                            />
 
-                          Editar
-                        </Link>
+                            Editar
+                          </Link>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleExcluirOperacao(
-                              operacao.id,
-                            )
-                          }
-                          disabled={
-                            excluindoId ===
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleExcluirOperacao(
+                                operacao.id,
+                              )
+                            }
+                            disabled={
+                              excluindoId ===
+                              operacao.id
+                            }
+                            className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Trash2
+                              size={14}
+                              strokeWidth={1.9}
+                            />
+
+                            {excluindoId ===
                             operacao.id
-                          }
-                          className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <Trash2
-                            size={14}
-                            strokeWidth={1.9}
-                          />
-
-                          {excluindoId ===
-                          operacao.id
-                            ? "Excluindo..."
-                            : "Excluir"}
-                        </button>
-                      </div>
+                              ? "Excluindo..."
+                              : "Excluir"}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </article>
                 );
