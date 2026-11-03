@@ -192,14 +192,74 @@ public class SecurityConfig {
                         )
                         .hasRole("ADMIN")
 
+                        // Exclusão de hóspede, de aviso e de alocação:
+                        // somente ADMIN.
                         .requestMatchers(
+                                HttpMethod.DELETE,
                                 "/api/hospedes/**",
+                                "/api/avisos/**",
+                                "/api/alocacoes-quartos/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Quartos, hospedagens e agenda:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
                                 "/api/quartos/**",
                                 "/api/hospedagens/**",
-                                "/api/agenda-viagem/**",
+                                "/api/agenda-viagem/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação, edição e exclusão de quartos,
+                        // hospedagens e agenda: somente ADMIN.
+                        .requestMatchers(
+                                "/api/quartos/**",
+                                "/api/hospedagens/**",
+                                "/api/agenda-viagem/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Traslado do hóspede:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/traslados/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Mudança de status do traslado:
+                        // ADMIN e STAFF.
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/traslados/*/status"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação, edição, correção de status e
+                        // vínculo do traslado: somente ADMIN.
+                        .requestMatchers(
+                                "/api/traslados/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Demais rotas operacionais: ADMIN e STAFF
+                        // (avisos: criar e editar; alocações: alocar
+                        // e trocar quarto; check-in e não comparecimento).
+                        .requestMatchers(
+                                "/api/hospedes/**",
                                 "/api/avisos/**",
                                 "/api/alocacoes-quartos/**",
-                                "/api/traslados/**",
                                 "/api/check-in/qr/**",
                                 "/api/dashboard/**"
                         )

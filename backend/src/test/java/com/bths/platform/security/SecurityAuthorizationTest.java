@@ -730,4 +730,209 @@ class SecurityAuthorizationTest {
         when(jwtService.tokenValido(token, usuario))
                 .thenReturn(true);
     }
+
+    @Test
+    void devePermitirStaffConsultarQuartos()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        get("/api/quartos")
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffCriarQuarto()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        post("/api/quartos")
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void devePermitirAdminCriarQuarto()
+            throws Exception {
+
+        autenticar("token-admin", "admin@beattrips.com", "ADMIN");
+
+        // Corpo vazio: passa da autorização e para na validação (400).
+        mockMvc.perform(
+                        post("/api/quartos")
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-admin"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffExcluirHospedagem()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        delete("/api/hospedagens/{id}", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffEditarAgenda()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        put("/api/agenda-viagem/{id}", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffExcluirAviso()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        delete("/api/avisos/{id}", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffExcluirAlocacao()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        delete("/api/alocacoes-quartos/{id}", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffExcluirHospede()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        delete("/api/hospedes/{id}", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffCriarTraslado()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        post("/api/traslados")
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deveRetornar403QuandoStaffCorrigirStatusDoTraslado()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        mockMvc.perform(
+                        patch("/api/traslados/{id}/corrigir-status", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {"status": "AGUARDANDO", "motivo": "Teste"}
+                                        """)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void devePermitirStaffAlterarStatusDoTraslado()
+            throws Exception {
+
+        autenticar("token-staff", "staff@beattrips.com", "STAFF");
+
+        // Traslado inexistente: passa da autorização e o service
+        // responde 404, o que prova que o STAFF não foi barrado.
+        mockMvc.perform(
+                        patch("/api/traslados/{id}/status", 999999L)
+                                .with(csrf())
+                                .header(
+                                        "Authorization",
+                                        "Bearer token-staff"
+                                )
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {"status": "EM_ANDAMENTO"}
+                                        """)
+                )
+                .andExpect(status().isNotFound());
+    }
 }
