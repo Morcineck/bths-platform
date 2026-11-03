@@ -611,13 +611,13 @@ export default function TrasladosPage() {
           </div>
 
           {isAdmin && (
-          <Link
+            <Link
               href="/traslados/nova"
-             className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
+              className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
             >
-             <Bus
-               size={18}
-               strokeWidth={1.9}
+              <Bus
+                size={18}
+                strokeWidth={1.9}
               />
 
               Nova operação
