@@ -11,6 +11,8 @@ import {
   Plus,
 } from "lucide-react";
 
+import { useIsAdmin } from "@/features/auth/context/UsuarioAutenticadoContext";
+
 import { PageHeader } from "@/components/layout/PageHeader";
 
 import {
@@ -34,6 +36,8 @@ export default function HospedagensPage() {
     viagens,
     setViagens,
   ] = useState<Viagem[]>([]);
+
+  const isAdmin = useIsAdmin();
 
   const [
     viagemSelecionadaId,
@@ -205,7 +209,7 @@ export default function HospedagensPage() {
             </select>
           </div>
 
-          {viagemSelecionadaId && (
+          {isAdmin && viagemSelecionadaId && (
             <Link
               href={`/hospedagens/nova?viagemId=${viagemSelecionadaId}`}
               className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
@@ -381,19 +385,21 @@ export default function HospedagensPage() {
                     </div>
                   </div>
 
-                  <div className="mt-3 border-t border-border pt-3">
-                    <Link
-                      href={`/hospedagens/${hospedagem.id}/editar`}
-                      className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
-                    >
-                      <Pencil
-                        size={14}
-                        strokeWidth={1.9}
-                      />
+                  {isAdmin && (
+                    <div className="mt-3 border-t border-border pt-3">
+                      <Link
+                        href={`/hospedagens/${hospedagem.id}/editar`}
+                        className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                      >
+                        <Pencil
+                          size={14}
+                          strokeWidth={1.9}
+                        />
 
-                      Editar hospedagem
-                    </Link>
-                  </div>
+                        Editar hospedagem
+                      </Link>
+                    </div>
+                  )}
                 </article>
               ),
             )}

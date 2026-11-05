@@ -13,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { useIsAdmin } from "@/features/auth/context/UsuarioAutenticadoContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 import {
@@ -107,6 +108,8 @@ export default function AgendaViagemPage() {
     viagens,
     setViagens,
   ] = useState<Viagem[]>([]);
+
+  const isAdmin = useIsAdmin();
 
   const [
     viagemId,
@@ -356,7 +359,7 @@ export default function AgendaViagemPage() {
             </select>
           </div>
 
-          {viagemId && (
+          {isAdmin && viagemId && (
             <Link
               href={`/agenda-viagem/nova?viagemId=${viagemId}`}
               className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
@@ -527,43 +530,45 @@ export default function AgendaViagemPage() {
                             </div>
                           </div>
 
-                          <div className="flex shrink-0 gap-2">
-                            <Link
-                              href={`/agenda-viagem/${item.id}/editar`}
-                              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
-                            >
-                              <Edit3
-                                size={14}
-                                strokeWidth={1.9}
-                              />
+                          {isAdmin && (
+                            <div className="flex shrink-0 gap-2">
+                              <Link
+                                href={`/agenda-viagem/${item.id}/editar`}
+                                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                              >
+                                <Edit3
+                                  size={14}
+                                  strokeWidth={1.9}
+                                />
 
-                              Editar
-                            </Link>
+                                Editar
+                              </Link>
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleExcluir(
-                                  item,
-                                )
-                              }
-                              disabled={
-                                excluindoId ===
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleExcluir(
+                                    item,
+                                  )
+                                }
+                                disabled={
+                                  excluindoId ===
+                                  item.id
+                                }
+                                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Trash2
+                                  size={14}
+                                  strokeWidth={1.9}
+                                />
+
+                                {excluindoId ===
                                 item.id
-                              }
-                              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Trash2
-                                size={14}
-                                strokeWidth={1.9}
-                              />
-
-                              {excluindoId ===
-                              item.id
-                                ? "Excluindo..."
-                                : "Excluir"}
-                            </button>
-                          </div>
+                                  ? "Excluindo..."
+                                  : "Excluir"}
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {item.descricao && (
