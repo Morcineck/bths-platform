@@ -232,11 +232,8 @@ export default function CheckInPage() {
       scannerRef.current =
         scanner;
 
-      const cameraId =
-        cameras[0].id;
-
       await scanner.start(
-        cameraId,
+        { facingMode: "environment" },
         {
           fps: 10,
           qrbox: {
