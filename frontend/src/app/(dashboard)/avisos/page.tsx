@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { useIsAdmin } from "@/features/auth/context/UsuarioAutenticadoContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 import {
@@ -77,6 +78,8 @@ export default function AvisosPage() {
     viagens,
     setViagens,
   ] = useState<Viagem[]>([]);
+
+  const isAdmin = useIsAdmin();
 
   const [
     viagemId,
@@ -452,29 +455,31 @@ export default function AvisosPage() {
                         Editar
                       </Link>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleExcluir(
-                            aviso,
-                          )
-                        }
-                        disabled={
-                          excluindoId ===
-                          aviso.id
-                        }
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Trash2
-                          size={14}
-                          strokeWidth={1.9}
-                        />
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleExcluir(
+                              aviso,
+                            )
+                          }
+                          disabled={
+                            excluindoId ===
+                            aviso.id
+                          }
+                          className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Trash2
+                            size={14}
+                            strokeWidth={1.9}
+                          />
 
-                        {excluindoId ===
-                        aviso.id
-                          ? "Excluindo..."
-                          : "Excluir"}
-                      </button>
+                          {excluindoId ===
+                          aviso.id
+                            ? "Excluindo..."
+                            : "Excluir"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </article>

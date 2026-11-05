@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useIsAdmin } from "@/features/auth/context/UsuarioAutenticadoContext";
 
 import {
   BedDouble,
@@ -45,6 +46,8 @@ export default function QuartosPage() {
     viagens,
     setViagens,
   ] = useState<Viagem[]>([]);
+
+  const isAdmin = useIsAdmin();
 
   const [
     viagemSelecionadaId,
@@ -280,7 +283,7 @@ export default function QuartosPage() {
             </select>
           </div>
 
-          {viagemSelecionadaId && (
+          {isAdmin && viagemSelecionadaId && (
             <Link
               href={`/quartos/novo?viagemId=${viagemSelecionadaId}`}
               className="gradient-brand inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
@@ -581,19 +584,21 @@ export default function QuartosPage() {
                       )}
                     </div>
 
-                    <div className="mt-3 border-t border-border pt-3">
-                      <Link
-                        href={`/quartos/${quarto.quartoId}/editar`}
-                        className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
-                      >
-                        <Pencil
-                          size={14}
-                          strokeWidth={1.9}
-                        />
+                    {isAdmin && (
+                      <div className="mt-3 border-t border-border pt-3">
+                        <Link
+                          href={`/quartos/${quarto.quartoId}/editar`}
+                          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                        >
+                          <Pencil
+                            size={14}
+                            strokeWidth={1.9}
+                          />
 
-                        Editar quarto
-                      </Link>
-                    </div>
+                          Editar quarto
+                        </Link>
+                      </div>
+                    )}
                   </article>
                 );
               },

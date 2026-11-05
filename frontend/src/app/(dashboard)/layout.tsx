@@ -4,12 +4,13 @@ import { ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { OperationalNavigation } from "@/components/layout/OperationalNavigation";
+import type { UsuarioAutenticado } from "@/features/auth/types/auth";
+import { UsuarioAutenticadoProvider } from "@/features/auth/context/UsuarioAutenticadoContext";
 
 import {
   buscarUsuarioAutenticado,
   logout,
 } from "@/features/auth/services/authService";
-import type { UsuarioAutenticado } from "@/features/auth/types/auth";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -154,7 +155,9 @@ export default function DashboardLayout({
 
         <main className="w-full min-w-0 px-4 py-6 pb-24 sm:px-5 md:px-7 md:py-8 md:pb-10 lg:px-8">
           <div className="mx-auto w-full max-w-7xl">
-            {children}
+            <UsuarioAutenticadoProvider value={usuario}>
+              {children}
+            </UsuarioAutenticadoProvider>
           </div>
         </main>
       </div>
