@@ -19,6 +19,7 @@ import {
 import {
   buscarMinhaTimeline,
   buscarMinhaViagem,
+  buscarMinhaHospedagem,
 } from "@/features/hospede/services/hospedeService";
 
 import type {
@@ -28,6 +29,10 @@ import type {
 import type {
   MinhaTimeline,
 } from "@/features/hospede/types/minhaTimeline";
+
+import type {
+  MinhaHospedagem,
+} from "@/features/hospede/types/minhaHospedagem";
 
 const MESES = [
   "JAN",
@@ -278,6 +283,14 @@ export default function AppViagemPage() {
   ] = useState<MinhaTimeline[]>([]);
 
   const [
+    minhaHospedagem,
+    setMinhaHospedagem,
+  ] =
+    useState<MinhaHospedagem | null>(
+      null,
+    );
+
+  const [
     carregando,
     setCarregando,
   ] = useState(true);
@@ -295,9 +308,13 @@ export default function AppViagemPage() {
         const [
           viagemResponse,
           timelineResponse,
+          hospedagemResponse,
         ] = await Promise.all([
           buscarMinhaViagem(),
           buscarMinhaTimeline(),
+          buscarMinhaHospedagem().catch(
+            () => null,
+          ),
         ]);
 
         setMinhaViagem(
@@ -306,6 +323,10 @@ export default function AppViagemPage() {
 
         setTimeline(
           timelineResponse,
+        );
+
+        setMinhaHospedagem(
+          hospedagemResponse,
         );
       } catch {
         setErro(
@@ -489,21 +510,25 @@ export default function AppViagemPage() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl bg-surface-secondary p-4">
-          <p className="text-xs text-muted">
-            Endereço da hospedagem
-          </p>
+        {minhaHospedagem?.endereco && (
+          <div className="mt-3 rounded-2xl bg-surface-secondary p-4">
+            <p className="text-xs text-muted">
+              Endereço da hospedagem
+            </p>
 
-          <p className="mt-1 text-sm font-medium leading-6 text-foreground">
-            {minhaViagem.endereco}
-          </p>
+            <p className="mt-1 text-sm font-medium leading-6 text-foreground">
+              {minhaHospedagem.endereco}
+            </p>
 
-          <p className="mt-1 text-xs text-muted">
-            {minhaViagem.cidade}
-            {" / "}
-            {minhaViagem.estado}
-          </p>
-        </div>
+            {(minhaHospedagem.cidade || minhaHospedagem.estado) && (
+              <p className="mt-1 text-xs text-muted">
+                {[minhaHospedagem.cidade, minhaHospedagem.estado]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
       <section className="space-y-4">
