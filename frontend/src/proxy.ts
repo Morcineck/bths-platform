@@ -27,6 +27,7 @@ export const config = {
     "/check-in/:path*",
     "/hospedagens/:path*",
     "/quartos/:path*",
+    "/viagens/:path*",
     "/app/:path*",
   ],
 };
