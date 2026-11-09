@@ -3,6 +3,7 @@
 import {
   FormEvent,
   Suspense,
+  useEffect,
   useState,
 } from "react";
 
@@ -19,6 +20,7 @@ import { Input } from "@/components/ui/Input";
 
 import {
   LoginBloqueadoError,
+  buscarSessaoAtiva,
   buscarUsuarioAutenticado,
   login,
 } from "@/features/auth/services/authService";
@@ -37,6 +39,25 @@ function LoginContent() {
 
   const [carregando, setCarregando] =
     useState(false);
+
+  useEffect(() => {
+    async function redirecionarSeAutenticado() {
+      const usuario =
+        await buscarSessaoAtiva();
+
+      if (!usuario) {
+        return;
+      }
+
+      router.replace(
+        usuario.perfil === "HOSPEDE"
+          ? "/app"
+          : "/dashboard",
+      );
+    }
+
+    redirecionarSeAutenticado();
+  }, [router]);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
