@@ -535,7 +535,7 @@ export default function NovaHospedagemPage() {
 
             <input
               id="imagemUrl"
-              type="url"
+              type="text"
               value={imagemUrl}
               onChange={(event) =>
                 setImagemUrl(
@@ -543,7 +543,7 @@ export default function NovaHospedagemPage() {
                 )
               }
               disabled={salvando}
-              placeholder="https://..."
+              placeholder="https://... ou /hospedagem/arquivo.webp"
               className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
