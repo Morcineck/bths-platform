@@ -318,7 +318,7 @@ export default function AppHospedePage() {
         >
           <div className="relative min-h-60 overflow-hidden">
             <Image
-              src="/viagem/hero-viagem.jpg"
+              src="/viagem/hero-viagem.webp"
               alt=""
               fill
               priority
