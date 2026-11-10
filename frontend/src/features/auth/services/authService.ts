@@ -80,6 +80,25 @@ export async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
   return response.json();
 }
 
+export async function buscarSessaoAtiva(): Promise<UsuarioAutenticado | null> {
+  try {
+    const response = await fetch(
+      `${API_URL}/api/auth/me`,
+      {
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function logout(): Promise<void> {
   await inicializarCsrf();
 

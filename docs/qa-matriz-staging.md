@@ -90,19 +90,20 @@ O ADMIN é usado no desktop; os testes de celular focaram no hóspede e no STAFF
 
 | # | Achado | Gravidade | Issue |
 |---|---|---|---|
-| 1 | Dashboard trava em "Carregando dashboard..." sem viagem cadastrada | baixo | #151 |
-| 2 | Não existe tela para criar viagem | bloqueador para produção | #148 |
+| 1 | Dashboard trava em "Carregando dashboard..." sem viagem cadastrada | baixo | corrigido na #151 |
+| 2 | Não existe tela para criar viagem | bloqueador para produção | corrigido na #148 (PRs #158 e #159) |
 | 3 | Não existe tela de usuários (STAFF só por API) | alto | #149 |
 | 4 | Lista de hóspedes quebrava com telefone nulo | bloqueador | corrigido no PR #144 e confirmado no staging |
-| 6 | Não existe tela para criar o traslado individual, que é a vaga do hóspede numa operação | bloqueador para produção | #147 |
-| 7 | Usuário logado que abre `/login` vê o formulário | baixo | #151 |
+| 6 | Não existe tela para criar o traslado individual, que é a vaga do hóspede numa operação | bloqueador para produção | corrigido na #147 (PR #160) |
+| 7 | Usuário logado que abre `/login` vê o formulário | baixo | corrigido na #151 |
 | 8 | Detalhe do hóspede leva cerca de 8 s no staging | observar | sem issue |
-| 9 | `/app/viagem` mostra o endereço da viagem (vazio) em vez do da hospedagem | baixo | #151 |
-| 10 | STAFF vê ações de ADMIN em `/traslados` e `/veiculos` (backend bloqueia) | médio | #150 |
-| 11 | Horários gerados pelo servidor em UTC (check-in, histórico de status) | alto | #146 |
-| 12 | STAFF pode escrever pela API em rotas que devem ser só do ADMIN (viagem, quarto, hospedagem, agenda, excluir aviso, criar traslado) | alto (permissão) | #148 e #152 |
-| 13 | Leitor de QR do check-in abre a câmera frontal no iPhone e no tablet | médio | #153 |
+| 9 | `/app/viagem` mostra o endereço da viagem (vazio) em vez do da hospedagem | baixo | corrigido na #151 |
+| 10 | STAFF vê ações de ADMIN em `/traslados` e `/veiculos` (backend bloqueia) | médio | corrigido na #150 (PRs #163 e #164) |
+| 11 | Horários gerados pelo servidor em UTC (check-in, histórico de status) | alto | corrigido na #146 (PR #157) |
+| 12 | STAFF pode escrever pela API em rotas que devem ser só do ADMIN (viagem, quarto, hospedagem, agenda, excluir aviso, criar traslado) | alto (permissão) | corrigido na #148 e na #152 (PRs #158 e #162) |
+| 13 | Leitor de QR do check-in abre a câmera frontal no iPhone e no tablet | médio | corrigido na #153 (PR #165), validado no iPhone e no tablet Android |
 
 O achado 5 (perfil não checado no `proxy.ts`) foi verificado e não gerou falha de segurança; o efeito de interface está no achado 10.
+A matriz acima registra o resultado da execução de 30/10/2026. A situação atual de cada achado está na coluna "Issue" desta tabela (atualizada em 09/11/2026).
 
 Fora da matriz, a imagem da viagem no hero da Home do hóspede, prevista no protótipo, foi registrada na #154.

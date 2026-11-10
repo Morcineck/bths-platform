@@ -9,6 +9,8 @@ import {
   Bus,
   CheckCircle2,
   Clock3,
+  Plane,
+  Plus,
   Users,
 } from "lucide-react";
 
@@ -18,6 +20,7 @@ import { buscarDashboard } from "@/features/dashboard/services/dashboardService"
 import type { DashboardResponse } from "@/features/dashboard/types/dashboard";
 import { listarViagens } from "@/features/viagem/services/viagemService";
 import type { Viagem } from "@/features/viagem/types/viagem";
+import { useIsAdmin } from "@/features/auth/context/UsuarioAutenticadoContext";
 
 export default function DashboardPage() {
   const [dashboard, setDashboard] =
@@ -34,6 +37,8 @@ export default function DashboardPage() {
 
   const [erro, setErro] =
     useState("");
+
+  const isAdmin = useIsAdmin();
 
   useEffect(() => {
     async function carregarViagens() {
@@ -62,6 +67,8 @@ export default function DashboardPage() {
           setViagemAtivaId(
             viagemPreferencial.id,
           );
+        } else {
+          setCarregando(false);
         }
       } catch {
         setErro(
@@ -119,6 +126,54 @@ export default function DashboardPage() {
       >
         {erro}
       </p>
+    );
+  }
+
+  if (!dashboard && viagens.length === 0) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Dashboard"
+          description="Visão geral da operação da Beat Trips."
+        />
+
+        <div className="rounded-2xl border border-border bg-surface/40 p-5 shadow-soft">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted">
+              <Plane
+                size={19}
+                strokeWidth={1.9}
+              />
+            </span>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground">
+                Nenhuma viagem cadastrada
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted">
+                {isAdmin
+                  ? "Cadastre a primeira viagem para acompanhar hóspedes, quartos e traslados por aqui."
+                  : "Assim que um administrador cadastrar uma viagem, a operação aparece aqui."}
+              </p>
+
+              {isAdmin && (
+                <Link
+                  href="/viagens/nova"
+                  className="gradient-brand mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.99]"
+                >
+                  <Plus
+                    size={18}
+                    strokeWidth={1.9}
+                  />
+
+                  Nova viagem
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
