@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import {
@@ -316,9 +317,19 @@ export default function AppHospedePage() {
           className="group relative block overflow-hidden rounded-3xl border border-border bg-surface shadow-soft"
         >
           <div className="relative min-h-60 overflow-hidden">
+            <Image
+              src="/viagem/hero-viagem.webp"
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover opacity-60 transition-transform duration-500 group-hover:scale-[1.02]"
+            />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,oklch(0.66_0.26_340_/_35%),transparent_42%),radial-gradient(circle_at_bottom_left,oklch(0.7_0.19_245_/_24%),transparent_40%)]" />
 
             <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-transparent to-magenta/15" />
+
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
 
             <div className="relative flex min-h-60 flex-col justify-between p-4">
               <div>

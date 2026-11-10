@@ -766,7 +766,7 @@ export default function EditarHospedagemPage() {
 
             <input
               id="imagemUrl"
-              type="url"
+              type="text"
               value={imagemUrl}
               onChange={(event) =>
                 setImagemUrl(
