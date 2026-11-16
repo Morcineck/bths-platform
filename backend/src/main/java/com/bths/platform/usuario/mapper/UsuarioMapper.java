@@ -13,6 +13,7 @@ public class UsuarioMapper {
 
         response.setId(usuario.getId());
         response.setNome(usuario.getNome());
+        response.setEmail(usuario.getEmail());
         response.setPerfil(usuario.getPerfil());
         response.setAtivo(usuario.isAtivo());
 

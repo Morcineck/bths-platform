@@ -1,5 +1,6 @@
 package com.bths.platform.usuario;
 
+import com.bths.platform.usuario.dto.UsuarioAtualizarRequest;
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Usuários", description = "Gestão administrativa das contas de acesso e perfis do BTHS.")
@@ -34,6 +36,11 @@ public class UsuarioController {
                 .body(response);
     }
 
+    @GetMapping
+    public ResponseEntity<List<UsuarioResponse>> listarEquipe() {
+        return ResponseEntity.ok(usuarioService.listarEquipe());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponse> buscarUsuarioPorId(
             @PathVariable UUID id
@@ -43,5 +50,14 @@ public class UsuarioController {
                 usuarioService.buscarUsuarioPorId(id);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(
+            @PathVariable UUID id,
+            @Valid @RequestBody UsuarioAtualizarRequest request
+    ) {
+
+        return ResponseEntity.ok(usuarioService.atualizarUsuario(id, request));
     }
 }

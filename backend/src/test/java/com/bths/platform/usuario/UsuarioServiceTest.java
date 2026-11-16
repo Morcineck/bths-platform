@@ -1,10 +1,13 @@
 package com.bths.platform.usuario;
 
-import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
-import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
+import com.bths.platform.usuario.dto.UsuarioAtualizarRequest;
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.enums.PerfilUsuario;
+import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
+import com.bths.platform.usuario.exception.OperacaoUsuarioNaoPermitidaException;
+import com.bths.platform.usuario.exception.PerfilUsuarioInvalidoException;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.usuario.mapper.UsuarioMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -171,4 +175,109 @@ class UsuarioServiceTest {
         verify(usuarioMapper, never())
                 .paraResponse(any(Usuario.class));
     }
+
+    private Usuario criarUsuario(PerfilUsuario perfil, boolean ativo, String email) {
+        Usuario usuario = new Usuario();
+        usuario.setId(UUID.randomUUID());
+        usuario.setNome("Usuário " + perfil);
+        usuario.setEmail(email);
+        usuario.setPerfil(perfil);
+        usuario.setAtivo(ativo);
+        return usuario;
+    }
+
+    @Test
+    void deveListarSomenteUsuariosDaEquipe() {
+        Usuario admin = criarUsuario(PerfilUsuario.ADMIN, true, "admin@beattrips.com");
+        Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
+
+        when(usuarioRepository.findByPerfilInOrderByNomeAsc(
+                List.of(PerfilUsuario.ADMIN, PerfilUsuario.STAFF)))
+                .thenReturn(List.of(admin, staff));
+        when(usuarioMapper.paraResponse(any(Usuario.class)))
+                .thenReturn(new UsuarioResponse());
+
+        List<UsuarioResponse> equipe = usuarioService.listarEquipe();
+
+        assertEquals(2, equipe.size());
+        verify(usuarioRepository).findByPerfilInOrderByNomeAsc(
+                List.of(PerfilUsuario.ADMIN, PerfilUsuario.STAFF));
+    }
+
+    @Test
+    void deveRecusarCadastroComPerfilHospede() {
+        UsuarioRequest request = new UsuarioRequest();
+        request.setNome("Hóspede");
+        request.setEmail("hospede@beattrips.com");
+        request.setSenha("senha123");
+        request.setPerfil(PerfilUsuario.HOSPEDE);
+
+        assertThrows(PerfilUsuarioInvalidoException.class,
+                () -> usuarioService.cadastrarUsuario(request));
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void deveAtualizarUsuarioDaEquipe() {
+        Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
+
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest();
+        request.setNome("Staff Editado");
+        request.setEmail("novo@beattrips.com");
+        request.setPerfil(PerfilUsuario.STAFF);
+
+        when(usuarioRepository.findById(staff.getId())).thenReturn(Optional.of(staff));
+        when(usuarioRepository.existsByEmailAndIdNot("novo@beattrips.com", staff.getId()))
+                .thenReturn(false);
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
+        when(usuarioMapper.paraResponse(any(Usuario.class))).thenReturn(new UsuarioResponse());
+
+        usuarioService.atualizarUsuario(staff.getId(), request);
+
+        verify(usuarioRepository).save(argThat(u ->
+                u.getNome().equals("Staff Editado")
+                        && u.getEmail().equals("novo@beattrips.com")
+                        && u.getPerfil() == PerfilUsuario.STAFF));
+    }
+
+    @Test
+    void deveRecusarAtualizacaoComEmailDeOutroUsuario() {
+        Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
+
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest();
+        request.setNome("Staff");
+        request.setEmail("ocupado@beattrips.com");
+        request.setPerfil(PerfilUsuario.STAFF);
+
+        when(usuarioRepository.findById(staff.getId())).thenReturn(Optional.of(staff));
+        when(usuarioRepository.existsByEmailAndIdNot("ocupado@beattrips.com", staff.getId()))
+                .thenReturn(true);
+
+        assertThrows(EmailUsuarioJaCadastradoException.class,
+                () -> usuarioService.atualizarUsuario(staff.getId(), request));
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
+    void deveImpedirRebaixarUltimoAdminAtivo() {
+        Usuario admin = criarUsuario(PerfilUsuario.ADMIN, true, "admin@beattrips.com");
+
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest();
+        request.setNome("Admin");
+        request.setEmail("admin@beattrips.com");
+        request.setPerfil(PerfilUsuario.STAFF);
+
+        when(usuarioRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+        when(usuarioRepository.existsByEmailAndIdNot("admin@beattrips.com", admin.getId()))
+                .thenReturn(false);
+        when(usuarioRepository.countByPerfilAndAtivoTrue(PerfilUsuario.ADMIN)).thenReturn(1L);
+
+        assertThrows(OperacaoUsuarioNaoPermitidaException.class,
+                () -> usuarioService.atualizarUsuario(admin.getId(), request));
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
 }

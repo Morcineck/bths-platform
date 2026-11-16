@@ -110,4 +110,26 @@ class UsuarioControllerTest {
         verify(usuarioService)
                 .cadastrarUsuario(any());
     }
+
+    @Test
+    void deveRetornar400QuandoSenhaTiverMenosDe8Caracteres() throws Exception {
+
+        String json = """
+        {
+            "nome": "Robson",
+            "email": "robson@email.com",
+            "senha": "1234567",
+            "perfil": "STAFF"
+        }
+        """;
+
+        mockMvc.perform(
+                        post("/api/usuarios")
+                                .contentType("application/json")
+                                .content(json)
+                )
+                .andExpect(status().isBadRequest());
+
+        verify(usuarioService, never()).cadastrarUsuario(any());
+    }
 }
