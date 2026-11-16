@@ -21,7 +21,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
-    private static final List<PerfilUsuario> PERFIL_EQUIPE =
+    private static final List<PerfilUsuario> PERFIS_EQUIPE =
             List.of(PerfilUsuario.ADMIN, PerfilUsuario.STAFF);
 
     public UsuarioService(
@@ -60,14 +60,14 @@ public class UsuarioService {
 
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException(
-                                "Usuario não encontrado!"
+                                "Usuário não encontrado!"
                         )
                 );
         return usuarioMapper.paraResponse(usuario);
     }
 
     public List<UsuarioResponse> listarEquipe() {
-        return usuarioRepository.findByPerfilInOrderByNomeAsc(PERFIL_EQUIPE)
+        return usuarioRepository.findByPerfilInOrderByNomeAsc(PERFIS_EQUIPE)
                 .stream()
                 .map(usuarioMapper::paraResponse)
                 .toList();
@@ -119,7 +119,7 @@ public class UsuarioService {
     }
 
     private void validarPerfilDaEquipe(PerfilUsuario perfil) {
-        if (!PERFIL_EQUIPE.contains(perfil)) {
+        if (!PERFIS_EQUIPE.contains(perfil)) {
             throw new PerfilUsuarioInvalidoException(
                     "Contas de hóspede são gerenciadas pelo acesso BTHS no detalhe do hóspede."
             );

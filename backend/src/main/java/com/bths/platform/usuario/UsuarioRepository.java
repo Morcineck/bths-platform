@@ -13,7 +13,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
     boolean existsByEmail(String email);
 
-    List<Usuario> findByPerfilInOrderByNomeAsc(List<PerfilUsuario>  perfil);
+    List<Usuario> findByPerfilInOrderByNomeAsc(List<PerfilUsuario> perfis);
 
     boolean existsByEmailAndIdNot(String email, UUID id);
 
