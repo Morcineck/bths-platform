@@ -8,6 +8,7 @@ public class UsuarioResponse {
 
     private UUID id;
     private String nome;
+    private String email;
     private PerfilUsuario perfil;
     private boolean ativo;
 
@@ -41,5 +42,13 @@ public class UsuarioResponse {
 
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

@@ -21,6 +21,8 @@ import com.bths.platform.security.exception.CredenciaisInvalidasException;
 import com.bths.platform.security.exception.LoginBloqueadoException;
 import com.bths.platform.traslado.exception.*;
 import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
+import com.bths.platform.usuario.exception.OperacaoUsuarioNaoPermitidaException;
+import com.bths.platform.usuario.exception.PerfilUsuarioInvalidoException;
 import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
 import com.bths.platform.veiculo.exception.VeiculoJaCadastradoException;
 import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
@@ -535,4 +537,34 @@ public class GlobalExceptionHandler {
                 .body(erro);
     }
 
+    @ExceptionHandler(PerfilUsuarioInvalidoException.class)
+    public ResponseEntity<Map<String, Object>> tratarPerfilUsuarioInvalido(
+            PerfilUsuarioInvalidoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Bad Request");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
+    @ExceptionHandler(OperacaoUsuarioNaoPermitidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarOperacaoUsuarioNaoPermitida(
+            OperacaoUsuarioNaoPermitidaException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
 }
