@@ -76,9 +76,9 @@ public class UsuarioService {
     public UsuarioResponse atualizarUsuario(UUID id, UsuarioAtualizarRequest request) {
         Usuario usuario = buscarUsuarioDaEquipe(id);
 
-        validarPerfilDaEquipe(request.getPerfil());
+        validarPerfilDaEquipe(request.perfil());
 
-        if (usuarioRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
+        if (usuarioRepository.existsByEmailAndIdNot(request.email(), id)) {
             throw new EmailUsuarioJaCadastradoException(
                     "Já existe um usuário cadastrado com esse e-mail!"
             );
@@ -86,15 +86,15 @@ public class UsuarioService {
 
         boolean deixaDeSerAdmin =
                 usuario.getPerfil() == PerfilUsuario.ADMIN
-                        && request.getPerfil() != PerfilUsuario.ADMIN;
+                        && request.perfil() != PerfilUsuario.ADMIN;
 
         if (deixaDeSerAdmin && usuario.isAtivo()) {
             validarQueNaoEhUltimoAdminAtivo();
         }
 
-        usuario.setNome(request.getNome());
-        usuario.setEmail(request.getEmail());
-        usuario.setPerfil(request.getPerfil());
+        usuario.setNome(request.nome());
+        usuario.setEmail(request.email());
+        usuario.setPerfil(request.perfil());
 
         return usuarioMapper.paraResponse(usuarioRepository.save(usuario));
     }

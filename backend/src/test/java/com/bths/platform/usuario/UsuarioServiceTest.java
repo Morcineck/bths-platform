@@ -222,10 +222,8 @@ class UsuarioServiceTest {
     void deveAtualizarUsuarioDaEquipe() {
         Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
 
-        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest();
-        request.setNome("Staff Editado");
-        request.setEmail("novo@beattrips.com");
-        request.setPerfil(PerfilUsuario.STAFF);
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest(
+        "Staff Editado","novo@beattrips.com",PerfilUsuario.STAFF);
 
         when(usuarioRepository.findById(staff.getId())).thenReturn(Optional.of(staff));
         when(usuarioRepository.existsByEmailAndIdNot("novo@beattrips.com", staff.getId()))
@@ -245,10 +243,8 @@ class UsuarioServiceTest {
     void deveRecusarAtualizacaoComEmailDeOutroUsuario() {
         Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
 
-        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest();
-        request.setNome("Staff");
-        request.setEmail("ocupado@beattrips.com");
-        request.setPerfil(PerfilUsuario.STAFF);
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest(
+        "Staff","ocupado@beattrips.com",PerfilUsuario.STAFF);
 
         when(usuarioRepository.findById(staff.getId())).thenReturn(Optional.of(staff));
         when(usuarioRepository.existsByEmailAndIdNot("ocupado@beattrips.com", staff.getId()))
@@ -264,10 +260,8 @@ class UsuarioServiceTest {
     void deveImpedirRebaixarUltimoAdminAtivo() {
         Usuario admin = criarUsuario(PerfilUsuario.ADMIN, true, "admin@beattrips.com");
 
-        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest();
-        request.setNome("Admin");
-        request.setEmail("admin@beattrips.com");
-        request.setPerfil(PerfilUsuario.STAFF);
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest(
+        "Admin","admin@beattrips.com",PerfilUsuario.STAFF);
 
         when(usuarioRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
         when(usuarioRepository.existsByEmailAndIdNot("admin@beattrips.com", admin.getId()))
@@ -280,4 +274,29 @@ class UsuarioServiceTest {
         verify(usuarioRepository, never()).save(any());
     }
 
+    @Test
+    void deveLancarExcecaoAoAtualizarUsuarioInexistente() {
+        UUID id = UUID.randomUUID();
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest(
+                "Staff", "staff@beattrips.com", PerfilUsuario.STAFF);
+
+        when(usuarioRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoEncontradoException.class,
+                () -> usuarioService.atualizarUsuario(id, request));
+    }
+
+    @Test
+    void deveRecusarAtualizacaoDeContaDeHospede() {
+        Usuario hospede = criarUsuario(PerfilUsuario.HOSPEDE, true, "hospede@beattrips.com");
+        UsuarioAtualizarRequest request = new UsuarioAtualizarRequest(
+                "Hóspede", "hospede@beattrips.com", PerfilUsuario.STAFF);
+
+        when(usuarioRepository.findById(hospede.getId())).thenReturn(Optional.of(hospede));
+
+        assertThrows(PerfilUsuarioInvalidoException.class,
+                () -> usuarioService.atualizarUsuario(hospede.getId(), request));
+
+        verify(usuarioRepository, never()).save(any());
+    }
 }

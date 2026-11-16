@@ -10,6 +10,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.bths.platform.usuario.exception.OperacaoUsuarioNaoPermitidaException;
+import com.bths.platform.usuario.exception.PerfilUsuarioInvalidoException;
+import java.util.List;
+import java.util.UUID;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -131,5 +138,89 @@ class UsuarioControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(usuarioService, never()).cadastrarUsuario(any());
+    }
+
+    @Test
+    void deveListarEquipeERetornar200() throws Exception {
+        UsuarioResponse staff = new UsuarioResponse();
+        staff.setNome("Staff QA");
+        staff.setEmail("staff@beattrips.com");
+        staff.setPerfil(PerfilUsuario.STAFF);
+        staff.setAtivo(true);
+
+        when(usuarioService.listarEquipe()).thenReturn(List.of(staff));
+
+        mockMvc.perform(get("/api/usuarios"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].nome").value("Staff QA"))
+                .andExpect(jsonPath("$[0].email").value("staff@beattrips.com"));
+    }
+
+    @Test
+    void deveAtualizarUsuarioERetornar200() throws Exception {
+        UUID id = UUID.randomUUID();
+        UsuarioResponse response = new UsuarioResponse();
+        response.setNome("Staff Editado");
+
+        when(usuarioService.atualizarUsuario(eq(id), any())).thenReturn(response);
+
+        String json = """
+        {
+            "nome": "Staff Editado",
+            "email": "staff@beattrips.com",
+            "perfil": "STAFF"
+        }
+        """;
+
+        mockMvc.perform(put("/api/usuarios/" + id)
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Staff Editado"));
+    }
+
+    @Test
+    void deveRetornar409QuandoOperacaoNaoForPermitida() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        when(usuarioService.atualizarUsuario(eq(id), any()))
+                .thenThrow(new OperacaoUsuarioNaoPermitidaException(
+                        "O sistema precisa manter pelo menos um ADMIN ativo."));
+
+        String json = """
+        {
+            "nome": "Admin",
+            "email": "admin@beattrips.com",
+            "perfil": "STAFF"
+        }
+        """;
+
+        mockMvc.perform(put("/api/usuarios/" + id)
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.mensagem")
+                        .value("O sistema precisa manter pelo menos um ADMIN ativo."));
+    }
+
+    @Test
+    void deveRetornar400QuandoPerfilForHospede() throws Exception {
+        when(usuarioService.cadastrarUsuario(any()))
+                .thenThrow(new PerfilUsuarioInvalidoException(
+                        "Contas de hóspede são gerenciadas pelo acesso BTHS no detalhe do hóspede."));
+
+        String json = """
+        {
+            "nome": "Hóspede",
+            "email": "hospede@beattrips.com",
+            "senha": "senha123",
+            "perfil": "HOSPEDE"
+        }
+        """;
+
+        mockMvc.perform(post("/api/usuarios")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isBadRequest());
     }
 }
