@@ -66,7 +66,7 @@ Os `images.remotePatterns` existentes devem ser preservados.
 
 O perfil `staging` utiliza Flyway e Hibernate `validate`.
 
-Nunca conectar testes Docker ao MySQL local original.
+Nunca conectar testes Docker ao banco local de desenvolvimento.
 
 ### Frontend
 
@@ -113,12 +113,12 @@ docker stop bths-frontend-smoke
 
 A execução do backend requer um datasource.
 
-Na issue #65 foi utilizado MySQL 8.4 temporário, em rede Docker interna, com armazenamento `tmpfs`.
+Na issue #65 foi utilizado MySQL 8.4 temporário, em rede Docker interna, com armazenamento `tmpfs`. Desde a issue #172 o banco é PostgreSQL, e o procedimento abaixo já usa PostgreSQL 17.
 
 Procedimento de validação:
 
 1. Criar uma rede Docker com `--internal`.
-2. Iniciar MySQL temporário sem publicar a porta 3306.
+2. Iniciar PostgreSQL temporário sem publicar a porta 5432.
 3. Gerar credenciais e uma chave JWT temporárias.
 4. Iniciar o backend com perfil `staging`.
 5. Configurar explicitamente a URL JDBC para o banco temporário.
@@ -129,7 +129,7 @@ Procedimento de validação:
 A URL JDBC utilizada foi:
 
 ```text
-jdbc:mysql://bths-issue65-mysql:3306/bths_issue65
+jdbc:postgresql://bths-issue65-postgres:5432/bths_issue65
 ```
 
 A execução utilizou `SPRING_DATASOURCE_URL` e `BTHS_DB_URL` apontando para esse banco.
@@ -144,7 +144,6 @@ Executar no PowerShell, sem utilizar credenciais do ambiente original.
 docker network create --driver bridge --internal bths-issue65-isolated
 
 # Gerar credenciais temporárias
-$BthsTestRootPassword = [guid]::NewGuid().ToString("N")
 $BthsTestAppPassword = [guid]::NewGuid().ToString("N")
 
 # Gerar chave JWT temporária de 256 bits
@@ -154,37 +153,36 @@ $rng.GetBytes($jwtBytes)
 $rng.Dispose()
 $BthsTestJwtSecret = [Convert]::ToBase64String($jwtBytes)
 
-# Iniciar MySQL descartável
+# Iniciar PostgreSQL descartável
 docker run -d --rm `
-  --name bths-issue65-mysql `
+  --name bths-issue65-postgres `
   --network bths-issue65-isolated `
-  --mount "type=tmpfs,destination=/var/lib/mysql,tmpfs-size=1073741824" `
-  -e "MYSQL_ROOT_PASSWORD=$BthsTestRootPassword" `
-  -e "MYSQL_DATABASE=bths_issue65" `
-  -e "MYSQL_USER=bths_test" `
-  -e "MYSQL_PASSWORD=$BthsTestAppPassword" `
-  mysql:8.4
+  --mount "type=tmpfs,destination=/var/lib/postgresql/data,tmpfs-size=1073741824" `
+  -e "POSTGRES_DB=bths_issue65" `
+  -e "POSTGRES_USER=bths_test" `
+  -e "POSTGRES_PASSWORD=$BthsTestAppPassword" `
+  postgres:17
 
 # Conferir inicialização
-docker logs --tail 40 bths-issue65-mysql
+docker logs --tail 40 bths-issue65-postgres
 ```
 
-Aguardar a mensagem `ready for connections` antes de iniciar o backend.
+Aguardar a mensagem `database system is ready to accept connections` antes de iniciar o backend.
 
 Após os testes e a remoção do container do backend:
 
 ```powershell
-docker stop bths-issue65-mysql
+docker stop bths-issue65-postgres
 docker network rm bths-issue65-isolated
 ```
 
-O armazenamento temporário será descartado ao encerrar o MySQL. Não há publicação de portas no host.
+O armazenamento temporário será descartado ao encerrar o PostgreSQL. Não há publicação de portas no host.
 
 ### Executar o backend no ambiente isolado
 
 Pré-requisitos:
 - Rede `bths-issue65-isolated` criada com `--internal`.
-- Container `bths-issue65-mysql` iniciado nessa rede.
+- Container `bths-issue65-postgres` iniciado nessa rede.
 - Banco `bths_issue65` disponível.
 - Variáveis temporárias `$BthsTestAppPassword` e `$BthsTestJwtSecret` previamente geradas no PowerShell.
 
@@ -204,8 +202,8 @@ docker run -d `
   --name bths-issue65-backend `
   --network bths-issue65-isolated `
   -e "SPRING_PROFILES_ACTIVE=staging" `
-  -e "BTHS_DB_URL=jdbc:mysql://bths-issue65-mysql:3306/bths_issue65" `
-  -e "SPRING_DATASOURCE_URL=jdbc:mysql://bths-issue65-mysql:3306/bths_issue65" `
+  -e "BTHS_DB_URL=jdbc:postgresql://bths-issue65-postgres:5432/bths_issue65" `
+  -e "SPRING_DATASOURCE_URL=jdbc:postgresql://bths-issue65-postgres:5432/bths_issue65" `
   -e "DB_USERNAME=bths_test" `
   -e "DB_PASSWORD=$BthsTestAppPassword" `
   -e "JWT_SECRET=$BthsTestJwtSecret" `
@@ -256,7 +254,7 @@ A receita completa de orquestração será consolidada na issue #66.
 - `/api/auth/csrf`: HTTP 200.
 - `/api/auth/me` sem autenticação: HTTP 401.
 
-Os testes do backend foram realizados em banco temporário, não no MySQL original.
+Os testes do backend foram realizados em banco temporário MySQL 8.4 (issue #65), não no banco local de desenvolvimento.
 
 ## 8. Segurança e limitações
 

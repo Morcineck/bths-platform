@@ -1,10 +1,10 @@
 <#
-Backup cifrado do MySQL do BTHS (issue #78).
+Backup cifrado do PostgreSQL do BTHS (issues #78 e #172).
 
 Le a conexao de variaveis de ambiente:
   BTHS_BACKUP_HOST, BTHS_BACKUP_PORT, BTHS_BACKUP_DB, BTHS_BACKUP_USER,
-  MYSQL_PWD (senha do usuario de backup), BTHS_BACKUP_AGE_RECIPIENT (chave publica age)
-  BTHS_BACKUP_SSL_MODE (opcional, padrao REQUIRED)
+  PGPASSWORD (senha do usuario de backup), BTHS_BACKUP_AGE_RECIPIENT (chave publica age)
+  BTHS_BACKUP_SSL_MODE (opcional, padrao require)
 
 Gera: dump -> cifra com age -> grava no destino local e no Drive.
 Mantem os ultimos $Retencao diarios e os 3 mensais mais recentes.
@@ -18,24 +18,24 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-foreach ($v in 'BTHS_BACKUP_HOST', 'BTHS_BACKUP_PORT', 'BTHS_BACKUP_DB', 'BTHS_BACKUP_USER', 'MYSQL_PWD', 'BTHS_BACKUP_AGE_RECIPIENT') {
+foreach ($v in 'BTHS_BACKUP_HOST', 'BTHS_BACKUP_PORT', 'BTHS_BACKUP_DB', 'BTHS_BACKUP_USER', 'PGPASSWORD', 'BTHS_BACKUP_AGE_RECIPIENT') {
     if (-not (Test-Path "env:$v")) { throw "Variavel de ambiente ausente: $v" }
 }
 if (-not (Get-Command age -ErrorAction SilentlyContinue)) { throw 'age nao encontrado no PATH' }
 
-$ssl = if ($env:BTHS_BACKUP_SSL_MODE) { $env:BTHS_BACKUP_SSL_MODE } else { 'REQUIRED' }
+$ssl = if ($env:BTHS_BACKUP_SSL_MODE) { $env:BTHS_BACKUP_SSL_MODE } else { 'require' }
 $agora = Get-Date
 $arquivo = "bths-$Ambiente-$($agora.ToString('yyyyMMdd-HHmmss')).sql.age"
 $tmp = Join-Path $env:TEMP ("bths-backup-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $tmp, $DestinoLocal, $DestinoDrive | Out-Null
 
 try {
-    $dump = "mysqldump -h $($env:BTHS_BACKUP_HOST) -P $($env:BTHS_BACKUP_PORT) -u $($env:BTHS_BACKUP_USER) --ssl-mode=$ssl --single-transaction --routines --triggers --no-tablespaces --set-gtid-purged=OFF $($env:BTHS_BACKUP_DB) > /out/dump.sql"
-    docker run --rm -e MYSQL_PWD -v "${tmp}:/out" mysql:8.4 sh -c $dump
-    if ($LASTEXITCODE -ne 0) { throw "mysqldump falhou (codigo $LASTEXITCODE)" }
+    $dump = "pg_dump -h $($env:BTHS_BACKUP_HOST) -p $($env:BTHS_BACKUP_PORT) -U $($env:BTHS_BACKUP_USER) -d $($env:BTHS_BACKUP_DB) --no-owner --no-privileges -f /out/dump.sql"
+    docker run --rm -e PGPASSWORD -e "PGSSLMODE=$ssl" -v "${tmp}:/out" postgres:17 sh -c $dump
+    if ($LASTEXITCODE -ne 0) { throw "pg_dump falhou (codigo $LASTEXITCODE)" }
 
     $fim = Get-Content (Join-Path $tmp 'dump.sql') -Tail 5
-    if (-not ($fim -match 'Dump completed')) { throw 'dump incompleto: marcador final ausente' }
+    if (-not ($fim -match 'PostgreSQL database dump complete')) { throw 'dump incompleto: marcador final ausente' }
 
     $saida = Join-Path $DestinoLocal $arquivo
     age -r $env:BTHS_BACKUP_AGE_RECIPIENT -o $saida (Join-Path $tmp 'dump.sql')

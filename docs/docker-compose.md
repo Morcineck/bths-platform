@@ -3,7 +3,7 @@
 
 ## Objetivo
 
-Executar frontend Next.js, backend Spring Boot e MySQL
+Executar frontend Next.js, backend Spring Boot e PostgreSQL
 em ambiente Docker Compose independente.
 
 Issue: #66
@@ -14,7 +14,7 @@ Issue: #66
 |---|---|---|
 | frontend | Next.js 16 / Node 22 | 127.0.0.1:3000 |
 | backend | Spring Boot 4.1 / Java 17 | 8080 interna |
-| mysql | MySQL 8.4 | 3306 interna |
+| postgres | PostgreSQL 17 | 5432 interna |
 
 O frontend encaminha as chamadas /api para o backend
 por meio dos rewrites do Next.js.
@@ -41,7 +41,7 @@ exclusivos deste ambiente.
 BTHS_COMPOSE_JWT_SECRET deve conter uma chave aleatória de pelo menos 256 bits, codificada em Base64.
 O Docker Compose repassa seu valor ao backend pela variável JWT_SECRET.
 
-O MySQL do Compose tem dois usuários, criados por docker/mysql/criar-usuarios.sh:
+O PostgreSQL do Compose tem dois usuários, criados por docker/postgres/criar-usuarios.sh:
 bths_compose (aplicação, só SELECT, INSERT, UPDATE e DELETE) e
 bths_compose_migracao (Flyway, com permissão de DDL).
 BTHS_COMPOSE_DB_PASSWORD é a senha da aplicação e BTHS_COMPOSE_MIGRACAO_PASSWORD, a da migração.
@@ -66,7 +66,7 @@ docker compose --env-file .env.compose -f compose.yaml build
 docker compose --env-file .env.compose -f compose.yaml up -d --no-build
 ```
 
-O MySQL deve ficar saudável antes da inicialização
+O PostgreSQL deve ficar saudável antes da inicialização
 do backend.
 
 Acesse:
@@ -107,16 +107,16 @@ Banco: bths_compose
 
 Usuário: bths_compose
 
-Host interno: mysql
+Host interno: postgres
 
-Porta interna: 3306
+Porta interna: 5432
 
-Volume: bths-compose_bths_mysql_data
+Volume: bths-compose_bths_postgres_data
 
 O backend utiliza o perfil staging, Flyway habilitado
 e Hibernate configurado como validate.
 
-As migrações V1 e V2 foram validadas com sucesso.
+A migração V1 em PostgreSQL foi validada com sucesso (#172).
 
 ## Persistência
 
@@ -146,12 +146,12 @@ docker compose --env-file .env.compose -f compose.yaml logs --tail=100 backend
 
 ## Segurança e limitações
 
-- MySQL não possui portas publicadas no host.
+- PostgreSQL não possui portas publicadas no host.
 - Backend não possui porta publicada no host.
 - Frontend é publicado somente em 127.0.0.1:3000.
 - Credenciais são fornecidas externamente.
-- O MySQL original localhost:3306/bths_platform
-  não deve ser utilizado ou modificado.
+- O banco local de desenvolvimento localhost:5433/bths_platform
+  não deve ser utilizado pelo Compose.
 - O ambiente não representa homologação de produção.
 - Cookies Secure dependem de HTTPS. O Compose roda em HTTP e, por isso,
   define `BTHS_AUTH_COOKIE_SECURE=false`. As origens CORS do Compose vêm de
@@ -166,6 +166,15 @@ docker compose --env-file .env.compose -f compose.yaml logs --tail=100 backend
   do backend para iniciar.
 
 ## Validações realizadas
+
+Revalidação com PostgreSQL (#172), 25/11/2026:
+
+- Build Docker das imagens aprovado.
+- PostgreSQL 17 saudável, com os usuários criados pelo script.
+- Flyway V1 aplicada pelo usuário de migração.
+- Backend e frontend saudáveis.
+
+Validação original com MySQL 8.4 (#66):
 
 - Build Docker das imagens aprovado.
 - Inicialização dos três serviços aprovada.

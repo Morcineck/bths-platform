@@ -13,7 +13,7 @@ Issue: #67
 
 | Serviço | Verificação |
 |---|---|
-| MySQL 8.4 | Consulta SQL SELECT 1 |
+| PostgreSQL 17 | Consulta SQL SELECT 1 com o usuário da aplicação |
 | Spring Boot 4.1 | Spring Boot Actuator |
 | Next.js 16 | Endpoint GET /health |
 
@@ -59,7 +59,7 @@ responder a requisições HTTP.
 
 A sequência de inicialização é:
 
-1. MySQL atinge o estado healthy.
+1. PostgreSQL atinge o estado healthy.
 2. Backend atinge o estado healthy.
 3. Frontend é iniciado.
 4. Frontend atinge o estado healthy.
@@ -79,7 +79,7 @@ docker compose --env-file .env.compose -f compose.yaml ps
 
 Resultado esperado:
 
-- mysql: healthy
+- postgres: healthy
 - backend: healthy
 - frontend: healthy
 
@@ -90,7 +90,7 @@ Resultado esperado:
 - Autenticação das demais rotas preservada.
 - Frontend /health respondeu HTTP 200.
 - Cache-Control: no-store confirmado.
-- MySQL, backend e frontend atingiram healthy.
+- Banco, backend e frontend atingiram healthy (MySQL na validação original; PostgreSQL revalidado em 25/11/2026, #172).
 - Teste negativo do comando de Health Check do
   frontend retornou código de saída 1.
 - Teste positivo do frontend operacional retornou 0.
@@ -105,7 +105,7 @@ Resultado esperado:
 - A dependência service_healthy controla a ordem
   de inicialização, não a recuperação automática
   de serviços dependentes.
-- Os testes não simulam uma falha real do MySQL.
+- Os testes não simulam uma falha real do banco.
 - O Health Check não substitui observabilidade,
   logs, métricas ou alertas.
 - Homologação em staging real com HTTPS permanece pendente.
@@ -115,7 +115,7 @@ Resultado esperado:
 - Não expor detalhes internos do Actuator publicamente.
 - Não incluir credenciais nas respostas dos endpoints.
 - Manter os arquivos de ambiente fora do Git.
-- Não alterar o banco original localhost:3306/bths_platform.
+- Não alterar o banco local de desenvolvimento localhost:5433/bths_platform.
 
 ## Referências
 

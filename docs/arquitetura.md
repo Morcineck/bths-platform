@@ -8,7 +8,7 @@ O sistema é composto por:
 
 * backend REST desenvolvido em Java e Spring Boot;
 * frontend web mobile-first desenvolvido com Next.js;
-* banco de dados relacional MySQL;
+* banco de dados relacional PostgreSQL;
 * autenticação e autorização baseadas em Spring Security e JWT;
 * uma única aplicação frontend com experiências adaptadas aos perfis ADMIN, STAFF e HOSPEDE.
 
@@ -57,7 +57,7 @@ A arquitetura atual e planejada do produto pode ser representada da seguinte for
                                       Repositories
                                              |
                                              v
-                                           MySQL
+                                         PostgreSQL
 ```
 
 A aplicação é desenvolvida como um produto full-stack, mantendo frontend e backend separados por responsabilidade, mas versionados no mesmo repositório.
@@ -121,7 +121,7 @@ O backend utiliza atualmente:
 * JWT;
 * Bean Validation;
 * Hibernate;
-* MySQL;
+* PostgreSQL;
 * Lombok;
 * Maven;
 * JUnit;
@@ -260,7 +260,7 @@ Repository
 JPA / Hibernate
    |
    v
-MySQL
+PostgreSQL
 ```
 
 ---
@@ -821,7 +821,7 @@ A arquitetura de autenticação poderá ser refinada durante essa etapa sem dupl
 
 # 22. Banco de dados
 
-O banco de dados utilizado pelo backend é MySQL.
+O banco de dados utilizado pelo backend é PostgreSQL.
 
 A persistência é realizada através de:
 
@@ -832,7 +832,7 @@ Spring Data JPA
 Hibernate
       |
       v
-MySQL
+PostgreSQL
 ```
 
 O modelo de banco deve acompanhar os domínios realmente necessários à operação.
