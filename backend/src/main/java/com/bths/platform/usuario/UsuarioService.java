@@ -1,6 +1,7 @@
 package com.bths.platform.usuario;
 
 import com.bths.platform.usuario.dto.UsuarioAtualizarRequest;
+import com.bths.platform.usuario.dto.UsuarioRedefinirSenhaRequest;
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.enums.PerfilUsuario;
@@ -97,6 +98,35 @@ public class UsuarioService {
         usuario.setPerfil(request.perfil());
 
         return usuarioMapper.paraResponse(usuarioRepository.save(usuario));
+    }
+
+    public UsuarioResponse desativarUsuario(UUID id, String emailUsuarioLogado) {
+        Usuario usuario = buscarUsuarioDaEquipe(id);
+
+        if (usuario.getEmail().equalsIgnoreCase(emailUsuarioLogado)) {
+            throw new OperacaoUsuarioNaoPermitidaException(
+                    "Você não pode desativar a sua própria conta."
+            );
+        }
+
+        usuario.setAtivo(false);
+
+        return usuarioMapper.paraResponse(usuarioRepository.save(usuario));
+    }
+
+    public UsuarioResponse reativarUsuario(UUID id) {
+        Usuario usuario = buscarUsuarioDaEquipe(id);
+
+        usuario.setAtivo(true);
+        return usuarioMapper.paraResponse(usuarioRepository.save(usuario));
+    }
+
+    public void redefinirSenha(UUID id, UsuarioRedefinirSenhaRequest request) {
+        Usuario usuario = buscarUsuarioDaEquipe(id);
+
+        usuario.setSenha(passwordEncoder.encode(request.novaSenha()));
+
+        usuarioRepository.save(usuario);
     }
 
     private Usuario buscarUsuarioDaEquipe(UUID id) {

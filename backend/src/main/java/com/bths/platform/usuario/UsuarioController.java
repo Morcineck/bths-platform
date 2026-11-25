@@ -1,12 +1,14 @@
 package com.bths.platform.usuario;
 
 import com.bths.platform.usuario.dto.UsuarioAtualizarRequest;
+import com.bths.platform.usuario.dto.UsuarioRedefinirSenhaRequest;
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,5 +61,32 @@ public class UsuarioController {
     ) {
 
         return ResponseEntity.ok(usuarioService.atualizarUsuario(id, request));
+    }
+
+    @PatchMapping("/{id}/desativar")
+    public ResponseEntity<UsuarioResponse> desativarUsuario(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                usuarioService.desativarUsuario(id, authentication.getName()));
+    }
+
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<UsuarioResponse> reativarUsuario(
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(usuarioService.reativarUsuario(id));
+    }
+
+    @PutMapping("/{id}/senha")
+    public ResponseEntity<Void> redefinirSenha(
+            @PathVariable UUID id,
+            @Valid @RequestBody UsuarioRedefinirSenhaRequest request
+    ) {
+
+        usuarioService.redefinirSenha(id, request);
+
+        return ResponseEntity.noContent().build();
     }
 }
