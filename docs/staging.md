@@ -65,7 +65,6 @@ Frontend (`bths-staging-frontend`): `BTHS_INTERNAL_API_URL` (URL pública do bac
 ## Limitações conhecidas
 
 - Domínio próprio (por exemplo `app-staging.beattrips.com.br`) ainda não configurado; o staging usa o domínio `onrender.com`.
-- Backup e restore do Neon ainda não testados (`docs/backup-restore.md`).
 
 ## Migração para o Neon (#172) - 25/11/2026
 
@@ -76,6 +75,7 @@ Frontend (`bths-staging-frontend`): `BTHS_INTERNAL_API_URL` (URL pública do bac
 | `GET /actuator/health/readiness` | `{"status":"UP"}` com o `bths_app` |
 | Login pelo frontend | ADMIN, STAFF e HOSPEDE autenticados, cada um com o perfil certo |
 | Gravação | usuário STAFF, viagem, hóspede e acesso BTHS do hóspede cadastrados pelo sistema |
+| Backup e restore | backup cifrado com `pg_dump` restaurado sem erro num PostgreSQL descartável (`docs/backup-restore.md`) |
 
 ## Validação de CSRF, cookies e sessão (#76)
 

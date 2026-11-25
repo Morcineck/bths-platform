@@ -1,7 +1,7 @@
 # BTHS Platform - Backup e restore do PostgreSQL
 
 **Issues:** #78 - Implementar e testar backup e restore · #172 - Migração para PostgreSQL
-**Estado:** procedimento adaptado para PostgreSQL (Neon) em 25/11/2026. **O backup e o restore no Neon ainda precisam ser testados** (seção 8). Produção ainda não existe; este procedimento valerá para ela com as mudanças indicadas na seção 9.
+**Estado:** procedimento validado no staging em PostgreSQL (Neon) em 25/11/2026. Produção ainda não existe; este procedimento valerá para ela com as mudanças indicadas na seção 9.
 
 ## 1. Objetivo
 
@@ -107,9 +107,12 @@ Cuidado no PowerShell 5.1: o operador `>` converte a saída para UTF-16 e corrom
 
 ## 8. Evidências
 
-### PostgreSQL (Neon)
+### PostgreSQL (Neon) - 25/11/2026
 
-Pendente: executar o backup do staging no Neon com o script e restaurar o arquivo cifrado num PostgreSQL descartável.
+| Teste | Resultado |
+|---|---|
+| Backup do staging no Neon com o script e o usuário `bths_backup` | `.sql.age` de 34.042 bytes, gravado no PC e no Drive; dump completo (marcador final presente). |
+| Restore a partir do arquivo cifrado, num `postgres:17` descartável | Chave privada decifrou; restauração sem erro com `ON_ERROR_STOP`; 15 tabelas; Flyway V1 com `success=t`; 1 ADMIN, 1 STAFF e 1 HOSPEDE; viagem de teste restaurada. |
 
 ### Histórico em MySQL (24/10/2026)
 
