@@ -32,12 +32,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final String ERRO_BAD_REQUEST = "bad request";
 
     @ExceptionHandler(ViagemNaoEncontradaException.class)
     public ResponseEntity<Map<String, Object>> tratarViagemNaoEncontrada(
@@ -218,7 +222,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> erro = new HashMap<>();
 
-        erro.put("erro", "Bad Request");
+        erro.put("erro", ERRO_BAD_REQUEST);
         erro.put("mensagem", exception.getMessage());
         erro.put("status", HttpStatus.BAD_REQUEST.value());
 
@@ -266,7 +270,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> erro = new HashMap<>();
 
-        erro.put("erro", "Bad Request");
+        erro.put("erro", ERRO_BAD_REQUEST);
         erro.put("mensagem", exception.getMessage());
         erro.put("status", HttpStatus.BAD_REQUEST.value());
 
@@ -543,7 +547,7 @@ public class GlobalExceptionHandler {
     ) {
         Map<String, Object> erro = new HashMap<>();
 
-        erro.put("erro", "Bad Request");
+        erro.put("erro", ERRO_BAD_REQUEST);
         erro.put("mensagem", exception.getMessage());
         erro.put("status", HttpStatus.BAD_REQUEST.value());
 
@@ -565,6 +569,29 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> tratarValidacao(
+            MethodArgumentNotValidException exception
+    ) {
+
+        String mensagem = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .findFirst()
+                .orElse("Dados inválidos.");
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", ERRO_BAD_REQUEST);
+        erro.put("mensagem", mensagem);
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(erro);
     }
 }
