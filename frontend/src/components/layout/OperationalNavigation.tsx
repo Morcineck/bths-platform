@@ -17,6 +17,7 @@ import {
   Users,
   CalendarDays,
   UserRoundCog,
+  UsersRound,
 } from "lucide-react";
 
 type OperationalNavigationProps = {
@@ -82,6 +83,11 @@ const itensAdmin = [
     label: "Veículos",
     icon: Car,
   },
+  {
+    href: "/usuarios",
+    label: "Usuários",
+    icon: UsersRound,
+  },
 ] as const;
 
 export function OperationalNavigation({
@@ -108,7 +114,8 @@ export function OperationalNavigation({
     (perfil === "ADMIN" &&
       (isActive("/viagens") ||
         isActive("/motoristas") ||
-        isActive("/veiculos")));
+        isActive("/veiculos") ||
+        isActive("/usuarios")));
 
   return (
     <>

@@ -28,6 +28,7 @@ export const config = {
     "/hospedagens/:path*",
     "/quartos/:path*",
     "/viagens/:path*",
+    "/usuarios/:path*",
     "/app/:path*",
   ],
 };
