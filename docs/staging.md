@@ -14,20 +14,20 @@ O navegador só fala com o frontend. As chamadas `/api/*` são encaminhadas pelo
 ## Topologia
 
 ```
-navegador --HTTPS--> Next.js (Render) --rewrite /api--> Spring Boot (Render) --TLS--> MySQL 8.4 (Aiven)
+navegador --HTTPS--> Next.js (Render) --rewrite /api--> Spring Boot (Render) --TLS--> PostgreSQL 17 (Neon)
 ```
 
 - Frontend e backend: dois Web Services no Render (plano free, Docker, região Virginia, branch `develop`).
-- Banco: MySQL 8.4 gerenciado no Aiven (plano grátis, América do Norte, SSL obrigatório).
+- Banco: PostgreSQL 17 gerenciado no Neon (plano Free, projeto `bths-staging`, banco `neondb`, região AWS US East 1 / N. Virginia, a mesma do Render, SSL obrigatório). Até 25/11/2026 o staging usou MySQL 8.4 no Aiven (#172).
 - Perfil Spring: `staging`. Flyway roda no startup com usuário próprio de migração; a aplicação usa `ddl-auto=validate`.
 
 ## Desvios em relação à produção
 
 - **Backend acessível publicamente.** Em produção o backend deve ficar em rede privada; no Render free não existe rede privada entre serviços.
-- **Região nos EUA.** Render e Aiven grátis não oferecem Brasil. Produção precisa de análise de região e LGPD antes de receber dados reais.
+- **Região nos EUA.** O Render grátis não oferece Brasil, e o banco fica na mesma região do backend para reduzir a latência. Produção precisa de análise de região e LGPD antes de receber dados reais.
 - **Hibernação.** No plano free o serviço dorme após 15 min sem uso. A primeira requisição pode levar de 1 a 3 min (a aplicação sobe em cerca de 3 min a frio). Se o backend estiver dormindo, o proxy do frontend pode responder 500 até ele acordar.
-- **Banco desliga por inatividade** no plano grátis do Aiven.
-- **TLS do banco:** `sslMode=REQUIRED` (criptografa, mas não verifica a identidade do servidor). Produção deve usar `VERIFY_CA` ou `VERIFY_IDENTITY` com o certificado da CA.
+- **Banco suspende por inatividade.** No plano Free do Neon, o banco suspende depois de 5 min sem uso; a primeira consulta depois disso leva alguns segundos a mais.
+- **TLS do banco:** `sslmode=require` (criptografa, mas não verifica a identidade do servidor). Produção deve usar `verify-full` com o certificado da CA.
 - **HSTS:** o backend envia `Strict-Transport-Security`; as páginas do frontend ainda não.
 - **Deploy manual** (Auto-Deploy desligado) em ambos os serviços.
 
@@ -40,17 +40,18 @@ Backend (`bths-staging-backend`): `SPRING_PROFILES_ACTIVE`, `PORT`, `JAVA_TOOL_O
 Frontend (`bths-staging-frontend`): `BTHS_INTERNAL_API_URL` (URL pública do backend, lida em build) e `PORT`. `NEXT_PUBLIC_API_URL` fica vazio (mesma origem).
 
 - Segredos do staging são exclusivos dele e não são reaproveitados em produção.
-- Dois usuários no banco, com privilégio mínimo: aplicação (DML) e migração (DML + DDL).
+- Dois usuários no banco, com privilégio mínimo: `bths_app` (aplicação, DML) e `bths_migracao` (migração, DDL). O `neondb_owner`, criado pelo Neon, não é usado pelo BTHS.
+- `BTHS_DB_URL` usa o endereço **direto** do Neon (sem `-pooler`) com `sslmode=require`: o backend já tem o pool do HikariCP, e o Flyway precisa de conexão direta.
 - `JWT_SECRET` precisa ser Base64, com no mínimo 32 bytes decodificados (validado na subida).
 - A URL do backend é fixada no build do frontend: se mudar, é preciso novo deploy do frontend.
 
 ## Como foi montado
 
-1. Aiven: criar serviço MySQL grátis e criar os dois usuários de banco.
+1. Neon: criar o projeto `bths-staging` (PostgreSQL 17, AWS US East 1) e criar os usuários `bths_migracao` e `bths_app` pelo SQL Editor (`docs/segredos.md`). As senhas são geradas pelo **Reset password** do Neon.
 2. Render: criar o Web Service do backend (Docker, contexto `./backend`, Dockerfile `./backend/Dockerfile`, health check `/actuator/health/liveness`) e carregar as variáveis.
-3. Conferir nos logs a execução do Flyway (V1 e V2 aplicadas do zero) e o readiness em `/actuator/health/readiness`.
+3. Conferir a execução do Flyway (V1 aplicada do zero pelo `bths_migracao`) e o readiness em `/actuator/health/readiness`.
 4. Render: criar o Web Service do frontend (Docker, contexto `./frontend`, Dockerfile `./frontend/Dockerfile`, health check `/login`) com `BTHS_INTERNAL_API_URL` e `PORT=3000`.
-5. Criar um usuário ADMIN de teste direto no banco (não existe seed). A senha é aleatória, o hash é BCrypt de 60 caracteres e as credenciais ficam só em arquivo local ignorado pelo Git.
+5. Criar um usuário ADMIN de teste direto no banco (não existe seed), com a senha em hash BCrypt de 60 caracteres. Os demais usuários de teste (STAFF e HOSPEDE) são criados pelo próprio sistema.
 
 ## Como validar
 
@@ -63,9 +64,18 @@ Frontend (`bths-staging-frontend`): `BTHS_INTERNAL_API_URL` (URL pública do bac
 
 ## Limitações conhecidas
 
-- O dashboard fica em "Carregando dashboard..." quando não existe nenhuma viagem cadastrada (estado vazio sem tratamento no frontend). Aparece no staging por causa do banco vazio.
 - Domínio próprio (por exemplo `app-staging.beattrips.com.br`) ainda não configurado; o staging usa o domínio `onrender.com`.
-- Sem backup/restore testado do banco.
+- Backup e restore do Neon ainda não testados (`docs/backup-restore.md`).
+
+## Migração para o Neon (#172) - 25/11/2026
+
+| Verificação | Resultado |
+|---|---|
+| Flyway | V1 aplicada com sucesso pelo `bths_migracao` |
+| Tabelas | 15 (14 do BTHS e o histórico do Flyway) |
+| `GET /actuator/health/readiness` | `{"status":"UP"}` com o `bths_app` |
+| Login pelo frontend | ADMIN, STAFF e HOSPEDE autenticados, cada um com o perfil certo |
+| Gravação | usuário STAFF, viagem, hóspede e acesso BTHS do hóspede cadastrados pelo sistema |
 
 ## Validação de CSRF, cookies e sessão (#76)
 
