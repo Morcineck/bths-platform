@@ -26,10 +26,10 @@ Next.js (frontend, :3000)
 Spring Boot (backend, :8080)  ─ sem porta pública
         │
         ▼
-MySQL (:3306)                 ─ sem porta pública
+PostgreSQL (:5432)            ─ sem porta pública
 ```
 
-- Só o proxy reverso publica portas. Backend e MySQL ficam em rede privada, como já ocorre no Compose.
+- Só o proxy reverso publica portas. Backend e PostgreSQL ficam em rede privada, como já ocorre no Compose.
 - O proxy tem um único destino (o Next.js). O encaminhamento de `/api/*` ao backend já é feito pelo `rewrites` do `next.config.ts` (variável de build `BTHS_INTERNAL_API_URL`).
 - Os endpoints de saúde do Spring (`/actuator/health`) ficam fora de `/api` e, portanto, **não** são alcançáveis pelo proxy público. A saúde do frontend é `/health`.
 
@@ -76,7 +76,7 @@ MySQL (:3306)                 ─ sem porta pública
 
 **Rede**
 - Publicar 80 e 443 somente no proxy. No Compose de produção, a porta `127.0.0.1:3000` do frontend deixa de ser a porta de entrada.
-- Backend e MySQL sem portas publicadas.
+- Backend e PostgreSQL sem portas publicadas.
 
 **Links e QR Code**
 - Links enviados aos hóspedes e URLs de check-in devem usar sempre `https://app.beattrips.com.br`. Trocar o endereço depois invalida links já distribuídos.

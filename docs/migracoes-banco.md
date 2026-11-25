@@ -1,42 +1,39 @@
 # BTHS Platform - Migrações de banco de dados (Flyway)
-**Issue:** [#82 - Versionar schema e migrações](https://github.com/Morcineck/bths-platform/issues/82)
-**Stack:** Java 17 · Spring Boot 4.1.0 · MySQL 8.4 · Hibernate/JPA · Flyway
-**Estado deste documento:** procedimentos homologados no MySQL Docker de testes em 13–14/10/2026; **não executados no banco local original**.
+**Issues:** [#82 - Versionar schema e migrações](https://github.com/Morcineck/bths-platform/issues/82) · [#172 - Migração para PostgreSQL](https://github.com/Morcineck/bths-platform/issues/172)
+**Stack:** Java 17 · Spring Boot 4.1.0 · PostgreSQL 17 · Hibernate/JPA · Flyway
+**Estado deste documento:** V1 em PostgreSQL validada localmente (Docker e Docker Compose) em 25/11/2026. O histórico em MySQL está na seção 6.
 
 ## 1. Objetivo e responsabilidades
 
 - **Flyway** versiona e executa mudanças de estrutura via arquivos SQL imutáveis.
 - **Hibernate** usa `spring.jpa.hibernate.ddl-auto=validate` e **não altera** tabelas.
-- **MySQL** armazena dados e mantém o histórico do Flyway em `flyway_schema_history`.
-- Alterações posteriores devem criar uma **nova migração** `V3__...sql`, `V4__...sql` etc. Não editar V1/V2 após merge/publicação: mudanças de checksum invalidam ambientes já migrados.
+- **PostgreSQL** armazena dados e mantém o histórico do Flyway em `flyway_schema_history`.
+- Alterações posteriores devem criar uma **nova migração** `V2__...sql`, `V3__...sql` etc. Não editar a V1 após merge/publicação: mudanças de checksum invalidam ambientes já migrados.
 
 Migrações em `backend/src/main/resources/db/migration/`:
 
 | Arquivo | Finalidade |
 |---|---|
-| `V1__estrutura_inicial_bths.sql` | Reproduz as **14 tabelas** do schema legado, com **20 chaves estrangeiras**. Preserva intencionalmente duas inconsistências históricas para permitir baseline em banco existente. |
-| `V2__corrigir_schema_legado_bths.sql` | Remove a coluna legada `operacoes_traslado.orientecao_hospede` e retira `CONFIRMADO` do `ENUM` de `traslados.status`. |
-
-**Atenção:** V2 pode causar perda de dados caso a coluna legada contenha valores ou haja traslados com status `CONFIRMADO`. As pré-condições são obrigatórias em **cada ambiente**, mesmo que tenham sido verificadas no banco local em outubro de 2026.
+| `V1__estrutura_inicial_bths.sql` | Cria as **14 tabelas** da aplicação em PostgreSQL, com chaves estrangeiras, `CHECK` dos valores de enum e índices nas colunas de chave estrangeira. Consolida o schema anterior em MySQL (antigas V1 + V2). |
 
 ## 2. Perfis e configurações
 
 | Ambiente | Comportamento previsto |
 |---|---|
-| Desenvolvimento padrão | `ddl-auto=validate`; Flyway temporariamente desligado por padrão (`BTHS_FLYWAY_ENABLED:false`) durante transição do banco local. |
+| Desenvolvimento padrão | PostgreSQL local em `localhost:5433/bths_platform`; `ddl-auto=validate`; Flyway desligado por padrão (`BTHS_FLYWAY_ENABLED:false`), ligado no ambiente local com `BTHS_FLYWAY_ENABLED=true`. |
 | Testes H2 | `ddl-auto=create-drop`; `spring.flyway.enabled=false` no arquivo de configuração de testes. |
-| Staging (`staging`) | URL externa `BTHS_DB_URL`, usuário/senha por variáveis, `ddl-auto=validate`, Flyway habilitado. |
+| Staging (`staging`) | URL externa `BTHS_DB_URL` (`jdbc:postgresql://...`), usuário/senha por variáveis, `ddl-auto=validate`, Flyway habilitado. |
 | Produção (`prod`) | Igual ao staging; adicionalmente SQL de debug desligado. |
 
 Credenciais **não** devem ser versionadas. Nunca usar um banco de staging e produção com a mesma URL, nem usar `baseline-on-migrate=true` como configuração permanente. Em especial, `BTHS_DB_URL` e `DB_USERNAME` devem ser validados explicitamente antes de cada operação.
 
 ## 3. Banco novo e vazio
 
-**Pré-condições:** banco MySQL 8.4 separado, vazio, credenciais disponíveis e conexão de banco verificada.
+**Pré-condições:** banco PostgreSQL 17 separado, vazio, credenciais disponíveis e conexão de banco verificada.
 
 1. Conferir URL, porta, nome do banco e usuário efetivos **sem exibir senhas**.
 2. Habilitar Flyway nesse ambiente (`spring.flyway.enabled=true` ou `BTHS_FLYWAY_ENABLED=true` no perfil apropriado).
-3. Iniciar o Spring Boot. O Flyway aplica V1 e V2 em ordem e cria `flyway_schema_history`.
+3. Iniciar o Spring Boot. O Flyway aplica a V1 e cria `flyway_schema_history`.
 4. Exigir inicialização bem-sucedida do Spring Boot com Hibernate em `validate`.
 5. Validar, no **banco de destino**, os resultados:
 
@@ -47,117 +44,58 @@ ORDER BY installed_rank;
 
 SELECT COUNT(*) AS total_tabelas
 FROM information_schema.tables
-WHERE table_schema = DATABASE();
+WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
 
 SELECT COUNT(*) AS total_fks
-FROM information_schema.KEY_COLUMN_USAGE
-WHERE TABLE_SCHEMA = DATABASE()
-  AND REFERENCED_TABLE_NAME IS NOT NULL;
+FROM information_schema.table_constraints
+WHERE table_schema = 'public' AND constraint_type = 'FOREIGN KEY';
 ```
 
-**Esperado para banco novo:** V1 e V2 como `SQL`, ambas `success=1`; 15 tabelas (14 da aplicação + histórico); 20 chaves estrangeiras. Reiniciar a aplicação: nenhuma migração adicional deve ser aplicada.
+**Esperado para banco novo:** V1 como `SQL` com `success=true`; 15 tabelas (14 da aplicação + histórico do Flyway). Reiniciar a aplicação: nenhuma migração adicional deve ser aplicada.
 
-## 4. Banco existente - baseline controlado
+## 4. Bancos existentes em MySQL
 
-**NUNCA aplicar V1 diretamente em um banco que já possui tabelas.** O registro de `BASELINE` indica que a estrutura V1 já existe; ele **não valida automaticamente a equivalência das tabelas**.
+A migração para PostgreSQL (#172) não converte bancos MySQL existentes. Na data da migração, o BTHS não tinha produção, e os bancos MySQL eram de desenvolvimento e staging. Todo ambiente PostgreSQL começa vazio e recebe a V1 do zero, como na seção 3.
 
-### 4.1. Pré-condições obrigatórias
+Se algum dia for preciso levar dados de um banco MySQL para o PostgreSQL, isso exige um procedimento próprio, com backup, conversão de tipos (`binary(16)` para `UUID`, `bit(1)` para `BOOLEAN`), conferência de contagens e teste em ambiente separado antes do destino real.
 
-- Janela de manutenção/backup e plano de restauração aprovados; parar escritas na aplicação durante a intervenção.
-- Confirmar ambiente e endpoint real (hostname, porta, schema e conta). Não confiar apenas no nome da variável.
-- Exportar **backup integral de estrutura e dados**, guardar fora do repositório e testar a restauração em ambiente separado.
-- Comparar a estrutura preexistente com a V1 (tabelas, tipos, índices, constraints e FKs). Se houver divergências inesperadas, **parar** e elaborar migração específica.
-- Confirmar as pré-condições da V2 **no banco que será migrado**:
-
-```sql
-SELECT COUNT(*) AS valores_coluna_legada
-FROM operacoes_traslado
-WHERE orientecao_hospede IS NOT NULL;
-
-SELECT COUNT(*) AS traslados_confirmados
-FROM traslados
-WHERE status = 'CONFIRMADO';
-```
-
-Ambos os resultados precisam ser `0` antes de executar V2; do contrário, tratar os dados e revisar o SQL da V2.
-
-- Registrar contagens de tabelas e registros críticos, incluindo quantidade de ADMIN ativo (não copiar senhas/hashes para relatórios):
-
-```sql
-SELECT perfil, COUNT(*) AS total FROM usuarios GROUP BY perfil;
-SELECT COUNT(*) AS admins_ativos FROM usuarios
-WHERE perfil = 'ADMIN' AND ativo = b'1';
-```
-
-### 4.2. Aplicar baseline e V2
-
-**Somente após todos os controles acima:** no ambiente exato, configurar uma execução excepcional com Flyway habilitado, `spring.flyway.baseline-on-migrate=true` e `spring.flyway.baseline-version=1`. A V1 é registrada como `BASELINE`, sem executar SQL da V1; a V2 é executada.
-
-Não ativar `baseline-on-migrate` globalmente em `application.properties`, staging ou produção. **A execução de baseline precisa ser manual, pontual e revisada**, com comprovação de destino. Após o sucesso, remover essa opção excepcional.
-
-Em um banco pré-existente já versionado, basta iniciar normalmente sem baseline; o Flyway não deverá executar migrações concluídas.
-
-### 4.3. Verificação pós-migração
-
-```sql
-SELECT installed_rank, version, type, success
-FROM flyway_schema_history ORDER BY installed_rank;
-
-SELECT COLUMN_NAME
-FROM information_schema.COLUMNS
-WHERE TABLE_SCHEMA = DATABASE()
-  AND TABLE_NAME = 'operacoes_traslado'
-  AND COLUMN_NAME IN ('orientecao_hospede', 'orientacao_hospede');
-
-SELECT COLUMN_TYPE
-FROM information_schema.COLUMNS
-WHERE TABLE_SCHEMA = DATABASE()
-  AND TABLE_NAME = 'traslados' AND COLUMN_NAME = 'status';
-```
-
-**Esperado para banco legado:** versão `1` como `BASELINE` e versão `2` como `SQL`, ambas `success=1`; apenas coluna `orientacao_hospede`; enum sem `CONFIRMADO`; contagens de usuários e ADMIN inalteradas; inicialização do Spring Boot sem `baseline-on-migrate` bem-sucedida.
+O baseline controlado (`baseline-on-migrate`) continua proibido como configuração permanente. Só pode ser usado em uma execução manual, pontual e revisada, com comprovação do destino.
 
 ## 5. Recuperação e forward fix
 
-- **Não contar com rollback automático de DDL no MySQL**. `ALTER TABLE` e outros DDL podem produzir commits implícitos e persistir parcialmente após falha.
+- No PostgreSQL, o DDL é transacional: se uma migração falhar no meio, o Flyway desfaz as mudanças daquela migração (`Changes successfully rolled back`). Mesmo assim, conferir o estado do banco antes de tentar de novo.
 - Em falha **antes** de alteração do schema: interromper o rollout, diagnosticar e corrigir a causa.
-- Em falha **durante** a migração: parar aplicação e escritas; inspecionar `flyway_schema_history`, estrutura efetiva e logs; **não executar `repair` nem editar V1/V2 por tentativa**.
+- Em falha **durante** a migração: parar aplicação e escritas; inspecionar `flyway_schema_history`, estrutura efetiva e logs; **não executar `repair` nem editar migrações já aplicadas por tentativa**.
 - Para falhas em migrações futuras, preferir **forward fix**: um novo script versionado que leve o schema ao estado correto, revisado e ensaiado.
 - Se houver perda ou corrupção de dados, restaurar backup em ambiente isolado, conferir integridade e só então definir o procedimento de recuperação do ambiente afetado. Restaurar um backup anterior também exige considerar **dados criados após o backup** e um possível período de indisponibilidade.
 - Manter cópia segura do backup, fora do GitHub e das imagens Docker; não registrar senhas, hashes, dados pessoais ou tokens na documentação.
 
-## 6. Evidências obtidas no Docker - 13-14/10/2026
+## 6. Evidências
 
-| Cenário                                             | Resultado observado |
-|-----------------------------------------------------|---|
-| Testes Maven                                        | 546 executados; 0 falhas; 0 erros; `BUILD SUCCESS` (com Flyway desabilitado no H2). |
-| MySQL 8.4.11 vazio (`bths_flyway_test`)             | V1 + V2 aplicadas e registradas; aplicação iniciou com Hibernate `validate`. |
-| Banco vazio - contagem                              | 15 tabelas e 20 FKs após V1/V2; V1 anterior foi refeito e revalidado junto da V2. |
-| Banco legado restaurado (`bths_flyway_legacy_test`) | Backup de 11/10/2026 restaurado; 14 tabelas, 3 HÓSPEDES, 1 STAFF e 1 ADMIN ativo antes da migração. |
-| Legado - baseline + V2                              | Flyway registrou `V1 BASELINE` e `V2 SQL`, ambas sucesso. Coluna antiga removida, enum corrigido; 5 usuários preservados. |
-| Segunda inicialização sem baseline                  | Spring Boot iniciou normalmente, com apenas duas entradas no histórico (`V1 BASELINE`, `V2 SQL`). |
-
-**Limites das evidências:** os testes não constituem deploy de produção; o banco local original `bths_platform` **não foi migrado**. O backup usado representa o estado de 11/10/2026, não alterações posteriores. Uma implantação real precisa repetir verificações, backup, simulação e aprovação no destino efetivo.
-
-### 6.1. Homologação em staging (Aiven) - 24/10/2026
+### 6.1. PostgreSQL local (#172) - 25/11/2026
 
 | Cenário | Resultado observado |
 |---|---|
-| MySQL 8.4 gerenciado no Aiven, schema vazio, `sslMode=REQUIRED` | Flyway validou 2 migrações e criou `flyway_schema_history` |
-| V1 e V2 pelo usuário de migração (DDL), deploy no Render | Aplicadas do zero em cerca de 3,5 s; "now at version v2" |
-| Aplicação com o usuário de runtime (só DML) e `ddl-auto=validate` | Subiu normalmente; readiness `UP` e login funcionando |
+| Testes Maven | 669 executados; 0 falhas; 0 erros; `BUILD SUCCESS` (com Flyway desabilitado no H2). |
+| PostgreSQL 17.12 vazio em Docker (`bths_platform`) | V1 aplicada ("now at version v1"); aplicação iniciou com Hibernate `validate`. |
+| Docker Compose com PostgreSQL 17 | Usuários de aplicação e de migração criados por `docker/postgres/criar-usuarios.sh`; V1 aplicada pelo usuário de migração; `postgres`, `backend` e `frontend` em `healthy`. |
+| Falha de migração | Uma V2 antiga com sintaxe MySQL falhou e o Flyway desfez as mudanças dela, confirmando o DDL transacional. |
 
-O processo foi o mesmo planejado para produção: banco próprio, dois usuários com privilégio mínimo (migração e aplicação) e Flyway no startup do backend.
+**Limites:** validação apenas local. O staging em PostgreSQL ainda precisa ser homologado.
 
-**Limites:** o staging usa o plano grátis do Aiven; a restauração de backup não foi testada, e as contagens de tabelas e FKs não foram conferidas diretamente no Aiven.
+### 6.2. Histórico em MySQL
+
+Evidências do schema anterior, em MySQL 8.4, antes da issue #172:
+
+- **13-14/10/2026, Docker:** V1 + V2 aplicadas em banco vazio (15 tabelas e 20 FKs); baseline controlado em banco legado restaurado, com V1 registrada como `BASELINE` e V2 como `SQL`, preservando os 5 usuários; 546 testes Maven verdes.
+- **24/10/2026, staging no Aiven:** V1 e V2 aplicadas do zero pelo usuário de migração no deploy do Render; aplicação subiu com o usuário de runtime (só DML), readiness `UP` e login funcionando.
 
 ## 7. Checklist de PR e release
 
-- [ ] `pom.xml`, perfis e migrações V1/V2 revisados no diff completo.
+- [ ] `pom.xml`, perfis e migrações revisados no diff completo.
 - [ ] `git diff --check` sem erros.
-- [ ] `./mvnw clean test` verde (546 testes na execução registrada).
-- [x] Staging testado com o mesmo processo planejado para produção; **banco próprio** (ver 6.1).
-- [ ] Evidências MySQL de schema vazio e de baseline legado anexadas à issue/PR, sem dados sensíveis.
+- [ ] `./mvnw clean test` verde (669 testes na execução registrada).
+- [ ] Staging testado com o mesmo processo planejado para produção; **banco próprio**.
 - [ ] Processo de backup, recuperação e correção progressiva revisado.
 - [ ] Nenhuma credencial ou backup de dados incorporado ao Git.
 - [ ] Revisão de branch, PR para `develop`, merge após CI; preparar integração futura com `main` separadamente.

@@ -127,7 +127,7 @@ O BTHS Platform utiliza uma arquitetura baseada na separação entre frontend, A
              +-----------------+-----------------+
                                |
                                v
-                             MySQL
+                           PostgreSQL
 ```
 
 O frontend é responsável pela interface e experiência de utilização.
@@ -350,7 +350,7 @@ O projeto também possui configuração de integração com SonarQube/SonarCloud
 
 ### Banco de dados
 
-* MySQL
+* PostgreSQL
 
 ### Testes
 
@@ -417,7 +417,7 @@ O backend e o frontend pertencem ao mesmo produto, mas são aplicações indepen
 Para executar o backend localmente é necessário possuir:
 
 * Java 17;
-* MySQL;
+* PostgreSQL (ou Docker);
 * Git.
 
 O Maven Wrapper está incluído no projeto, portanto não é necessário instalar o Maven separadamente.
