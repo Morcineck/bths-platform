@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import org.springframework.test.web.servlet.MockMvc;
 import com.bths.platform.usuario.exception.OperacaoUsuarioNaoPermitidaException;
 import com.bths.platform.usuario.exception.PerfilUsuarioInvalidoException;
@@ -222,5 +224,50 @@ class UsuarioControllerTest {
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void deveDesativarUsuarioERetornar200() throws Exception {
+        UUID id = UUID.randomUUID();
+        UsuarioResponse response = new UsuarioResponse();
+        response.setAtivo(false);
+
+        when(usuarioService.desativarUsuario(eq(id), eq("admin@beattrips.com")))
+                .thenReturn(response);
+
+        mockMvc.perform(patch("/api/usuarios/" + id + "/desativar")
+                        .principal(new UsernamePasswordAuthenticationToken(
+                                "admin@beattrips.com", null)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ativo").value(false));
+    }
+
+
+    @Test
+    void deveRedefinirSenhaERetornar204() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/usuarios/" + id + "/senha")
+                        .contentType("application/json")
+                        .content("{\"novaSenha\": \"novaSenha123\"}"))
+                .andExpect(status().isNoContent());
+
+        verify(usuarioService).redefinirSenha(eq(id), any());
+    }
+
+
+    @Test
+    void deveRetornar400ComMensagemQuandoNovaSenhaForCurta() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/usuarios/" + id + "/senha")
+                        .contentType("application/json")
+                        .content("{\"novaSenha\": \"1234567\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensagem")
+                        .value("A nova senha deve possuir pelo menos 8 caracteres!"));
+
+        verify(usuarioService, never()).redefinirSenha(any(), any());
     }
 }

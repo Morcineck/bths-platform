@@ -1,6 +1,7 @@
 package com.bths.platform.usuario;
 
 import com.bths.platform.usuario.dto.UsuarioAtualizarRequest;
+import com.bths.platform.usuario.dto.UsuarioRedefinirSenhaRequest;
 import com.bths.platform.usuario.dto.UsuarioRequest;
 import com.bths.platform.usuario.dto.UsuarioResponse;
 import com.bths.platform.usuario.enums.PerfilUsuario;
@@ -250,8 +251,10 @@ class UsuarioServiceTest {
         when(usuarioRepository.existsByEmailAndIdNot("ocupado@beattrips.com", staff.getId()))
                 .thenReturn(true);
 
+        UUID id = staff.getId();
+
         assertThrows(EmailUsuarioJaCadastradoException.class,
-                () -> usuarioService.atualizarUsuario(staff.getId(), request));
+                () -> usuarioService.atualizarUsuario(id, request));
 
         verify(usuarioRepository, never()).save(any());
     }
@@ -268,8 +271,10 @@ class UsuarioServiceTest {
                 .thenReturn(false);
         when(usuarioRepository.countByPerfilAndAtivoTrue(PerfilUsuario.ADMIN)).thenReturn(1L);
 
+        UUID id = admin.getId();
+
         assertThrows(OperacaoUsuarioNaoPermitidaException.class,
-                () -> usuarioService.atualizarUsuario(admin.getId(), request));
+                () -> usuarioService.atualizarUsuario(id, request));
 
         verify(usuarioRepository, never()).save(any());
     }
@@ -294,9 +299,69 @@ class UsuarioServiceTest {
 
         when(usuarioRepository.findById(hospede.getId())).thenReturn(Optional.of(hospede));
 
+        UUID id = hospede.getId();
+
         assertThrows(PerfilUsuarioInvalidoException.class,
-                () -> usuarioService.atualizarUsuario(hospede.getId(), request));
+                () -> usuarioService.atualizarUsuario(id, request));
 
         verify(usuarioRepository, never()).save(any());
+    }
+
+
+    @Test
+    void deveDesativarUsuarioDaEquipe() {
+        Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
+        UUID id = staff.getId();
+
+        when(usuarioRepository.findById(id)).thenReturn(Optional.of(staff));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
+        when(usuarioMapper.paraResponse(any(Usuario.class))).thenReturn(new UsuarioResponse());
+
+        usuarioService.desativarUsuario(id, "admin@beattrips.com");
+
+        verify(usuarioRepository).save(argThat(u -> !u.isAtivo()));
+    }
+
+
+    @Test
+    void deveImpedirAdminDeDesativarAPropriaConta() {
+        Usuario admin = criarUsuario(PerfilUsuario.ADMIN, true, "admin@beattrips.com");
+        UUID id = admin.getId();
+
+        when(usuarioRepository.findById(id)).thenReturn(Optional.of(admin));
+
+        assertThrows(OperacaoUsuarioNaoPermitidaException.class,
+                () -> usuarioService.desativarUsuario(id, "ADMIN@beattrips.com"));
+
+        verify(usuarioRepository, never()).save(any());
+    }
+
+
+    @Test
+    void deveReativarUsuarioDaEquipe() {
+        Usuario staff = criarUsuario(PerfilUsuario.STAFF, false, "staff@beattrips.com");
+        UUID id = staff.getId();
+
+        when(usuarioRepository.findById(id)).thenReturn(Optional.of(staff));
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
+        when(usuarioMapper.paraResponse(any(Usuario.class))).thenReturn(new UsuarioResponse());
+
+        usuarioService.reativarUsuario(id);
+
+        verify(usuarioRepository).save(argThat(Usuario::isAtivo));
+    }
+
+
+    @Test
+    void deveRedefinirSenhaComCriptografia() {
+        Usuario staff = criarUsuario(PerfilUsuario.STAFF, true, "staff@beattrips.com");
+        UUID id = staff.getId();
+
+        when(usuarioRepository.findById(id)).thenReturn(Optional.of(staff));
+        when(passwordEncoder.encode("novaSenha123")).thenReturn("hash-novo");
+
+        usuarioService.redefinirSenha(id, new UsuarioRedefinirSenhaRequest("novaSenha123"));
+
+        verify(usuarioRepository).save(argThat(u -> u.getSenha().equals("hash-novo")));
     }
 }
