@@ -23,6 +23,7 @@ import {
   buscarSessaoAtiva,
   buscarUsuarioAutenticado,
   login,
+  rotaInicial,
 } from "@/features/auth/services/authService";
 
 function LoginContent() {
@@ -49,11 +50,7 @@ function LoginContent() {
         return;
       }
 
-      router.replace(
-        usuario.perfil === "HOSPEDE"
-          ? "/app"
-          : "/dashboard",
-      );
+      router.replace(rotaInicial(usuario));
     }
 
     redirecionarSeAutenticado();
@@ -76,12 +73,7 @@ function LoginContent() {
       const usuario =
         await buscarUsuarioAutenticado();
 
-      if (usuario.perfil === "HOSPEDE") {
-        router.replace("/app");
-        return;
-      }
-
-      router.replace("/dashboard");
+      router.replace(rotaInicial(usuario));
     } catch (error) {
       if (error instanceof LoginBloqueadoError) {
         setErro(error.mensagemParaUsuario());

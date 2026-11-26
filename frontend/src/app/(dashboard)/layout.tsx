@@ -10,6 +10,7 @@ import { UsuarioAutenticadoProvider } from "@/features/auth/context/UsuarioAuten
 import {
   buscarUsuarioAutenticado,
   logout,
+  rotaInicial,
 } from "@/features/auth/services/authService";
 
 type DashboardLayoutProps = {
@@ -37,8 +38,11 @@ export default function DashboardLayout({
         const usuarioAutenticado =
           await buscarUsuarioAutenticado();
 
-        if (usuarioAutenticado.perfil === "HOSPEDE") {
-          router.replace("/app");
+        if (
+          usuarioAutenticado.trocaSenhaObrigatoria ||
+          usuarioAutenticado.perfil === "HOSPEDE"
+        ) {
+          router.replace(rotaInicial(usuarioAutenticado));
           return;
         }
 
