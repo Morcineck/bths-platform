@@ -26,7 +26,7 @@ navegador --HTTPS--> Next.js (Render) --rewrite /api--> Spring Boot (Render) --T
 - **Backend acessível publicamente.** Em produção o backend deve ficar em rede privada; no Render free não existe rede privada entre serviços.
 - **Região nos EUA.** O Render grátis não oferece Brasil, e o banco fica na mesma região do backend para reduzir a latência. Produção precisa de análise de região e LGPD antes de receber dados reais.
 - **Hibernação.** No plano free o serviço dorme após 15 min sem uso. A primeira requisição pode levar de 1 a 3 min (a aplicação sobe em cerca de 3 min a frio). Se o backend estiver dormindo, o proxy do frontend pode responder 500 até ele acordar.
-- **Banco suspende por inatividade.** No plano Free do Neon, o banco suspende depois de 5 min sem uso; a primeira consulta depois disso leva alguns segundos a mais.
+- **Banco suspende por inatividade.** No plano Free do Neon, o banco suspende depois de 5 min sem consultas; a primeira consulta depois disso leva alguns segundos a mais. O pool do HikariCP foi ajustado para não manter o banco acordado, e o monitor externo deve usar a liveness, não a readiness (ver `docs/configuracao-producao.md`, #175).
 - **TLS do banco:** `sslmode=require` (criptografa, mas não verifica a identidade do servidor). Produção deve usar `verify-full` com o certificado da CA.
 - **HSTS:** o backend envia `Strict-Transport-Security`; as páginas do frontend ainda não.
 - **Deploy manual** (Auto-Deploy desligado) em ambos os serviços.

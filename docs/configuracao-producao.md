@@ -67,6 +67,25 @@ BTHS_CORS_ALLOWED_ORIGINS=https://app.beattrips.com.br
 O endereço do app foi definido na issue #70: `app.beattrips.com.br`.
 Ver `docs/topologia-publica.md`.
 
+## Pool do banco (HikariCP) e o Neon
+
+O plano gratuito do Neon suspende o banco depois de 5 minutos sem consultas e limita
+o uso a 100 CU-h por mês em cada projeto. Com os padrões do HikariCP (10 conexões
+sempre abertas e um ping em cada conexão parada a cada 2 minutos), o banco nunca
+suspende e passa do limite (cerca de 186 CU-h por mês). Por isso, nos perfis
+`staging` e `prod` (#175):
+
+| Propriedade | Valor | Efeito |
+|---|---|---|
+| `spring.datasource.hikari.minimum-idle` | `0` | o pool não segura conexões quando ninguém usa o sistema |
+| `spring.datasource.hikari.idle-timeout` | `60000` | conexão parada é fechada após cerca de 1 min |
+| `spring.datasource.hikari.keepalive-time` | `0` | desliga o ping automático |
+
+- O primeiro acesso depois do banco suspenso é um pouco mais lento (o Neon acorda em
+  até alguns segundos).
+- O monitor externo que mantém o backend do Render acordado deve chamar
+  `/actuator/health/liveness`. A readiness consulta o banco e o manteria acordado.
+
 ## Travas de build e inicialização
 
 - O backend não inicia com `bths.cors.allowed-origins` inválida, com
