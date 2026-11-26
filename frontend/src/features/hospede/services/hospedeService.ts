@@ -37,7 +37,7 @@ import type {
 import type { MeuTraslado } from "../types/meuTraslado";
 import type { MeuCheckIn } from "../types/meuCheckIn";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export async function listarHospedesPorViagem(
   viagemId: number,

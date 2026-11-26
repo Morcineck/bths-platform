@@ -11,7 +11,7 @@ import type {
   UsuarioEquipe,
 } from "../types/usuario";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const USUARIOS_URL = `${API_URL}/api/usuarios`;
 
 

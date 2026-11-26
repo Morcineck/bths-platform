@@ -10,7 +10,7 @@ import type {
   MotoristaRequest,
 } from "../types/motorista";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export async function listarMotoristas(): Promise<Motorista[]> {
   const response = await authFetch(

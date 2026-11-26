@@ -1412,7 +1412,7 @@ export default function HospedeDetalhePage({
             <div className="mt-3 flex justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}/api/check-in/qr/${encodeURIComponent(
+                src={`${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/check-in/qr/${encodeURIComponent(
                   hospede.codigoCheckIn,
                 )}/imagem`}
                 alt={`QR Code de check-in de ${hospede.nomeCompleto}`}

@@ -11,7 +11,7 @@ import type {
 } from "../types/agendaViagem";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL;
+  process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export async function listarAgendaPorViagem(
   viagemId: number,
