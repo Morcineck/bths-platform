@@ -13,7 +13,7 @@ import type {
   StatusTraslado,
 } from "@/features/traslado/operacao/types/operacaoTraslado";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export async function criarOperacaoTraslado(
   dados: OperacaoTrasladoRequest,
