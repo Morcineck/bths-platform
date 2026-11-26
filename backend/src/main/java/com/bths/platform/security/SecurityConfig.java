@@ -100,7 +100,8 @@ public class SecurityConfig {
                         .permitAll()
 
                         .requestMatchers(
-                                "/api/auth/me"
+                                "/api/auth/me",
+                                "/api/auth/senha"
                         )
                         .authenticated()
 
@@ -280,6 +281,11 @@ public class SecurityConfig {
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
+                )
+
+                .addFilterAfter(
+                        new TrocaSenhaObrigatoriaFilter(jwtAccessDeniedHandler),
+                        JwtAuthenticationFilter.class
                 );
 
         return http.build();

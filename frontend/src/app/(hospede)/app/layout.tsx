@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import {
   buscarUsuarioAutenticado,
   logout,
+  rotaInicial,
 } from "@/features/auth/services/authService";
 
 import type {
@@ -52,11 +53,12 @@ export default function AppHospedeLayout({
           await buscarUsuarioAutenticado();
 
         if (
+          usuarioAutenticado.trocaSenhaObrigatoria ||
           usuarioAutenticado.perfil !==
           "HOSPEDE"
         ) {
           router.replace(
-            "/dashboard",
+            rotaInicial(usuarioAutenticado),
           );
 
           return;

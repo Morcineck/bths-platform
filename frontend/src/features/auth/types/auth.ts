@@ -10,4 +10,10 @@ export type UsuarioAutenticado = {
   nome: string;
   email: string;
   perfil: PerfilUsuario;
+  trocaSenhaObrigatoria: boolean;
+};
+
+export type TrocarSenhaRequest = {
+  senhaAtual: string;
+  novaSenha: string;
 };

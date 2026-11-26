@@ -30,5 +30,6 @@ export const config = {
     "/viagens/:path*",
     "/usuarios/:path*",
     "/app/:path*",
+    "/trocar-senha/:path*",
   ],
 };
