@@ -1,0 +1,339 @@
+package com.bths.platform.security;
+
+import jakarta.servlet.DispatcherType;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.bths.platform.observabilidade.RequestIdFilter;
+
+import java.util.List;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration
+    ) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            JwtAccessDeniedHandler jwtAccessDeniedHandler,
+            CorsConfigurationSource corsConfigurationSource
+    ) throws Exception {
+
+        http
+                .csrf(csrf -> csrf.spa())
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource)
+                )
+
+                .headers(headers -> headers
+                        .referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)
+                        )
+                )
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(
+                                        jwtAuthenticationEntryPoint
+                                )
+                                .accessDeniedHandler(
+                                        jwtAccessDeniedHandler
+                                )
+                )
+
+                .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/logout",
+                                "/api/auth/csrf"
+                        )
+                        .permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/actuator/health",
+                                "/actuator/health/**"
+                        )
+                        .permitAll()
+
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+
+                        .requestMatchers(
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        )
+                        .permitAll()
+
+                        .requestMatchers(
+                                "/api/auth/me"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/usuarios/**",
+                                "/api/motoristas/**",
+                                "/api/veiculos/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/hospedes"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/hospedes/*/acesso-bths"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/hospedes/*/acesso-bths"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/hospedes/*/usuario/*"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/hospedes/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/traslados/*/operacao"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Consulta das operações de traslado:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/traslados/operacoes/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/traslados/operacoes/*/status"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação e alteração das operações:
+                        // somente ADMIN.
+                        .requestMatchers(
+                                "/api/traslados/operacoes/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Consulta de viagens:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/viagens/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação, edição e exclusão de viagens:
+                        // somente ADMIN
+                        .requestMatchers(
+                                "/api/viagens/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Exclusão de hóspede, de aviso e de alocação:
+                        // somente ADMIN.
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/hospedes/**",
+                                "/api/avisos/**",
+                                "/api/alocacoes-quartos/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Quartos, hospedagens e agenda:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/quartos/**",
+                                "/api/hospedagens/**",
+                                "/api/agenda-viagem/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação, edição e exclusão de quartos,
+                        // hospedagens e agenda: somente ADMIN.
+                        .requestMatchers(
+                                "/api/quartos/**",
+                                "/api/hospedagens/**",
+                                "/api/agenda-viagem/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Traslado do hóspede:
+                        // ADMIN e STAFF podem visualizar.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/traslados/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Mudança de status do traslado:
+                        // ADMIN e STAFF.
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/traslados/*/status"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        // Criação, edição, correção de status e
+                        // vínculo do traslado: somente ADMIN.
+                        .requestMatchers(
+                                "/api/traslados/**"
+                        )
+                        .hasRole("ADMIN")
+
+                        // Demais rotas operacionais: ADMIN e STAFF
+                        // (avisos: criar e editar; alocações: alocar
+                        // e trocar quarto; check-in e não comparecimento).
+                        .requestMatchers(
+                                "/api/hospedes/**",
+                                "/api/avisos/**",
+                                "/api/alocacoes-quartos/**",
+                                "/api/check-in/qr/**",
+                                "/api/dashboard/**"
+                        )
+                        .hasAnyRole(
+                                "ADMIN",
+                                "STAFF"
+                        )
+
+                        .requestMatchers(
+                                "/api/app/**"
+                        )
+                        .hasRole("HOSPEDE")
+
+                        .anyRequest()
+                        .authenticated()
+                )
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            CorsProperties corsProperties
+    ) {
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                corsProperties.allowedOrigins()
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of(
+                        "Content-Type",
+                        "Authorization",
+                        "X-XSRF-TOKEN"
+                )
+        );
+
+        configuration.setExposedHeaders(
+                List.of(
+                        RequestIdFilter.HEADER
+                )
+        );
+
+        configuration.setAllowCredentials(
+                true
+        );
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/api/**",
+                configuration
+        );
+
+        return source;
+    }
+}

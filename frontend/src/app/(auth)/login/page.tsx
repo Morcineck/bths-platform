@@ -1,0 +1,209 @@
+"use client";
+
+import {
+  FormEvent,
+  Suspense,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
+import Image from "next/image";
+
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+
+import {
+  LoginBloqueadoError,
+  buscarSessaoAtiva,
+  buscarUsuarioAutenticado,
+  login,
+} from "@/features/auth/services/authService";
+
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const sessaoExpirada =
+    searchParams.get("motivo") ===
+    "sessao-expirada";
+
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+
+  const [carregando, setCarregando] =
+    useState(false);
+
+  useEffect(() => {
+    async function redirecionarSeAutenticado() {
+      const usuario =
+        await buscarSessaoAtiva();
+
+      if (!usuario) {
+        return;
+      }
+
+      router.replace(
+        usuario.perfil === "HOSPEDE"
+          ? "/app"
+          : "/dashboard",
+      );
+    }
+
+    redirecionarSeAutenticado();
+  }, [router]);
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    setErro("");
+    setCarregando(true);
+
+    try {
+      await login({
+        email,
+        senha,
+      });
+
+      const usuario =
+        await buscarUsuarioAutenticado();
+
+      if (usuario.perfil === "HOSPEDE") {
+        router.replace("/app");
+        return;
+      }
+
+      router.replace("/dashboard");
+    } catch (error) {
+      if (error instanceof LoginBloqueadoError) {
+        setErro(error.mensagemParaUsuario());
+      } else {
+        setErro(
+          "Não foi possível entrar. Verifique suas credenciais e tente novamente.",
+        );
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  return (
+    <Card className="glass-login shadow-soft">
+      <header>
+        <div className="flex flex-col items-center text-center">
+          <Image
+            src="/brand/beat-trips-simbolo.webp"
+            alt="Beat Trips"
+            width={96}
+            height={96}
+            priority
+            className="brand-glow h-24 w-24"
+          />
+
+          <p className="mt-4 text-sm font-medium text-primary">
+            Beat Trips
+          </p>
+
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+            Acesse o BTHS
+          </h1>
+
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Entre com suas credenciais para acessar a plataforma.
+          </p>
+        </div>
+
+        {sessaoExpirada && (
+          <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3">
+            <p className="text-sm text-amber-300">
+              Sua sessão expirou. Faça login novamente.
+            </p>
+          </div>
+        )}
+      </header>
+
+      <form
+        className="mt-8 space-y-5"
+        onSubmit={handleSubmit}
+      >
+        <div className="space-y-2">
+          <label
+            htmlFor="email"
+            className="text-sm font-medium text-foreground"
+          >
+            E-mail
+          </label>
+
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="seu@email.com"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="senha"
+            className="text-sm font-medium text-foreground"
+          >
+            Senha
+          </label>
+
+          <Input
+            id="senha"
+            name="senha"
+            type="password"
+            placeholder="Digite sua senha"
+            autoComplete="current-password"
+            required
+            value={senha}
+            onChange={(event) =>
+              setSenha(event.target.value)
+            }
+          />
+        </div>
+
+        {erro && (
+          <p
+            role="alert"
+            className="text-sm text-red-400"
+          >
+            {erro}
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          disabled={carregando}
+        >
+          {carregando
+            ? "Entrando..."
+            : "Entrar"}
+        </Button>
+      </form>
+    </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
+  );
+}

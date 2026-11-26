@@ -1,0 +1,92 @@
+package com.bths.platform.usuario;
+
+import com.bths.platform.usuario.dto.UsuarioAtualizarRequest;
+import com.bths.platform.usuario.dto.UsuarioRedefinirSenhaRequest;
+import com.bths.platform.usuario.dto.UsuarioRequest;
+import com.bths.platform.usuario.dto.UsuarioResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@Tag(name = "Usuários", description = "Gestão administrativa das contas de acesso e perfis do BTHS.")
+@RestController
+@RequestMapping("/api/usuarios")
+public class UsuarioController {
+
+    private final UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
+    @PostMapping
+    public ResponseEntity<UsuarioResponse> cadastrarUsuario(
+            @Valid @RequestBody UsuarioRequest request
+    ) {
+
+        UsuarioResponse response =
+                usuarioService.cadastrarUsuario(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UsuarioResponse>> listarEquipe() {
+        return ResponseEntity.ok(usuarioService.listarEquipe());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> buscarUsuarioPorId(
+            @PathVariable UUID id
+    ) {
+
+        UsuarioResponse response =
+                usuarioService.buscarUsuarioPorId(id);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(
+            @PathVariable UUID id,
+            @Valid @RequestBody UsuarioAtualizarRequest request
+    ) {
+
+        return ResponseEntity.ok(usuarioService.atualizarUsuario(id, request));
+    }
+
+    @PatchMapping("/{id}/desativar")
+    public ResponseEntity<UsuarioResponse> desativarUsuario(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                usuarioService.desativarUsuario(id, authentication.getName()));
+    }
+
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<UsuarioResponse> reativarUsuario(
+            @PathVariable UUID id
+    ) {
+        return ResponseEntity.ok(usuarioService.reativarUsuario(id));
+    }
+
+    @PutMapping("/{id}/senha")
+    public ResponseEntity<Void> redefinirSenha(
+            @PathVariable UUID id,
+            @Valid @RequestBody UsuarioRedefinirSenhaRequest request
+    ) {
+
+        usuarioService.redefinirSenha(id, request);
+
+        return ResponseEntity.noContent().build();
+    }
+}

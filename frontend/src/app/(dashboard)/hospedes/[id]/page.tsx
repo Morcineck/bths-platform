@@ -1,0 +1,3199 @@
+"use client";
+
+import Link from "next/link";
+import { use, useEffect, useState } from "react";
+
+import {
+  alocarHospedeEmQuarto,
+  buscarAlocacaoPorHospedeEViagem,
+  trocarQuarto,
+} from "@/features/alocacao/services/alocacaoService";
+
+import type {
+  AlocacaoQuarto,
+  TipoCama,
+} from "@/features/alocacao/types/alocacao";
+
+import {
+  buscarUsuarioAutenticado,
+} from "@/features/auth/services/authService";
+
+import {
+  consultarCheckIn,
+  realizarCheckIn,
+  registrarNaoComparecimento,
+} from "@/features/checkin/services/checkInService";
+
+import type {
+  CheckInResponse,
+} from "@/features/checkin/types/checkin";
+
+import {
+  buscarAcessoBths,
+  buscarHospedePorId,
+  criarAcessoBths,
+  redefinirSenhaAcessoBths,
+} from "@/features/hospede/services/hospedeService";
+
+import type {
+  Hospede,
+  HospedeAcessoBths,
+} from "@/features/hospede/types/hospede";
+
+import {
+  listarMotoristas,
+} from "@/features/motorista/services/motoristaService";
+
+import type {
+  Motorista,
+} from "@/features/motorista/types/motorista";
+
+import {
+  associarOperacaoTraslado,
+  listarTrasladosPorHospede,
+} from "@/features/traslado/services/trasladoService";
+
+import {
+  listarVeiculos,
+} from "@/features/veiculo/services/veiculoService";
+
+import type {
+  Veiculo,
+} from "@/features/veiculo/types/veiculo";
+
+import {
+  listarOperacoesPorViagem,
+  vincularTrasladoOperacao,
+} from "@/features/traslado/operacao/services/operacaoTrasladoService";
+
+import type {
+  OperacaoTraslado,
+} from "@/features/traslado/operacao/types/operacaoTraslado";
+
+import {
+  listarQuartosPorViagem,
+} from "@/features/quarto/services/quartoService";
+
+import type {
+  Quarto,
+} from "@/features/quarto/types/quarto";
+
+import type {
+  Traslado,
+} from "@/features/traslado/types/traslado";
+
+import {
+  ArrowLeft,
+  Pencil,
+} from "lucide-react";
+
+import { PageHeader } from "@/components/layout/PageHeader";
+
+type HospedeDetalhePageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default function HospedeDetalhePage({
+  params,
+}: HospedeDetalhePageProps) {
+  const { id } = use(params);
+
+  const [hospede, setHospede] =
+    useState<Hospede | null>(null);
+
+  const [checkIn, setCheckIn] =
+    useState<CheckInResponse | null>(null);
+
+  const [traslados, setTraslados] =
+    useState<Traslado[]>([]);
+
+  const [quartos, setQuartos] =
+    useState<Quarto[]>([]);
+
+  const [alocacao, setAlocacao] =
+    useState<AlocacaoQuarto | null>(null);
+
+  const [
+    quartoSelecionadoId,
+    setQuartoSelecionadoId,
+  ] = useState("");
+
+  const [
+    tipoCamaSelecionado,
+    setTipoCamaSelecionado,
+  ] = useState<TipoCama | "">("");
+
+  const [
+    alocandoQuarto,
+    setAlocandoQuarto,
+  ] = useState(false);
+
+  const [
+    erroAlocacao,
+    setErroAlocacao,
+  ] = useState("");
+
+  const [
+    sucessoAlocacao,
+    setSucessoAlocacao,
+  ] = useState("");
+
+  const [
+    novoQuartoId,
+    setNovoQuartoId,
+  ] = useState("");
+
+  const [
+    novoTipoCama,
+    setNovoTipoCama,
+  ] = useState<TipoCama | "">("");
+
+  const [
+    trocandoQuarto,
+    setTrocandoQuarto,
+  ] = useState(false);
+
+  const [
+    erroTrocaQuarto,
+    setErroTrocaQuarto,
+  ] = useState("");
+
+  const [
+    sucessoTrocaQuarto,
+    setSucessoTrocaQuarto,
+  ] = useState("");
+
+  const [
+    carregando,
+    setCarregando,
+  ] = useState(true);
+
+  const [
+    erro,
+    setErro,
+  ] = useState("");
+
+  const [
+    isAdmin,
+    setIsAdmin,
+  ] = useState(false);
+
+  const [
+    observacaoCheckIn,
+    setObservacaoCheckIn,
+  ] = useState("");
+
+  const [
+    realizandoCheckIn,
+    setRealizandoCheckIn,
+  ] = useState(false);
+
+  const [
+    erroCheckIn,
+    setErroCheckIn,
+  ] = useState("");
+
+  const [
+    motivoNaoComparecimento,
+    setMotivoNaoComparecimento,
+  ] = useState("");
+
+  const [
+    registrandoNaoComparecimento,
+    setRegistrandoNaoComparecimento,
+  ] = useState(false);
+
+  const [
+    erroNaoComparecimento,
+    setErroNaoComparecimento,
+  ] = useState("");
+
+  const [
+    sucessoNaoComparecimento,
+    setSucessoNaoComparecimento,
+  ] = useState("");
+
+  const [
+    motoristas,
+    setMotoristas,
+  ] = useState<Motorista[]>([]);
+
+  const [
+    veiculos,
+    setVeiculos,
+  ] = useState<Veiculo[]>([]);
+
+  const [
+    motoristaSelecionadoPorTraslado,
+    setMotoristaSelecionadoPorTraslado,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    veiculoSelecionadoPorTraslado,
+    setVeiculoSelecionadoPorTraslado,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    salvandoOperacaoId,
+    setSalvandoOperacaoId,
+  ] = useState<number | null>(null);
+
+  const [
+    erroOperacao,
+    setErroOperacao,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    sucessoOperacao,
+    setSucessoOperacao,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    operacoesCompartilhadas,
+    setOperacoesCompartilhadas,
+  ] = useState<OperacaoTraslado[]>([]);
+
+  const [
+    operacaoCompartilhadaSelecionadaPorTraslado,
+    setOperacaoCompartilhadaSelecionadaPorTraslado,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    vinculandoOperacaoCompartilhadaId,
+    setVinculandoOperacaoCompartilhadaId,
+  ] = useState<number | null>(null);
+
+  const [
+    erroOperacaoCompartilhada,
+    setErroOperacaoCompartilhada,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    sucessoOperacaoCompartilhada,
+    setSucessoOperacaoCompartilhada,
+  ] = useState<Record<number, string>>({});
+
+  const [
+    editandoOperacaoCompartilhadaId,
+    setEditandoOperacaoCompartilhadaId,
+  ] = useState<number | null>(null);
+
+  const [
+    acessoBths,
+    setAcessoBths,
+  ] = useState<HospedeAcessoBths | null>(null);
+
+  const [
+    emailAcessoBths,
+    setEmailAcessoBths,
+  ] = useState("");
+
+  const [
+    senhaTemporariaBths,
+    setSenhaTemporariaBths,
+  ] = useState("");
+
+  const [
+    novaSenhaBths,
+    setNovaSenhaBths,
+  ] = useState("");
+
+  const [
+    confirmarNovaSenhaBths,
+    setConfirmarNovaSenhaBths,
+  ] = useState("");
+
+  const [
+    redefinindoSenhaBths,
+    setRedefinindoSenhaBths,
+  ] = useState(false);
+
+
+  const [
+    criandoAcessoBths,
+    setCriandoAcessoBths,
+  ] = useState(false);
+
+  const [
+    erroAcessoBths,
+    setErroAcessoBths,
+  ] = useState("");
+
+  const [
+    sucessoAcessoBths,
+    setSucessoAcessoBths,
+  ] = useState("");
+
+  useEffect(() => {
+    async function carregarHospede() {
+      try {
+        setErro("");
+
+        const usuario =
+          await buscarUsuarioAutenticado();
+
+        setIsAdmin(
+          usuario.perfil === "ADMIN",
+        );
+
+        if (
+          usuario.perfil === "ADMIN"
+        ) {
+          const [
+            dadosMotoristas,
+            dadosVeiculos,
+          ] = await Promise.all([
+            listarMotoristas(),
+            listarVeiculos(),
+          ]);
+
+          setMotoristas(
+            dadosMotoristas.filter(
+              (motorista) =>
+                motorista.ativo,
+            ),
+          );
+
+          setVeiculos(
+            dadosVeiculos.filter(
+              (veiculo) =>
+                veiculo.ativo,
+            ),
+          );
+        }
+
+        const dados =
+          await buscarHospedePorId(
+            Number(id),
+          );
+
+        setHospede(dados);
+
+        if (
+          usuario.perfil === "ADMIN"
+        ) {
+          const dadosAcessoBths =
+            await buscarAcessoBths(
+              Number(id),
+            );
+
+          setAcessoBths(
+            dadosAcessoBths,
+          );
+
+          if (
+            !dadosAcessoBths.vinculado &&
+            dados.email
+          ) {
+            setEmailAcessoBths(
+              dados.email,
+            );
+          }
+        }
+
+        const dadosCheckIn =
+          await consultarCheckIn(
+            Number(id),
+          );
+
+        setCheckIn(
+          dadosCheckIn,
+        );
+
+        if (
+          dadosCheckIn.quartoId !==
+          null
+        ) {
+          const dadosAlocacao =
+            await buscarAlocacaoPorHospedeEViagem(
+              Number(id),
+              dados.viagemId,
+            );
+
+          setAlocacao(
+            dadosAlocacao,
+          );
+        }
+
+        const dadosQuartos =
+          await listarQuartosPorViagem(
+            dados.viagemId,
+          );
+
+        setQuartos(
+          dadosQuartos.filter(
+            (quarto) =>
+              quarto.status ===
+              "DISPONIVEL",
+          ),
+        );
+
+        const [
+          dadosTraslados,
+          dadosOperacoesCompartilhadas,
+        ] = await Promise.all([
+          listarTrasladosPorHospede(
+            Number(id),
+          ),
+
+          listarOperacoesPorViagem(
+            dados.viagemId,
+          ),
+        ]);
+
+        setTraslados(
+          dadosTraslados,
+        );
+
+        setOperacoesCompartilhadas(
+          dadosOperacoesCompartilhadas,
+        );
+
+        setOperacaoCompartilhadaSelecionadaPorTraslado(
+          Object.fromEntries(
+            dadosTraslados.map(
+              (traslado) => [
+                traslado.id,
+
+                traslado.operacaoTrasladoId !==
+                null
+                  ? String(
+                      traslado.operacaoTrasladoId,
+                    )
+                  : "",
+              ],
+            ),
+          ),
+        );
+      } catch {
+        setErro(
+          "Não foi possível carregar os dados do hóspede.",
+        );
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarHospede();
+  }, [id]);
+
+  async function handleAlocarQuarto() {
+    if (!quartoSelecionadoId) {
+      setErroAlocacao(
+        "Selecione um quarto para continuar.",
+      );
+
+      return;
+    }
+
+    if (!tipoCamaSelecionado) {
+        setErroAlocacao(
+          "Selecione o tipo de cama para continuar.",
+        );
+
+        return;
+
+        }
+
+    try {
+      setAlocandoQuarto(true);
+      setErroAlocacao("");
+      setSucessoAlocacao("");
+
+      const novaAlocacao =
+        await alocarHospedeEmQuarto({
+          hospedeId: Number(id),
+
+          quartoId: Number(
+            quartoSelecionadoId,
+          ),
+
+          tipoCama:
+            tipoCamaSelecionado,
+
+        });
+
+      setAlocacao(
+        novaAlocacao,
+      );
+
+      setCheckIn(
+        (checkInAtual) =>
+          checkInAtual
+            ? {
+                ...checkInAtual,
+
+                quartoId:
+                  novaAlocacao.quartoId,
+
+                quartoNome:
+                  novaAlocacao.quartoNome,
+              }
+            : checkInAtual,
+      );
+
+      setQuartoSelecionadoId("");
+      setTipoCamaSelecionado("");
+
+      setSucessoAlocacao(
+        `Hóspede alocado com sucesso no quarto ${novaAlocacao.quartoNome}.`,
+      );
+    } catch {
+      setSucessoAlocacao("");
+
+      setErroAlocacao(
+        "Não foi possível alocar o hóspede no quarto.",
+      );
+    } finally {
+      setAlocandoQuarto(false);
+    }
+  }
+
+  async function handleTrocarQuarto() {
+    if (!alocacao) {
+      setErroTrocaQuarto(
+        "Alocação do hóspede não encontrada.",
+      );
+
+      return;
+    }
+
+    if (!novoQuartoId) {
+      setErroTrocaQuarto(
+        "Selecione o novo quarto.",
+      );
+
+      return;
+    }
+
+    if (!novoTipoCama) {
+      setErroTrocaQuarto(
+        "Selecione o tipo de cama.",
+      );
+
+      return;
+    }
+
+    try {
+      setTrocandoQuarto(true);
+      setErroTrocaQuarto("");
+      setSucessoTrocaQuarto("");
+
+      const alocacaoAtualizada =
+        await trocarQuarto(
+          alocacao.id,
+          Number(novoQuartoId),
+          novoTipoCama,
+        );
+
+      setAlocacao(
+        alocacaoAtualizada,
+      );
+
+      setCheckIn(
+        (checkInAtual) =>
+          checkInAtual
+            ? {
+                ...checkInAtual,
+
+                quartoId:
+                  alocacaoAtualizada.quartoId,
+
+                quartoNome:
+                  alocacaoAtualizada.quartoNome,
+              }
+            : checkInAtual,
+      );
+
+      setNovoQuartoId("");
+      setNovoTipoCama("");
+
+      setSucessoTrocaQuarto(
+        `Quarto alterado com sucesso para ${alocacaoAtualizada.quartoNome}.`,
+      );
+    } catch (error) {
+      setSucessoTrocaQuarto("");
+
+      setErroTrocaQuarto(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível trocar o quarto do hóspede.",
+      );
+    } finally {
+      setTrocandoQuarto(false);
+    }
+  }
+
+  async function handleRealizarCheckIn() {
+    try {
+      setRealizandoCheckIn(true);
+      setErroCheckIn("");
+
+      const response =
+        await realizarCheckIn(
+          Number(id),
+          {
+            observacao:
+              observacaoCheckIn ||
+              undefined,
+          },
+        );
+
+      setCheckIn(
+        response,
+      );
+
+      setHospede(
+        (hospedeAtual) =>
+          hospedeAtual
+            ? {
+                ...hospedeAtual,
+
+                statusCheckIn:
+                  response.statusCheckIn,
+              }
+            : hospedeAtual,
+      );
+
+      setObservacaoCheckIn("");
+    } catch {
+      setErroCheckIn(
+        "Não foi possível realizar o check-in.",
+      );
+    } finally {
+      setRealizandoCheckIn(false);
+    }
+  }
+
+  async function handleRegistrarNaoComparecimento() {
+    if (
+      !motivoNaoComparecimento.trim()
+    ) {
+      setErroNaoComparecimento(
+        "Informe o motivo do não comparecimento.",
+      );
+
+      return;
+    }
+
+    try {
+      setRegistrandoNaoComparecimento(
+        true,
+      );
+
+      setErroNaoComparecimento("");
+      setSucessoNaoComparecimento("");
+
+      const response =
+        await registrarNaoComparecimento(
+          Number(id),
+          {
+            motivo:
+              motivoNaoComparecimento.trim(),
+          },
+        );
+
+      setCheckIn(
+        response,
+      );
+
+      setHospede(
+        (hospedeAtual) =>
+          hospedeAtual
+            ? {
+                ...hospedeAtual,
+
+                statusCheckIn:
+                  response.statusCheckIn,
+              }
+            : hospedeAtual,
+      );
+
+      setMotivoNaoComparecimento("");
+
+      setSucessoNaoComparecimento(
+        "Não comparecimento registrado com sucesso.",
+      );
+    } catch (error) {
+      setSucessoNaoComparecimento("");
+
+      setErroNaoComparecimento(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível registrar o não comparecimento.",
+      );
+    } finally {
+      setRegistrandoNaoComparecimento(
+        false,
+      );
+    }
+  }
+
+  async function handleAssociarOperacao(
+    trasladoId: number,
+  ) {
+    const trasladoAtual =
+      traslados.find(
+        (traslado) =>
+          traslado.id ===
+          trasladoId,
+      );
+
+    const motoristaId =
+      motoristaSelecionadoPorTraslado[
+        trasladoId
+      ] ??
+      (trasladoAtual?.motoristaId
+        ? String(
+            trasladoAtual.motoristaId,
+          )
+        : "");
+
+    const veiculoId =
+      veiculoSelecionadoPorTraslado[
+        trasladoId
+      ] ??
+      (trasladoAtual?.veiculoId
+        ? String(
+            trasladoAtual.veiculoId,
+          )
+        : "");
+
+    if (
+      !motoristaId ||
+      !veiculoId
+    ) {
+      setErroOperacao(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            "Selecione motorista e veículo.",
+        }),
+      );
+
+      return;
+    }
+
+    try {
+      setSalvandoOperacaoId(
+        trasladoId,
+      );
+
+      setErroOperacao(
+        (atual) => ({
+          ...atual,
+          [trasladoId]: "",
+        }),
+      );
+
+      setSucessoOperacao(
+        (atual) => ({
+          ...atual,
+          [trasladoId]: "",
+        }),
+      );
+
+      const atualizado =
+        await associarOperacaoTraslado(
+          trasladoId,
+          {
+            motoristaId:
+              Number(motoristaId),
+
+            veiculoId:
+              Number(veiculoId),
+          },
+        );
+
+      setTraslados(
+        (atuais) =>
+          atuais.map(
+            (traslado) =>
+              traslado.id ===
+              atualizado.id
+                ? atualizado
+                : traslado,
+          ),
+      );
+
+      setMotoristaSelecionadoPorTraslado(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            atualizado.motoristaId !==
+            null
+              ? String(
+                  atualizado.motoristaId,
+                )
+              : "",
+        }),
+      );
+
+      setVeiculoSelecionadoPorTraslado(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            atualizado.veiculoId !==
+            null
+              ? String(
+                  atualizado.veiculoId,
+                )
+              : "",
+        }),
+      );
+
+      setSucessoOperacao(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            "Traslado individual atualizado com sucesso.",
+        }),
+      );
+    } catch (error) {
+      setErroOperacao(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            error instanceof Error
+              ? error.message
+              : "Não foi possível atualizar o traslado individual.",
+        }),
+      );
+    } finally {
+      setSalvandoOperacaoId(null);
+    }
+  }
+
+
+
+  async function handleVincularOperacaoCompartilhada(
+    trasladoId: number,
+  ) {
+    const operacaoId =
+      operacaoCompartilhadaSelecionadaPorTraslado[
+        trasladoId
+      ];
+
+    if (!operacaoId) {
+      setErroOperacaoCompartilhada(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            "Selecione uma operação compartilhada.",
+        }),
+      );
+
+      return;
+    }
+
+    const trasladoAtual =
+      traslados.find(
+        (traslado) =>
+          traslado.id ===
+          trasladoId,
+      );
+
+    const operacaoAnteriorId =
+      trasladoAtual?.operacaoTrasladoId ??
+      null;
+
+    const novaOperacaoId =
+      Number(operacaoId);
+
+    try {
+      setVinculandoOperacaoCompartilhadaId(
+        trasladoId,
+      );
+
+      setErroOperacaoCompartilhada(
+        (atual) => ({
+          ...atual,
+          [trasladoId]: "",
+        }),
+      );
+
+      setSucessoOperacaoCompartilhada(
+        (atual) => ({
+          ...atual,
+          [trasladoId]: "",
+        }),
+      );
+
+      await vincularTrasladoOperacao(
+        novaOperacaoId,
+        trasladoId,
+      );
+
+      setTraslados(
+        (atuais) =>
+          atuais.map(
+            (traslado) =>
+              traslado.id ===
+              trasladoId
+                ? {
+                    ...traslado,
+
+                    operacaoTrasladoId:
+                      novaOperacaoId,
+                  }
+                : traslado,
+          ),
+      );
+
+      if (
+        operacaoAnteriorId !==
+        novaOperacaoId
+      ) {
+        setOperacoesCompartilhadas(
+          (atuais) =>
+            atuais.map(
+              (operacao) => {
+                if (
+                  operacao.id ===
+                  operacaoAnteriorId
+                ) {
+                  return {
+                    ...operacao,
+
+                    quantidadePassageiros:
+                      Math.max(
+                        operacao.quantidadePassageiros -
+                          1,
+                        0,
+                      ),
+
+                    vagasDisponiveis:
+                      operacao.vagasDisponiveis !==
+                      null
+                        ? operacao.vagasDisponiveis +
+                          1
+                        : null,
+                  };
+                }
+
+                if (
+                  operacao.id ===
+                  novaOperacaoId
+                ) {
+                  return {
+                    ...operacao,
+
+                    quantidadePassageiros:
+                      operacao.quantidadePassageiros +
+                      1,
+
+                    vagasDisponiveis:
+                      operacao.vagasDisponiveis !==
+                      null
+                        ? Math.max(
+                            operacao.vagasDisponiveis -
+                              1,
+                            0,
+                          )
+                        : null,
+                  };
+                }
+
+                return operacao;
+              },
+            ),
+        );
+      }
+
+      setEditandoOperacaoCompartilhadaId(
+        null,
+      );
+
+      setSucessoOperacaoCompartilhada(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            operacaoAnteriorId ===
+            null
+              ? "Traslado vinculado à operação compartilhada."
+              : operacaoAnteriorId ===
+                  novaOperacaoId
+                ? "O traslado já está vinculado a esta operação."
+                : "Operação compartilhada alterada com sucesso.",
+        }),
+      );
+    } catch (error) {
+      setErroOperacaoCompartilhada(
+        (atual) => ({
+          ...atual,
+
+          [trasladoId]:
+            error instanceof Error
+              ? error.message
+              : "Não foi possível vincular o traslado à operação compartilhada.",
+        }),
+      );
+    } finally {
+      setVinculandoOperacaoCompartilhadaId(
+        null,
+      );
+    }
+  }
+
+  function handleIniciarTrocaOperacao(
+    traslado: Traslado,
+  ) {
+    setOperacaoCompartilhadaSelecionadaPorTraslado(
+      (atual) => ({
+        ...atual,
+
+        [traslado.id]:
+          traslado.operacaoTrasladoId !==
+          null
+            ? String(
+                traslado.operacaoTrasladoId,
+              )
+            : "",
+      }),
+    );
+
+    setErroOperacaoCompartilhada(
+      (atual) => ({
+        ...atual,
+        [traslado.id]: "",
+      }),
+    );
+
+    setSucessoOperacaoCompartilhada(
+      (atual) => ({
+        ...atual,
+        [traslado.id]: "",
+      }),
+    );
+
+    setEditandoOperacaoCompartilhadaId(
+      traslado.id,
+    );
+  }
+
+  function handleCancelarTrocaOperacao(
+    traslado: Traslado,
+  ) {
+    setOperacaoCompartilhadaSelecionadaPorTraslado(
+      (atual) => ({
+        ...atual,
+
+        [traslado.id]:
+          traslado.operacaoTrasladoId !==
+          null
+            ? String(
+                traslado.operacaoTrasladoId,
+              )
+            : "",
+      }),
+    );
+
+    setErroOperacaoCompartilhada(
+      (atual) => ({
+        ...atual,
+        [traslado.id]: "",
+      }),
+    );
+
+    setEditandoOperacaoCompartilhadaId(
+      null,
+    );
+  }
+
+  async function handleCriarAcessoBths() {
+    if (!emailAcessoBths.trim()) {
+      setErroAcessoBths(
+        "Informe o e-mail para criar o acesso BTHS.",
+      );
+      return;
+    }
+
+    if (!senhaTemporariaBths.trim()) {
+      setErroAcessoBths(
+        "Informe a senha temporária.",
+      );
+      return;
+    }
+
+    try {
+      setCriandoAcessoBths(true);
+      setErroAcessoBths("");
+      setSucessoAcessoBths("");
+
+      const novoAcesso =
+        await criarAcessoBths(
+          Number(id),
+          {
+            email:
+              emailAcessoBths.trim(),
+            senhaTemporaria:
+              senhaTemporariaBths,
+          },
+        );
+
+      setAcessoBths(
+        novoAcesso,
+      );
+
+      setSenhaTemporariaBths("");
+
+      setSucessoAcessoBths(
+        "Acesso BTHS criado e vinculado com sucesso.",
+      );
+    } catch (error) {
+      setSucessoAcessoBths("");
+
+      setErroAcessoBths(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível criar o acesso BTHS.",
+      );
+    } finally {
+      setCriandoAcessoBths(false);
+    }
+  }
+
+  async function handleRedefinirSenhaBths() {
+    setErroAcessoBths("");
+    setSucessoAcessoBths("");
+
+    if (!novaSenhaBths.trim()) {
+      setErroAcessoBths(
+        "Informe a nova senha.",
+      );
+
+      return;
+    }
+
+    if (
+      novaSenhaBths.length < 8
+    ) {
+      setErroAcessoBths(
+        "A nova senha deve possuir pelo menos 8 caracteres.",
+      );
+
+      return;
+    }
+
+    if (
+      novaSenhaBths !==
+      confirmarNovaSenhaBths
+    ) {
+      setErroAcessoBths(
+        "As senhas informadas não coincidem.",
+      );
+
+      return;
+    }
+
+    try {
+      setRedefinindoSenhaBths(
+        true,
+      );
+
+      await redefinirSenhaAcessoBths(
+        Number(id),
+        {
+          novaSenha:
+            novaSenhaBths,
+        },
+      );
+
+      setNovaSenhaBths("");
+      setConfirmarNovaSenhaBths("");
+
+      setSucessoAcessoBths(
+        "Senha do acesso BTHS redefinida com sucesso.",
+      );
+    } catch (error) {
+      setErroAcessoBths(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível redefinir a senha do acesso BTHS.",
+      );
+    } finally {
+      setRedefinindoSenhaBths(
+        false,
+      );
+    }
+  }
+
+    if (carregando) {
+      return (
+        <p className="text-sm text-muted">
+          Carregando hóspede...
+        </p>
+      );
+    }
+
+    if (
+      erro ||
+      !hospede
+    ) {
+      return (
+        <div className="space-y-4">
+          <Link
+            href="/hospedes"
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
+          >
+            <ArrowLeft
+              size={15}
+              strokeWidth={1.9}
+            />
+
+            Voltar para hóspedes
+          </Link>
+
+          <div
+            role="alert"
+            className="rounded-2xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger"
+          >
+            {erro ||
+              "Hóspede não encontrado."}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <Link
+            href="/hospedes"
+            className="inline-flex items-center gap-2 text-xs font-medium text-muted transition-colors hover:text-primary"
+          >
+            <ArrowLeft
+              size={15}
+              strokeWidth={1.9}
+            />
+
+            Voltar para hóspedes
+          </Link>
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <PageHeader
+              title={hospede.nomeCompleto}
+              description={hospede.viagemNome}
+            />
+
+            {isAdmin && (
+              <Link
+                href={`/hospedes/${id}/editar`}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-primary/30 px-5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+              >
+                <Pencil
+                  size={16}
+                  strokeWidth={1.9}
+                />
+
+                Editar hóspede
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <section className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              E-mail
+            </p>
+
+            <p className="mt-1.5 break-all text-sm font-medium text-foreground">
+              {hospede.email ??
+                "Não informado"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Telefone
+            </p>
+
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.telefone ??
+                "Não informado"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              CPF
+            </p>
+
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.cpf}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Data de nascimento
+            </p>
+
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.dataNascimento
+                ? new Date(
+                    `${hospede.dataNascimento}T00:00:00`,
+                  ).toLocaleDateString(
+                    "pt-BR",
+                  )
+                : "Não informada"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Check-in
+            </p>
+
+            <div className="mt-2">
+              <span
+                className={
+                  hospede.statusCheckIn ===
+                  "REALIZADO"
+                    ? "inline-flex rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                    : hospede.statusCheckIn ===
+                        "NAO_COMPARECEU"
+                      ? "inline-flex rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                      : "inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                }
+              >
+                {hospede.statusCheckIn ===
+                "REALIZADO"
+                  ? "Realizado"
+                  : hospede.statusCheckIn ===
+                      "NAO_COMPARECEU"
+                    ? "Não compareceu"
+                    : "Pendente"}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Código de check-in
+            </p>
+
+            <p className="mt-1.5 break-all text-sm font-medium text-foreground">
+              {hospede.codigoCheckIn}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              Chegada prevista
+            </p>
+
+            <p className="mt-1.5 text-sm font-medium text-foreground">
+              {hospede.horarioPrevistoChegada
+                ? new Date(
+                    hospede.horarioPrevistoChegada,
+                  ).toLocaleString(
+                    "pt-BR",
+                  )
+                : "Não informada"}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-[11px] font-medium text-muted">
+              QR Code
+            </p>
+
+            <div className="mt-3 flex justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${process.env.NEXT_PUBLIC_API_URL}/api/check-in/qr/${encodeURIComponent(
+                  hospede.codigoCheckIn,
+                )}/imagem`}
+                alt={`QR Code de check-in de ${hospede.nomeCompleto}`}
+                className="h-36 w-36 rounded-xl bg-white p-2.5"
+              />
+            </div>
+          </div>
+        </section>
+
+            {isAdmin && (
+              <section className="space-y-4">
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">
+                    Acesso BTHS
+                  </h2>
+
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    Gerencie a conta utilizada pelo hóspede para acessar o aplicativo.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5">
+                  {acessoBths?.vinculado ? (
+                    <>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-[11px] font-medium text-muted">
+                            Conta vinculada
+                          </p>
+
+                          <p className="mt-1.5 break-all text-sm font-semibold text-foreground">
+                            {acessoBths.email}
+                          </p>
+                        </div>
+
+                        <span
+                          className={
+                            acessoBths.ativo
+                              ? "inline-flex w-fit rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                              : "inline-flex w-fit rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                          }
+                        >
+                          {acessoBths.ativo
+                            ? "Ativa"
+                            : "Inativa"}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 rounded-xl border border-border bg-background/25 px-3 py-3">
+                        <p className="text-[11px] text-muted">
+                          ID da conta
+                        </p>
+
+                        <p className="mt-1 break-all text-xs font-medium text-foreground">
+                          {acessoBths.usuarioId}
+                        </p>
+                      </div>
+
+                      <div className="mt-5 border-t border-border pt-5">
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground">
+                            Redefinir senha
+                          </h3>
+
+                          <p className="mt-1 text-xs leading-5 text-muted">
+                            Defina uma nova senha temporária para o acesso do hóspede.
+                          </p>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                          <div>
+                            <label
+                              htmlFor="novaSenhaBths"
+                              className="mb-2 block text-xs font-medium text-muted"
+                            >
+                              Nova senha
+                            </label>
+
+                            <input
+                              id="novaSenhaBths"
+                              type="password"
+                              value={novaSenhaBths}
+                              onChange={(event) =>
+                                setNovaSenhaBths(
+                                  event.target.value,
+                                )
+                              }
+                              disabled={
+                                redefinindoSenhaBths
+                              }
+                              placeholder="Mínimo de 8 caracteres"
+                              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="confirmarNovaSenhaBths"
+                              className="mb-2 block text-xs font-medium text-muted"
+                            >
+                              Confirmar nova senha
+                            </label>
+
+                            <input
+                              id="confirmarNovaSenhaBths"
+                              type="password"
+                              value={
+                                confirmarNovaSenhaBths
+                              }
+                              onChange={(event) =>
+                                setConfirmarNovaSenhaBths(
+                                  event.target.value,
+                                )
+                              }
+                              disabled={
+                                redefinindoSenhaBths
+                              }
+                              placeholder="Repita a nova senha"
+                              className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+
+                        {erroAcessoBths && (
+                          <div
+                            role="alert"
+                            className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                          >
+                            {erroAcessoBths}
+                          </div>
+                        )}
+
+                        {sucessoAcessoBths && (
+                          <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                            {sucessoAcessoBths}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={
+                            handleRedefinirSenhaBths
+                          }
+                          disabled={
+                            redefinindoSenhaBths
+                          }
+                          className="mt-4 inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {redefinindoSenhaBths
+                            ? "Redefinindo..."
+                            : "Redefinir senha"}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">
+                          Nenhuma conta BTHS vinculada
+                        </h3>
+
+                        <p className="mt-1 text-xs leading-5 text-muted">
+                          Crie uma conta para liberar o acesso deste hóspede ao aplicativo.
+                        </p>
+                      </div>
+
+                      <div className="mt-5 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor="email-acesso-bths"
+                            className="mb-2 block text-xs font-medium text-muted"
+                          >
+                            E-mail de acesso
+                          </label>
+
+                          <input
+                            id="email-acesso-bths"
+                            type="email"
+                            value={emailAcessoBths}
+                            onChange={(event) =>
+                              setEmailAcessoBths(
+                                event.target.value,
+                              )
+                            }
+                            placeholder="hospede@email.com"
+                            className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="senha-temporaria-bths"
+                            className="mb-2 block text-xs font-medium text-muted"
+                          >
+                            Senha temporária
+                          </label>
+
+                          <input
+                            id="senha-temporaria-bths"
+                            type="password"
+                            value={senhaTemporariaBths}
+                            onChange={(event) =>
+                              setSenhaTemporariaBths(
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Defina uma senha temporária"
+                            className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                          />
+                        </div>
+                      </div>
+
+                      {erroAcessoBths && (
+                        <div
+                          role="alert"
+                          className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                        >
+                          {erroAcessoBths}
+                        </div>
+                      )}
+
+                      {sucessoAcessoBths && (
+                        <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                          {sucessoAcessoBths}
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={
+                          handleCriarAcessoBths
+                        }
+                        disabled={
+                          criandoAcessoBths
+                        }
+                        className="gradient-brand mt-4 inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {criandoAcessoBths
+                          ? "Criando acesso..."
+                          : "Criar acesso BTHS"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </section>
+            )}
+
+            <section className="space-y-4">
+              <div>
+                <h2 className="text-base font-semibold text-foreground">
+                  Check-in e hospedagem
+                </h2>
+
+                <p className="mt-1 text-xs leading-5 text-muted">
+                  Situação operacional do hóspede durante a viagem.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Status
+                  </p>
+
+                  <div className="mt-2">
+                    <span
+                      className={
+                        checkIn?.statusCheckIn ===
+                        "REALIZADO"
+                          ? "inline-flex rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                          : checkIn?.statusCheckIn ===
+                              "NAO_COMPARECEU"
+                            ? "inline-flex rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                            : "inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                      }
+                    >
+                      {checkIn?.statusCheckIn ===
+                      "REALIZADO"
+                        ? "Realizado"
+                        : checkIn?.statusCheckIn ===
+                            "NAO_COMPARECEU"
+                          ? "Não compareceu"
+                          : "Pendente"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Quarto
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-medium text-foreground">
+                    {checkIn?.quartoNome ??
+                      "Ainda não alocado"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Check-in realizado em
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-medium text-foreground">
+                    {checkIn?.dataHoraCheckIn
+                      ? new Date(
+                          checkIn.dataHoraCheckIn,
+                        ).toLocaleString(
+                          "pt-BR",
+                        )
+                      : "Ainda não realizado"}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-3.5">
+                  <p className="text-[11px] text-muted">
+                    Responsável
+                  </p>
+
+                  <p className="mt-1.5 text-sm font-medium text-foreground">
+                    {checkIn?.responsavel ??
+                      "Não informado"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-background/25 px-3.5 py-3">
+                <p className="text-[11px] text-muted">
+                  Observação registrada
+                </p>
+
+                <p className="mt-1.5 text-sm text-foreground">
+                  {checkIn?.observacao ??
+                    "Nenhuma observação registrada"}
+                </p>
+              </div>
+
+              {checkIn &&
+                checkIn.quartoId !== null &&
+                alocacao && (
+                  <div className="rounded-2xl border border-border bg-surface/50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Trocar quarto
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        Altere o quarto e o tipo de cama deste hóspede.
+                      </p>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="novo-quarto"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Novo quarto
+                        </label>
+
+                        <select
+                          id="novo-quarto"
+                          value={
+                            novoQuartoId
+                          }
+                          onChange={(event) =>
+                            setNovoQuartoId(
+                              event.target.value,
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione o novo quarto
+                          </option>
+
+                          {quartos
+                            .filter(
+                              (quarto) =>
+                                quarto.id !==
+                                checkIn.quartoId,
+                            )
+                            .map(
+                              (quarto) => (
+                                <option
+                                  key={quarto.id}
+                                  value={quarto.id}
+                                >
+                                  {quarto.nome} — {quarto.tipo}
+                                </option>
+                              ),
+                            )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="novo-tipo-cama"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Tipo de cama
+                        </label>
+
+                        <select
+                          id="novo-tipo-cama"
+                          value={novoTipoCama}
+                          onChange={(event) =>
+                            setNovoTipoCama(
+                              event.target.value as
+                                | TipoCama
+                                | "",
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione o tipo de cama
+                          </option>
+
+                          <option value="CASAL">
+                            Casal
+                          </option>
+
+                          <option value="BELICHE">
+                            Beliche
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {erroTrocaQuarto && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroTrocaQuarto}
+                      </div>
+                    )}
+
+                    {sucessoTrocaQuarto && (
+                      <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                        {sucessoTrocaQuarto}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleTrocarQuarto
+                      }
+                      disabled={
+                        trocandoQuarto ||
+                        !novoQuartoId ||
+                        !novoTipoCama
+                      }
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {trocandoQuarto
+                        ? "Trocando quarto..."
+                        : "Trocar quarto"}
+                    </button>
+                  </div>
+                )}
+
+              {checkIn &&
+                checkIn.quartoId === null &&
+                checkIn.statusCheckIn !==
+                  "NAO_COMPARECEU" && (
+                  <div className="rounded-2xl border border-border bg-surface/50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Alocar quarto
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        O hóspede precisa estar alocado antes da realização do check-in.
+                      </p>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="quarto"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Quarto
+                        </label>
+
+                        <select
+                          id="quarto"
+                          value={
+                            quartoSelecionadoId
+                          }
+                          onChange={(event) =>
+                            setQuartoSelecionadoId(
+                              event.target.value,
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione um quarto
+                          </option>
+
+                          {quartos.map(
+                            (quarto) => (
+                              <option
+                                key={quarto.id}
+                                value={quarto.id}
+                              >
+                                {quarto.nome} — {quarto.tipo}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="tipo-cama"
+                          className="mb-2 block text-xs font-medium text-muted"
+                        >
+                          Tipo de cama
+                        </label>
+
+                        <select
+                          id="tipo-cama"
+                          value={
+                            tipoCamaSelecionado
+                          }
+                          onChange={(event) =>
+                            setTipoCamaSelecionado(
+                              event.target.value as
+                                | TipoCama
+                                | "",
+                            )
+                          }
+                          className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                        >
+                          <option value="">
+                            Selecione o tipo de cama
+                          </option>
+
+                          <option value="CASAL">
+                            Casal
+                          </option>
+
+                          <option value="BELICHE">
+                            Beliche
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {erroAlocacao && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroAlocacao}
+                      </div>
+                    )}
+
+                    {sucessoAlocacao && (
+                      <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                        {sucessoAlocacao}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleAlocarQuarto
+                      }
+                      disabled={
+                        alocandoQuarto ||
+                        !quartoSelecionadoId
+                      }
+                      className="gradient-brand mt-4 inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {alocandoQuarto
+                        ? "Alocando..."
+                        : "Alocar quarto"}
+                    </button>
+                  </div>
+                )}
+
+              {checkIn &&
+                checkIn.statusCheckIn !==
+                  "REALIZADO" &&
+                checkIn.statusCheckIn !==
+                  "NAO_COMPARECEU" &&
+                checkIn.quartoId !== null && (
+                  <div className="rounded-2xl border border-border bg-surface/50 p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Realizar check-in
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        Confirme a chegada do hóspede e registre uma observação, se necessário.
+                      </p>
+                    </div>
+
+                    <div className="mt-4">
+                      <label
+                        htmlFor="observacao-checkin"
+                        className="mb-2 block text-xs font-medium text-muted"
+                      >
+                        Observação
+                      </label>
+
+                      <textarea
+                        id="observacao-checkin"
+                        value={
+                          observacaoCheckIn
+                        }
+                        onChange={(event) =>
+                          setObservacaoCheckIn(
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Adicione uma observação, se necessário."
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
+                      />
+                    </div>
+
+                    {erroCheckIn && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroCheckIn}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleRealizarCheckIn
+                      }
+                      disabled={
+                        realizandoCheckIn
+                      }
+                      className="gradient-brand mt-4 inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {realizandoCheckIn
+                        ? "Realizando check-in..."
+                        : "Realizar check-in"}
+                    </button>
+                  </div>
+                )}
+
+              {sucessoNaoComparecimento && (
+                <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                  {sucessoNaoComparecimento}
+                </div>
+              )}
+
+              {checkIn &&
+                checkIn.statusCheckIn ===
+                  "PENDENTE" && (
+                  <div className="rounded-2xl border border-danger/20 bg-danger/[0.03] p-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Não comparecimento
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-5 text-muted">
+                        Utilize esta ação apenas quando estiver confirmado que o hóspede não compareceu.
+                      </p>
+                    </div>
+
+                    <div className="mt-4">
+                      <label
+                        htmlFor="motivo-nao-comparecimento"
+                        className="mb-2 block text-xs font-medium text-muted"
+                      >
+                        Motivo
+                      </label>
+
+                      <textarea
+                        id="motivo-nao-comparecimento"
+                        value={
+                          motivoNaoComparecimento
+                        }
+                        onChange={(event) =>
+                          setMotivoNaoComparecimento(
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Informe o motivo do não comparecimento."
+                        rows={3}
+                        className="w-full resize-none rounded-xl border border-border bg-background/30 px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-danger"
+                      />
+                    </div>
+
+                    {erroNaoComparecimento && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                      >
+                        {erroNaoComparecimento}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleRegistrarNaoComparecimento
+                      }
+                      disabled={
+                        registrandoNaoComparecimento
+                      }
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-xl border border-danger/35 px-4 text-xs font-semibold text-danger transition-colors hover:bg-danger/5 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {registrandoNaoComparecimento
+                        ? "Registrando..."
+                        : "Marcar como não compareceu"}
+                    </button>
+                  </div>
+                )}
+            </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">
+            Traslados
+          </h2>
+
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Deslocamentos vinculados a este hóspede.
+          </p>
+        </div>
+
+        {traslados.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft">
+            <p className="text-xs text-muted">
+              Nenhum traslado cadastrado para este hóspede.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {traslados.map(
+              (traslado) => {
+                const operacaoAtual =
+                  operacoesCompartilhadas.find(
+                    (operacao) =>
+                      operacao.id ===
+                      traslado.operacaoTrasladoId,
+                  );
+
+                const operacaoSelecionadaId =
+                  operacaoCompartilhadaSelecionadaPorTraslado[
+                    traslado.id
+                  ] ?? "";
+
+                const operacaoSelecionada =
+                  operacoesCompartilhadas.find(
+                    (operacao) =>
+                      operacao.id ===
+                      Number(
+                        operacaoSelecionadaId,
+                      ),
+                  );
+
+                const possuiOperacaoCompartilhada =
+                  traslado.operacaoTrasladoId !==
+                  null;
+
+                const editandoOperacaoCompartilhada =
+                  editandoOperacaoCompartilhadaId ===
+                  traslado.id;
+
+                const operacoesCompativeis =
+                  operacoesCompartilhadas.filter(
+                    (operacao) =>
+                      operacao.tipo ===
+                        traslado.tipo &&
+                      (
+                        traslado.tipo ===
+                          "OUTRO" ||
+                        operacao.aeroporto ===
+                          traslado.aeroporto
+                      ) &&
+                      (operacao.vagasDisponiveis ??
+                        0) >
+                        0,
+                  );
+
+                const outrasOperacoesCompativeis =
+                  operacoesCompartilhadas.filter(
+                    (operacao) =>
+                      operacao.id !==
+                        traslado.operacaoTrasladoId &&
+                      operacao.tipo ===
+                        traslado.tipo &&
+                      (
+                        traslado.tipo ===
+                          "OUTRO" ||
+                        operacao.aeroporto ===
+                          traslado.aeroporto
+                      ) &&
+                      (operacao.vagasDisponiveis ??
+                        0) >
+                        0,
+                  );
+
+                return (
+                  <div
+                    key={traslado.id}
+                    className="rounded-2xl border border-border bg-surface/50 p-4 shadow-soft sm:p-5"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="font-semibold text-foreground">
+                            {traslado.tipo ===
+                            "AEROPORTO_PARA_HOSPEDAGEM"
+                              ? "Aeroporto → Hospedagem"
+                              : traslado.tipo ===
+                                  "HOSPEDAGEM_PARA_AEROPORTO"
+                                ? "Hospedagem → Aeroporto"
+                                : "Outro traslado"}
+                          </p>
+
+                          <p className="mt-1 text-sm text-muted">
+                            {
+                              traslado.localOrigem
+                            }{" "}
+                            →{" "}
+                            {
+                              traslado.localDestino
+                            }
+                          </p>
+                        </div>
+
+                        <span
+                          className={
+                            traslado.status === "CONCLUIDO"
+                              ? "inline-flex w-fit rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-medium text-success"
+                              : traslado.status === "CANCELADO"
+                                ? "inline-flex w-fit rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-medium text-danger"
+                                : traslado.status === "EM_ANDAMENTO"
+                                  ? "inline-flex w-fit rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary"
+                                  : "inline-flex w-fit rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-medium text-warning"
+                          }
+                        >
+                          {traslado.status === "AGUARDANDO"
+                            ? "Aguardando"
+                            : traslado.status === "EM_ANDAMENTO"
+                              ? "Em andamento"
+                              : traslado.status === "CONCLUIDO"
+                                ? "Concluído"
+                                : "Cancelado"}
+                        </span>
+                      </div>
+
+                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        <div>
+                          <p className="text-[11px] text-muted">
+                            Data e hora prevista
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
+                            {new Date(
+                              traslado.dataHoraPrevista,
+                            ).toLocaleString(
+                              "pt-BR",
+                            )}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] text-muted">
+                            Aeroporto
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
+                            {traslado.aeroporto ??
+                              "Não informado"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] text-muted">
+                            Voo
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
+                            {traslado.numeroVoo ??
+                              "Não informado"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[11px] text-muted">
+                            Companhia aérea
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
+                            {traslado.companhiaAerea ??
+                              "Não informada"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {!possuiOperacaoCompartilhada && (
+                        <div className="rounded-2xl border border-border bg-background/20 p-4">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              Traslado individual
+                            </p>
+
+                            <p className="mt-1 text-sm text-muted">
+                              Motorista e veículo exclusivos deste deslocamento.
+                            </p>
+                          </div>
+
+                          <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <div>
+                              <p className="text-[11px] text-muted">
+                                Motorista
+                              </p>
+
+                              <p className="mt-1.5 text-sm font-medium text-foreground">
+                                {traslado.motoristaNome ??
+                                  "Ainda não definido"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-[11px] text-muted">
+                                Veículo
+                              </p>
+
+                              <p className="mt-1.5 text-sm font-medium text-foreground">
+                                {traslado.veiculoModelo
+                                  ? `${traslado.veiculoModelo}${
+                                      traslado.veiculoPlaca
+                                        ? ` | ${traslado.veiculoPlaca}`
+                                        : ""
+                                    }`
+                                  : "Ainda não definido"}
+                              </p>
+
+                              {traslado.veiculoCapacidadePassageiros !==
+                                null && (
+                                <p className="mt-1 text-xs text-muted">
+                                  Capacidade:{" "}
+                                  {
+                                    traslado.veiculoCapacidadePassageiros
+                                  }{" "}
+                                  passageiros
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {isAdmin && (
+                            <div className="mt-5 space-y-4 border-t border-border pt-4">
+                              <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                  <label
+                                    htmlFor={`motorista-${traslado.id}`}
+                                    className="mb-2 block text-xs font-medium text-muted"
+                                  >
+                                    Motorista
+                                  </label>
+
+                                  <select
+                                    id={`motorista-${traslado.id}`}
+                                    value={
+                                      motoristaSelecionadoPorTraslado[
+                                        traslado.id
+                                      ] ??
+                                      (traslado.motoristaId !==
+                                      null
+                                        ? String(
+                                            traslado.motoristaId,
+                                          )
+                                        : "")
+                                    }
+                                    onChange={(
+                                      event,
+                                    ) =>
+                                      setMotoristaSelecionadoPorTraslado(
+                                        (
+                                          atual,
+                                        ) => ({
+                                          ...atual,
+
+                                          [traslado.id]:
+                                            event
+                                              .target
+                                              .value,
+                                        }),
+                                      )
+                                    }
+                                    className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                  >
+                                    <option value="">
+                                      Selecione o motorista
+                                    </option>
+
+                                    {motoristas.map(
+                                      (
+                                        motorista,
+                                      ) => (
+                                        <option
+                                          key={
+                                            motorista.id
+                                          }
+                                          value={
+                                            motorista.id
+                                          }
+                                        >
+                                          {
+                                            motorista.nomeCompleto
+                                          }
+                                        </option>
+                                      ),
+                                    )}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label
+                                    htmlFor={`veiculo-${traslado.id}`}
+                                    className="mb-2 block text-xs font-medium text-muted"
+                                  >
+                                    Veículo
+                                  </label>
+
+                                  <select
+                                    id={`veiculo-${traslado.id}`}
+                                    value={
+                                      veiculoSelecionadoPorTraslado[
+                                        traslado.id
+                                      ] ??
+                                      (traslado.veiculoId !==
+                                      null
+                                        ? String(
+                                            traslado.veiculoId,
+                                          )
+                                        : "")
+                                    }
+                                    onChange={(
+                                      event,
+                                    ) =>
+                                      setVeiculoSelecionadoPorTraslado(
+                                        (
+                                          atual,
+                                        ) => ({
+                                          ...atual,
+
+                                          [traslado.id]:
+                                            event
+                                              .target
+                                              .value,
+                                        }),
+                                      )
+                                    }
+                                    className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                  >
+                                    <option value="">
+                                      Selecione o veículo
+                                    </option>
+
+                                    {veiculos.map(
+                                      (
+                                        veiculo,
+                                      ) => (
+                                        <option
+                                          key={
+                                            veiculo.id
+                                          }
+                                          value={
+                                            veiculo.id
+                                          }
+                                        >
+                                          {
+                                            veiculo.modelo
+                                          }{" "}
+                                          |{" "}
+                                          {
+                                            veiculo.placa
+                                          }{" "}
+                                          |{" "}
+                                          {
+                                            veiculo.capacidadePassageiros
+                                          }{" "}
+                                          passageiros
+                                        </option>
+                                      ),
+                                    )}
+                                  </select>
+                                </div>
+                              </div>
+
+                              {erroOperacao[
+                                traslado.id
+                              ] && (
+                                <div
+                                  role="alert"
+                                  className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                                >
+                                  {
+                                    erroOperacao[
+                                      traslado.id
+                                    ]
+                                  }
+                                </div>
+                              )}
+
+                              {sucessoOperacao[
+                                traslado.id
+                              ] && (
+                                <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                                  {
+                                    sucessoOperacao[
+                                      traslado.id
+                                    ]
+                                  }
+                                </div>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleAssociarOperacao(
+                                    traslado.id,
+                                  )
+                                }
+                                disabled={
+                                  salvandoOperacaoId ===
+                                  traslado.id
+                                }
+                                className="gradient-brand inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {salvandoOperacaoId ===
+                                traslado.id
+                                  ? "Salvando..."
+                                  : traslado.motoristaId !==
+                                        null &&
+                                      traslado.veiculoId !==
+                                        null
+                                    ? "Atualizar traslado individual"
+                                    : "Salvar traslado individual"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            Operação compartilhada
+                          </p>
+
+                          <p className="mt-1 text-sm text-muted">
+                            Execução compartilhada deste deslocamento.
+                          </p>
+                        </div>
+
+                        {operacaoAtual ? (
+                          <div className="mt-4 rounded-xl border border-border bg-background/40 p-4">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                                  Operação #
+                                  {
+                                    operacaoAtual.id
+                                  }
+                                </p>
+
+                                <p className="mt-1 font-semibold text-foreground">
+                                  {new Date(
+                                    operacaoAtual.dataHoraPrevista,
+                                  ).toLocaleString(
+                                    "pt-BR",
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 grid gap-4 md:grid-cols-2">
+                              <div>
+                                <p className="text-[11px] text-muted">
+                                  Origem
+                                </p>
+
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
+                                  {
+                                    operacaoAtual.localOrigem
+                                  }
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-[11px] text-muted">
+                                  Destino
+                                </p>
+
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
+                                  {
+                                    operacaoAtual.localDestino
+                                  }
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-[11px] text-muted">
+                                  Motorista
+                                </p>
+
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
+                                  {operacaoAtual.motoristaNome ??
+                                    "Não definido"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-[11px] text-muted">
+                                  Veículo
+                                </p>
+
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
+                                  {operacaoAtual.veiculoModelo
+                                    ? `${operacaoAtual.veiculoModelo}${
+                                        operacaoAtual.veiculoPlaca
+                                          ? ` | ${operacaoAtual.veiculoPlaca}`
+                                          : ""
+                                      }`
+                                    : "Não definido"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-[11px] text-muted">
+                                  Ocupação
+                                </p>
+
+                                <p className="mt-1.5 text-sm font-medium text-foreground">
+                                  {
+                                    operacaoAtual.quantidadePassageiros
+                                  }{" "}
+                                  /{" "}
+                                  {
+                                    operacaoAtual.capacidadePassageiros
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="mt-4 text-sm text-muted">
+                            Este traslado ainda não está vinculado a uma operação compartilhada.
+                          </p>
+                        )}
+
+                        {isAdmin &&
+                          !possuiOperacaoCompartilhada && (
+                            <div className="mt-5 space-y-4 border-t border-border pt-4">
+                              {operacoesCompativeis.length ===
+                              0 ? (
+                                <div className="space-y-4">
+                                  <div className="rounded-2xl border border-border bg-background/20 p-4">
+                                    <p className="text-sm font-semibold text-foreground">
+                                      Nenhuma operação compatível disponível
+                                    </p>
+
+                                    <p className="mt-2 text-sm text-muted">
+                                      Para este traslado é necessária uma operação com os seguintes dados:
+                                    </p>
+
+                                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                      <div>
+                                        <p className="text-xs text-muted">
+                                          Tipo
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-medium text-foreground">
+                                          {traslado.tipo ===
+                                          "AEROPORTO_PARA_HOSPEDAGEM"
+                                            ? "Aeroporto → Hospedagem"
+                                            : traslado.tipo ===
+                                                "HOSPEDAGEM_PARA_AEROPORTO"
+                                              ? "Hospedagem → Aeroporto"
+                                              : "Outro traslado"}
+                                        </p>
+                                      </div>
+
+                                      {traslado.tipo !==
+                                        "OUTRO" && (
+                                        <div>
+                                          <p className="text-xs text-muted">
+                                            Aeroporto
+                                          </p>
+
+                                          <p className="mt-1 text-sm font-medium text-foreground">
+                                            {traslado.aeroporto ??
+                                              "Não informado"}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <Link
+                                    href="/traslados/nova"
+                                    className="inline-flex h-11 items-center justify-center rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+                                  >
+                                    Criar operação compatível
+                                  </Link>
+                                </div>
+                              ) : (
+                                <>
+                                  <div>
+                                    <label
+                                      htmlFor={`operacao-compartilhada-${traslado.id}`}
+                                      className="mb-2 block text-xs font-medium text-muted"
+                                    >
+                                      Operação compartilhada
+                                    </label>
+
+                                    <select
+                                      id={`operacao-compartilhada-${traslado.id}`}
+                                      value={
+                                        operacaoSelecionadaId
+                                      }
+                                      onChange={(event) =>
+                                        setOperacaoCompartilhadaSelecionadaPorTraslado(
+                                          (atual) => ({
+                                            ...atual,
+
+                                            [traslado.id]:
+                                              event.target.value,
+                                          }),
+                                        )
+                                      }
+                                      className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                    >
+                                      <option value="">
+                                        Selecione uma operação
+                                      </option>
+
+                                      {operacoesCompativeis.map(
+                                        (operacao) => (
+                                          <option
+                                            key={operacao.id}
+                                            value={operacao.id}
+                                          >
+                                            {new Date(
+                                              operacao.dataHoraPrevista,
+                                            ).toLocaleString(
+                                              "pt-BR",
+                                            )}{" "}
+                                            |{" "}
+                                            {
+                                              operacao.localOrigem
+                                            }{" "}
+                                            →{" "}
+                                            {
+                                              operacao.localDestino
+                                            }{" "}
+                                            |{" "}
+                                            {
+                                              operacao.quantidadePassageiros
+                                            }
+                                            /
+                                            {
+                                              operacao.capacidadePassageiros
+                                            }
+                                          </option>
+                                        ),
+                                      )}
+                                    </select>
+                                  </div>
+
+                                  {operacaoSelecionada && (
+                                    <div className="grid gap-3 rounded-xl border border-border bg-background/40 p-4 md:grid-cols-2">
+                                      <div>
+                                        <p className="text-xs text-muted">
+                                          Motorista
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-medium text-foreground">
+                                          {operacaoSelecionada.motoristaNome ??
+                                            "Não definido"}
+                                        </p>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-xs text-muted">
+                                          Veículo
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-medium text-foreground">
+                                          {operacaoSelecionada.veiculoModelo ??
+                                            "Não definido"}
+                                        </p>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-xs text-muted">
+                                          Horário
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-medium text-foreground">
+                                          {new Date(
+                                            operacaoSelecionada.dataHoraPrevista,
+                                          ).toLocaleString(
+                                            "pt-BR",
+                                          )}
+                                        </p>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-xs text-muted">
+                                          Ocupação
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-medium text-foreground">
+                                          {
+                                            operacaoSelecionada.quantidadePassageiros
+                                          }{" "}
+                                          /{" "}
+                                          {
+                                            operacaoSelecionada.capacidadePassageiros
+                                          }
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {erroOperacaoCompartilhada[
+                                    traslado.id
+                                  ] && (
+                                    <div
+                                      role="alert"
+                                      className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                                    >
+                                      {
+                                        erroOperacaoCompartilhada[
+                                          traslado.id
+                                        ]
+                                      }
+                                    </div>
+                                  )}
+
+                                  {sucessoOperacaoCompartilhada[
+                                    traslado.id
+                                  ] && (
+                                    <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                                      {
+                                        sucessoOperacaoCompartilhada[
+                                          traslado.id
+                                        ]
+                                      }
+                                    </div>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleVincularOperacaoCompartilhada(
+                                        traslado.id,
+                                      )
+                                    }
+                                    disabled={
+                                      vinculandoOperacaoCompartilhadaId ===
+                                        traslado.id ||
+                                      !operacaoSelecionadaId
+                                    }
+                                    className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    {vinculandoOperacaoCompartilhadaId ===
+                                    traslado.id
+                                      ? "Vinculando..."
+                                      : "Vincular à operação compartilhada"}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+                        {isAdmin &&
+                          possuiOperacaoCompartilhada &&
+                          !editandoOperacaoCompartilhada && (
+                            <div className="mt-5 border-t border-border pt-4">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleIniciarTrocaOperacao(
+                                    traslado,
+                                  )
+                                }
+                                className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/5"
+                              >
+                                Trocar operação compartilhada
+                              </button>
+                            </div>
+                          )}
+
+                        {isAdmin &&
+                          possuiOperacaoCompartilhada &&
+                          editandoOperacaoCompartilhada && (
+                            <div className="mt-5 space-y-4 border-t border-border pt-4">
+                              {outrasOperacoesCompativeis.length === 0 ? (
+                                <>
+                                  <div className="rounded-2xl border border-border bg-background/20 p-4">
+                                    <p className="text-sm font-semibold text-foreground">
+                                      Nenhuma outra operação compatível disponível
+                                    </p>
+
+                                    <p className="mt-2 text-sm text-muted">
+                                      Para trocar este traslado é necessária outra operação com os seguintes dados:
+                                    </p>
+
+                                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                      <div>
+                                        <p className="text-xs text-muted">
+                                          Tipo
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-medium text-foreground">
+                                          {traslado.tipo ===
+                                          "AEROPORTO_PARA_HOSPEDAGEM"
+                                            ? "Aeroporto → Hospedagem"
+                                            : traslado.tipo ===
+                                                "HOSPEDAGEM_PARA_AEROPORTO"
+                                              ? "Hospedagem → Aeroporto"
+                                              : "Outro traslado"}
+                                        </p>
+                                      </div>
+
+                                      {traslado.tipo !== "OUTRO" && (
+                                        <div>
+                                          <p className="text-xs text-muted">
+                                            Aeroporto
+                                          </p>
+
+                                          <p className="mt-1 text-sm font-medium text-foreground">
+                                            {traslado.aeroporto ??
+                                              "Não informado"}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col gap-3 sm:flex-row">
+                                    <Link
+                                      href="/traslados/nova"
+                                      className="inline-flex h-11 items-center justify-center rounded-xl border border-primary px-5 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+                                    >
+                                      Criar operação compatível
+                                    </Link>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleCancelarTrocaOperacao(
+                                          traslado,
+                                        )
+                                      }
+                                      className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div>
+                                    <label
+                                      htmlFor={`operacao-compartilhada-${traslado.id}`}
+                                      className="mb-2 block text-xs font-medium text-muted"
+                                    >
+                                      Nova operação
+                                    </label>
+
+                                    <select
+                                      id={`operacao-compartilhada-${traslado.id}`}
+                                      value={
+                                        operacaoSelecionadaId
+                                      }
+                                      onChange={(event) =>
+                                        setOperacaoCompartilhadaSelecionadaPorTraslado(
+                                          (atual) => ({
+                                            ...atual,
+                                            [traslado.id]:
+                                              event.target.value,
+                                          }),
+                                        )
+                                      }
+                                      className="h-11 w-full rounded-xl border border-border bg-background/30 px-4 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                                    >
+                                      <option value="">
+                                        Selecione uma operação
+                                      </option>
+
+                                      {outrasOperacoesCompativeis.map(
+                                        (operacao) => (
+                                          <option
+                                            key={operacao.id}
+                                            value={operacao.id}
+                                          >
+                                            {new Date(
+                                              operacao.dataHoraPrevista,
+                                            ).toLocaleString(
+                                              "pt-BR",
+                                            )}{" "}
+                                            |{" "}
+                                            {operacao.localOrigem}{" "}
+                                            →{" "}
+                                            {operacao.localDestino}{" "}
+                                            |{" "}
+                                            {operacao.quantidadePassageiros}
+                                            /
+                                            {operacao.capacidadePassageiros}
+                                          </option>
+                                        ),
+                                      )}
+                                    </select>
+                                  </div>
+
+                                  {operacaoSelecionada &&
+                                    operacaoSelecionada.id !==
+                                      traslado.operacaoTrasladoId && (
+                                      <div className="grid gap-3 rounded-xl border border-border bg-background/40 p-4 md:grid-cols-2">
+                                        <div>
+                                          <p className="text-xs text-muted">
+                                            Motorista
+                                          </p>
+
+                                          <p className="mt-1 text-sm font-medium text-foreground">
+                                            {operacaoSelecionada.motoristaNome ??
+                                              "Não definido"}
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <p className="text-xs text-muted">
+                                            Veículo
+                                          </p>
+
+                                          <p className="mt-1 text-sm font-medium text-foreground">
+                                            {operacaoSelecionada.veiculoModelo ??
+                                              "Não definido"}
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <p className="text-xs text-muted">
+                                            Horário
+                                          </p>
+
+                                          <p className="mt-1 text-sm font-medium text-foreground">
+                                            {new Date(
+                                              operacaoSelecionada.dataHoraPrevista,
+                                            ).toLocaleString(
+                                              "pt-BR",
+                                            )}
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <p className="text-xs text-muted">
+                                            Ocupação
+                                          </p>
+
+                                          <p className="mt-1 text-sm font-medium text-foreground">
+                                            {
+                                              operacaoSelecionada.quantidadePassageiros
+                                            }{" "}
+                                            /{" "}
+                                            {
+                                              operacaoSelecionada.capacidadePassageiros
+                                            }
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                  {erroOperacaoCompartilhada[
+                                    traslado.id
+                                  ] && (
+                                    <div
+                                      role="alert"
+                                      className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2.5 text-xs text-danger"
+                                    >
+                                      {
+                                        erroOperacaoCompartilhada[
+                                          traslado.id
+                                        ]
+                                      }
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-col gap-3 sm:flex-row">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleVincularOperacaoCompartilhada(
+                                          traslado.id,
+                                        )
+                                      }
+                                      disabled={
+                                        vinculandoOperacaoCompartilhadaId ===
+                                          traslado.id ||
+                                        !operacaoSelecionadaId
+                                      }
+                                      className="gradient-brand inline-flex h-10 items-center justify-center rounded-xl px-4 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      {vinculandoOperacaoCompartilhadaId ===
+                                      traslado.id
+                                        ? "Alterando..."
+                                        : "Confirmar troca"}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleCancelarTrocaOperacao(
+                                          traslado,
+                                        )
+                                      }
+                                      disabled={
+                                        vinculandoOperacaoCompartilhadaId ===
+                                        traslado.id
+                                      }
+                                      className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-xs font-medium text-muted transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+
+                        {sucessoOperacaoCompartilhada[
+                          traslado.id
+                        ] &&
+                          !editandoOperacaoCompartilhada && (
+                            <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-3 py-2.5 text-xs text-success">
+                              {
+                                sucessoOperacaoCompartilhada[
+                                  traslado.id
+                                ]
+                              }
+                            </div>
+                          )}
+                      </div>
+
+                      {traslado.observacoes && (
+                        <div className="rounded-xl border border-border bg-background/25 px-3 py-2.5">
+                          <p className="text-[11px] text-muted">
+                            Observações
+                          </p>
+
+                          <p className="mt-1.5 text-sm font-medium text-foreground">
+                            {
+                              traslado.observacoes
+                            }
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              },
+            )}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

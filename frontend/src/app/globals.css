@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+:root {
+  --background: oklch(0.13 0.018 290);
+  --foreground: oklch(0.97 0.005 285);
+
+  --surface: oklch(0.18 0.022 290);
+  --surface-secondary: oklch(0.23 0.028 290);
+
+  --muted: oklch(0.7 0.02 287);
+  --border: oklch(1 0 0 / 10%);
+
+  --primary: oklch(0.62 0.24 305);
+  --primary-hover: oklch(0.57 0.24 305);
+
+  --magenta: oklch(0.66 0.26 340);
+  --electric: oklch(0.7 0.19 245);
+  --success: oklch(0.72 0.17 160);
+  --warning: oklch(0.8 0.16 80);
+  --danger: oklch(0.62 0.24 22);
+
+  --gradient-brand: linear-gradient(
+    135deg,
+    oklch(0.62 0.24 305),
+    oklch(0.66 0.26 340) 55%,
+    oklch(0.7 0.19 245)
+  );
+
+  --gradient-night: linear-gradient(
+    160deg,
+    oklch(0.24 0.06 300) 0%,
+    oklch(0.15 0.03 290) 55%,
+    oklch(0.13 0.018 290) 100%
+  );
+
+  --shadow-glow:
+    0 18px 50px -18px
+    oklch(0.62 0.24 305 / 60%);
+
+  --shadow-soft:
+    0 12px 34px -20px
+    oklch(0 0 0 / 90%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-magenta: var(--magenta);
+  --color-electric: var(--electric);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      oklch(0.32 0.08 300 / 45%),
+      transparent 36%
+    ),
+    var(--gradient-night);
+
+  background-attachment: fixed;
+
+  color: var(--foreground);
+
+  font-family:
+    var(--font-geist-sans),
+    sans-serif;
+
+  -webkit-font-smoothing:
+    antialiased;
+}
+
+::selection {
+  background:
+    oklch(0.62 0.24 305 / 35%);
+}
+
+.gradient-brand {
+  background-image:
+    var(--gradient-brand);
+}
+
+.text-gradient {
+  background-image:
+    var(--gradient-brand);
+
+  background-clip: text;
+  color: transparent;
+}
+
+.shadow-glow {
+  box-shadow:
+    var(--shadow-glow);
+}
+
+.shadow-soft {
+  box-shadow:
+    var(--shadow-soft);
+}
+
+.glass {
+  background:
+    color-mix(
+      in oklab,
+      var(--surface) 76%,
+      transparent
+    );
+
+  backdrop-filter:
+    blur(18px);
+
+  border:
+    1px solid var(--border);
+}
+
+.safe-bottom {
+  padding-bottom:
+    calc(
+      env(
+        safe-area-inset-bottom,
+        0px
+      ) + 0.5rem
+    );
+}
+
+.safe-top {
+  padding-top:
+    calc(
+      env(
+        safe-area-inset-top,
+        0px
+      ) + 0.5rem
+    );
+}
+
+.aurora-bg {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--background);
+}
+
+.aurora-bg::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background:
+    radial-gradient(40% 35% at 20% 25%, oklch(0.66 0.26 340 / 38%), transparent 70%),
+    radial-gradient(45% 40% at 80% 20%, oklch(0.62 0.24 305 / 40%), transparent 70%),
+    radial-gradient(40% 35% at 70% 80%, oklch(0.85 0.14 175 / 26%), transparent 70%),
+    radial-gradient(35% 30% at 25% 85%, oklch(0.88 0.17 115 / 18%), transparent 70%),
+    radial-gradient(30% 30% at 50% 50%, oklch(0.62 0.24 305 / 22%), transparent 70%);
+  filter: blur(40px);
+  animation: aurora-deriva 24s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-deriva {
+  from {
+    transform: translate3d(-3%, -2%, 0) rotate(0deg);
+  }
+
+  to {
+    transform: translate3d(3%, 2%, 0) rotate(6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-bg::before {
+    animation: none;
+  }
+}
+
+.brand-glow {
+  filter:
+    drop-shadow(0 0 1px oklch(1 0 0 / 90%))
+    drop-shadow(0 0 6px oklch(1 0 0 / 35%));
+}
+
+.glass-login {
+  background:
+    color-mix(
+      in oklab,
+      var(--surface) 28%,
+      transparent
+    );
+
+  backdrop-filter:
+    blur(8px);
+
+  border:
+    1px solid oklch(1 0 0 / 14%);
+}

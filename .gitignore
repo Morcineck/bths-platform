@@ -36,3 +36,11 @@ build/
 .env
 .env.*
 !.env.example
+
+### Next.js / Node ###
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts

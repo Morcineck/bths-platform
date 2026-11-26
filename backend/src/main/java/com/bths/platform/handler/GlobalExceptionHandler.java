@@ -1,0 +1,597 @@
+package com.bths.platform.handler;
+
+import com.bths.platform.alocacao.exception.AlocacaoNaoEncontradaException;
+import com.bths.platform.alocacao.exception.HospedeJaAlocadoException;
+import com.bths.platform.alocacao.exception.ViagemIncompativelException;
+import com.bths.platform.checkin.exception.CheckInJaRealizadoException;
+import com.bths.platform.checkin.exception.HospedeJaRealizouCheckInException;
+import com.bths.platform.checkin.exception.HospedeSemAlocacaoException;
+import com.bths.platform.checkin.exception.NaoComparecimentoJaRegistradoException;
+import com.bths.platform.hospede.exception.HospedeJaCadastradoException;
+import com.bths.platform.hospede.exception.HospedeJaVinculadoException;
+import com.bths.platform.hospede.exception.HospedeNaoEncontradoException;
+import com.bths.platform.motorista.exception.MotoristaNaoEncontradoException;
+import com.bths.platform.operacaoTraslado.execepion.CapacidadeVeiculoExcedidaException;
+import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoComPassageirosException;
+import com.bths.platform.operacaoTraslado.execepion.OperacaoTrasladoNaoEncontradaException;
+import com.bths.platform.quarto.exception.QuartoIndisponivelException;
+import com.bths.platform.quarto.exception.QuartoLotadoException;
+import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
+import com.bths.platform.security.exception.CredenciaisInvalidasException;
+import com.bths.platform.security.exception.LoginBloqueadoException;
+import com.bths.platform.traslado.exception.*;
+import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
+import com.bths.platform.usuario.exception.OperacaoUsuarioNaoPermitidaException;
+import com.bths.platform.usuario.exception.PerfilUsuarioInvalidoException;
+import com.bths.platform.usuario.exception.UsuarioNaoEncontradoException;
+import com.bths.platform.veiculo.exception.VeiculoJaCadastradoException;
+import com.bths.platform.veiculo.exception.VeiculoNaoEncontradoException;
+import com.bths.platform.viagem.exception.ViagemNaoEncontradaException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    private static final String ERRO_BAD_REQUEST = "bad request";
+
+    @ExceptionHandler(ViagemNaoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> tratarViagemNaoEncontrada(
+            ViagemNaoEncontradaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeJaCadastradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeJaCadastrado(
+            HospedeJaCadastradoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeNaoEncontrado(
+            HospedeNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(QuartoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarQuartoNaoEncontrado(
+            QuartoNaoEncontradoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(AlocacaoNaoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> tratarAlocacaoNaoEncontrada(
+            AlocacaoNaoEncontradaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(QuartoLotadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarQuartoLotado(
+            QuartoLotadoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeJaAlocadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeJaAlocado(
+            HospedeJaAlocadoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(ViagemIncompativelException.class)
+    public ResponseEntity<Map<String, Object>> tratarViagemIncompativel(
+            ViagemIncompativelException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(QuartoIndisponivelException.class)
+    public ResponseEntity<Map<String, Object>> tratarQuartoIndisponivel(
+            QuartoIndisponivelException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeSemAlocacaoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeSemAlocacao(
+            HospedeSemAlocacaoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(CheckInJaRealizadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarCheckInJaRealizado(
+            CheckInJaRealizadoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(AeroportoObrigatorioException.class)
+    public ResponseEntity<Map<String, Object>> tratarAeroportoObrigatorio(
+            AeroportoObrigatorioException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", ERRO_BAD_REQUEST);
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
+    @ExceptionHandler(TrasladoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarTrasladoNaoEncontrado(
+            TrasladoNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(TransicaoStatusTrasladoInvalidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarTransicaoStatusTrasladoInvalida(
+            TransicaoStatusTrasladoInvalidaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MotivoCorrecaoObrigatorioException.class)
+    public ResponseEntity<Map<String, Object>> tratarMotivoCorrecaoObrigatorio(
+            MotivoCorrecaoObrigatorioException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", ERRO_BAD_REQUEST);
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
+    @ExceptionHandler(EmailUsuarioJaCadastradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarEmailUsuarioJaCadastrado(
+            EmailUsuarioJaCadastradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<Map<String, Object>> tratarCredenciaisInvalidas(
+            CredenciaisInvalidasException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Unauthorized");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.UNAUTHORIZED.value());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(erro);
+    }
+
+    @ExceptionHandler(LoginBloqueadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarLoginBloqueado(
+            LoginBloqueadoException exception
+    ) {
+
+        long segundos = Math.max(
+                1,
+                (exception.getTempoRestante().toMillis() + 999) / 1000
+        );
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Too Many Requests");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.TOO_MANY_REQUESTS.value());
+
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(segundos))
+                .body(erro);
+    }
+
+    @ExceptionHandler(UsuarioNaoEncontradoException.class)
+    public  ResponseEntity<Map<String, Object>> tratarUsuarioNaoEncontrado(
+            UsuarioNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeJaRealizouCheckInException.class)
+    public ResponseEntity<Map<String, Object>>
+    tratarHospedeJaRealizouCheckIn(
+            HospedeJaRealizouCheckInException exception
+    )  {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(NaoComparecimentoJaRegistradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarNaoComparecimentoJaRegistrado(
+            NaoComparecimentoJaRegistradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MotoristaNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarMotoristaNaoEncontrato(
+            MotoristaNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(VeiculoJaCadastradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarVeiculoJaCadastrado(
+            VeiculoJaCadastradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(VeiculoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarVeiculoNaoEncontrado(
+            VeiculoNaoEncontradoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MotoristaInativoException.class)
+    public ResponseEntity<Map<String, Object>> tratarMotoristaInativo(
+            MotoristaInativoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(VeiculoInativoException.class)
+    public ResponseEntity<Map<String, Object>> tratarVeiculoInativo(
+            VeiculoInativoException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(OperacaoTrasladoNaoEncontradaException.class)
+    public ResponseEntity<Map<String, Object>> tratarOperacaoTrasladoNaoEncontrada(
+            OperacaoTrasladoNaoEncontradaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Not Found");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.NOT_FOUND.value());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(erro);
+    }
+
+    @ExceptionHandler(CapacidadeVeiculoExcedidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarCapacidadeVeiculoExcedida(
+            CapacidadeVeiculoExcedidaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(
+            OperacaoTrasladoComPassageirosException.class
+    )
+
+    public ResponseEntity<Map<String, Object>>
+    tratarOperacaoTrasladoComPassageiros(
+            OperacaoTrasladoComPassageirosException exception
+    ) {
+
+        Map<String, Object> erro =
+                new HashMap<>();
+
+        erro.put(
+                "erro",
+                "Conflict"
+        );
+
+        erro.put(
+                "mensagem",
+                exception.getMessage()
+        );
+
+        erro.put(
+                "status",
+                HttpStatus.CONFLICT.value()
+        );
+
+        return ResponseEntity
+                .status(
+                        HttpStatus.CONFLICT
+                )
+                .body(erro);
+    }
+
+    @ExceptionHandler(HospedeJaVinculadoException.class)
+    public ResponseEntity<Map<String, Object>> tratarHospedeJaVinculado(
+            HospedeJaVinculadoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(PerfilUsuarioInvalidoException.class)
+    public ResponseEntity<Map<String, Object>> tratarPerfilUsuarioInvalido(
+            PerfilUsuarioInvalidoException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", ERRO_BAD_REQUEST);
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+
+    @ExceptionHandler(OperacaoUsuarioNaoPermitidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarOperacaoUsuarioNaoPermitida(
+            OperacaoUsuarioNaoPermitidaException exception
+    ) {
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", "Conflict");
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.CONFLICT.value());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> tratarValidacao(
+            MethodArgumentNotValidException exception
+    ) {
+
+        String mensagem = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .findFirst()
+                .orElse("Dados inválidos.");
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", ERRO_BAD_REQUEST);
+        erro.put("mensagem", mensagem);
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(erro);
+    }
+}
