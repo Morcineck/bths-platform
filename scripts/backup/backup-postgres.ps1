@@ -13,10 +13,23 @@ param(
     [string]$Ambiente = 'staging',
     [string]$DestinoLocal = 'C:\Users\robso\Backups\bths',
     [string]$DestinoDrive = 'G:\Meu Drive\Backups\bths',
-    [int]$Retencao = 14
+    [int]$Retencao = 14,
+    # Caminho de um arquivo NOME=valor (ex.: .env.backup.producao); usado pela tarefa agendada
+    [string]$ArquivoEnv = ''
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Carrega a conexao do arquivo quando informado: a tarefa agendada nao tem as variaveis da janela do PowerShell
+if ($ArquivoEnv) {
+    if (-not (Test-Path $ArquivoEnv)) { throw "Arquivo de ambiente nao encontrado: $ArquivoEnv" }
+    # Ignora linhas vazias e comentarios; o -split com limite 2 corta so no primeiro '=' (valores podem ter '=')
+    Get-Content $ArquivoEnv | Where-Object { $_ -and -not $_.StartsWith('#') } | ForEach-Object {
+        $k, $v = $_ -split '=', 2
+        # Trim tira espacos e quebras de linha que sobram no fim (o Bloco de Notas pode deixar)
+        Set-Item -Path "env:$($k.Trim())" -Value $v.Trim()
+    }
+}
 
 foreach ($v in 'BTHS_BACKUP_HOST', 'BTHS_BACKUP_PORT', 'BTHS_BACKUP_DB', 'BTHS_BACKUP_USER', 'PGPASSWORD', 'BTHS_BACKUP_AGE_RECIPIENT') {
     if (-not (Test-Path "env:$v")) { throw "Variavel de ambiente ausente: $v" }
