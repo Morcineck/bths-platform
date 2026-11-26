@@ -1,19 +1,8 @@
+// redirect: função do Next.js que, num componente de servidor, interrompe a renderização e manda o navegador para outra rota
+import { redirect } from "next/navigation";
+
+// A raiz do app não tem conteúdo próprio: quem abre app.beattrips.com.br quer entrar no sistema
+// O /login já trata quem está logado (ADMIN e STAFF vão para /dashboard, HOSPEDE para /app), desde a #151
 export default function Home() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-6">
-      <section className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6">
-        <p className="text-sm font-medium text-primary">
-          Beat Trips
-        </p>
-
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
-          BTHS Platform
-        </h1>
-
-        <p className="mt-3 text-sm leading-6 text-muted">
-          Plataforma de operação e experiência do hóspede.
-        </p>
-      </section>
-    </main>
-  );
+  redirect("/login");
 }
