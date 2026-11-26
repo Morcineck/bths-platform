@@ -340,6 +340,10 @@ public class HospedeService {
                     true
             );
 
+            usuario.setTrocaSenhaObrigatoria(
+                    true
+            );
+
             usuario =
                     usuarioRepository.save(
                             usuario
@@ -424,6 +428,10 @@ public class HospedeService {
                 passwordEncoder.encode(
                         request.getNovaSenha()
                 )
+        );
+
+        usuario.setTrocaSenhaObrigatoria(
+                true
         );
 
         usuarioRepository.save(

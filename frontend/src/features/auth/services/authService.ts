@@ -7,6 +7,7 @@ import {
 
 import type {
   LoginRequest,
+  TrocarSenhaRequest,
   UsuarioAutenticado,
 } from "../types/auth";
 
@@ -78,6 +79,49 @@ export async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
   }
 
   return response.json();
+}
+
+export function rotaInicial(
+  usuario: UsuarioAutenticado,
+): string {
+  if (usuario.trocaSenhaObrigatoria) {
+    return "/trocar-senha";
+  }
+
+  return usuario.perfil === "HOSPEDE"
+    ? "/app"
+    : "/dashboard";
+}
+
+export async function trocarSenha(
+  dados: TrocarSenhaRequest,
+): Promise<void> {
+  await inicializarCsrf();
+
+  const csrfToken = buscarCsrfTokenDoCookie();
+
+  const response = await authFetch(`${API_URL}/api/auth/senha`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-XSRF-TOKEN": csrfToken,
+    },
+    body: JSON.stringify(dados),
+  });
+
+  if (response.status === 400) {
+    const erro = await response.json().catch(() => null);
+
+    throw new Error(
+      erro?.mensagem ?? "Não foi possível trocar a senha.",
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível trocar a senha.",
+    );
+  }
 }
 
 export async function buscarSessaoAtiva(): Promise<UsuarioAutenticado | null> {

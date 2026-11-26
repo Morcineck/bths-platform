@@ -2,6 +2,7 @@ package com.bths.platform.security;
 
 import com.bths.platform.security.dto.LoginRequest;
 import com.bths.platform.security.dto.LoginResponse;
+import com.bths.platform.security.dto.TrocarSenhaRequest;
 import com.bths.platform.security.dto.UsuarioAutenticadoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -85,6 +87,25 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+
+    @Operation(summary = "Trocar a própria senha",
+            description = "Troca a senha do usuário autenticado e libera o acesso quando a troca era obrigatória.",
+            security = {@SecurityRequirement(name = "bthsCookieAuth")})
+    @Parameter(name = "X-XSRF-TOKEN", in = ParameterIn.HEADER,
+            description = "Token CSRF obtido em /api/auth/csrf.", required = true)
+    @ApiResponses({@ApiResponse(responseCode = "204", description = "Senha trocada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Senha atual incorreta ou nova senha inválida."),
+            @ApiResponse(responseCode = "401", description = "Autenticação necessária.")})
+    @PutMapping("/senha")
+    public ResponseEntity<Void> trocarSenha(
+            @Valid @RequestBody TrocarSenhaRequest request,
+            Authentication authentication
+    ) {
+
+        authService.trocarSenha(authentication.getName(), request);
+
+        return ResponseEntity.noContent().build();
+    }
 
     @Operation(summary = "Encerrar sessão",
             description = "Remove o cookie de autenticação BTHS_TOKEN e encerra a sessão do usuário.")

@@ -19,6 +19,7 @@ import com.bths.platform.quarto.exception.QuartoLotadoException;
 import com.bths.platform.quarto.exception.QuartoNaoEncontradoException;
 import com.bths.platform.security.exception.CredenciaisInvalidasException;
 import com.bths.platform.security.exception.LoginBloqueadoException;
+import com.bths.platform.security.exception.TrocaSenhaInvalidaException;
 import com.bths.platform.traslado.exception.*;
 import com.bths.platform.usuario.exception.EmailUsuarioJaCadastradoException;
 import com.bths.platform.usuario.exception.OperacaoUsuarioNaoPermitidaException;
@@ -308,6 +309,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
+                .body(erro);
+    }
+
+    @ExceptionHandler(TrocaSenhaInvalidaException.class)
+    public ResponseEntity<Map<String, Object>> tratarTrocaSenhaInvalida(
+            TrocaSenhaInvalidaException exception
+    ) {
+
+        Map<String, Object> erro = new HashMap<>();
+
+        erro.put("erro", ERRO_BAD_REQUEST);
+        erro.put("mensagem", exception.getMessage());
+        erro.put("status", HttpStatus.BAD_REQUEST.value());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(erro);
     }
 
