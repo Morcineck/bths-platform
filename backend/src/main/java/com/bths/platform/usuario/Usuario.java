@@ -29,6 +29,9 @@ public class Usuario {
     @Column(nullable = false)
     private boolean ativo;
 
+    @Column(name = "troca_senha_obrigatoria", nullable = false)
+    private boolean trocaSenhaObrigatoria;
+
     public UUID getId() {
         return id;
     }
@@ -75,5 +78,13 @@ public class Usuario {
 
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
+    }
+
+    public boolean isTrocaSenhaObrigatoria() {
+        return trocaSenhaObrigatoria;
+    }
+
+    public void setTrocaSenhaObrigatoria(boolean trocaSenhaObrigatoria) {
+        this.trocaSenhaObrigatoria = trocaSenhaObrigatoria;
     }
 }

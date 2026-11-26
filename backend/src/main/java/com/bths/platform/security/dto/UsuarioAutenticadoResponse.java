@@ -10,6 +10,7 @@ public class UsuarioAutenticadoResponse {
     private String nome;
     private String email;
     private PerfilUsuario perfil;
+    private boolean trocaSenhaObrigatoria;
 
     public UsuarioAutenticadoResponse(
             UUID id,
@@ -53,5 +54,13 @@ public class UsuarioAutenticadoResponse {
 
     public void setPerfil(PerfilUsuario perfil) {
         this.perfil = perfil;
+    }
+
+    public boolean isTrocaSenhaObrigatoria() {
+        return trocaSenhaObrigatoria;
+    }
+
+    public void setTrocaSenhaObrigatoria(boolean trocaSenhaObrigatoria) {
+        this.trocaSenhaObrigatoria = trocaSenhaObrigatoria;
     }
 }

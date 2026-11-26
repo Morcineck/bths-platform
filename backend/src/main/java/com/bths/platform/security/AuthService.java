@@ -4,6 +4,8 @@ import com.bths.platform.security.dto.UsuarioAutenticadoResponse;
 import com.bths.platform.security.exception.CredenciaisInvalidasException;
 import com.bths.platform.security.dto.LoginRequest;
 import com.bths.platform.security.dto.LoginResponse;
+import com.bths.platform.security.dto.TrocarSenhaRequest;
+import com.bths.platform.security.exception.TrocaSenhaInvalidaException;
 import com.bths.platform.security.exception.LoginBloqueadoException;
 import com.bths.platform.usuario.Usuario;
 import com.bths.platform.usuario.UsuarioRepository;
@@ -13,10 +15,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -28,18 +32,21 @@ public class AuthService {
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
     private final LimiteTentativasLogin limiteTentativasLogin;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             UsuarioRepository usuarioRepository,
-            LimiteTentativasLogin limiteTentativasLogin
+            LimiteTentativasLogin limiteTentativasLogin,
+            PasswordEncoder passwordEncoder
     ) {
 
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.usuarioRepository = usuarioRepository;
         this.limiteTentativasLogin = limiteTentativasLogin;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -104,11 +111,36 @@ public class AuthService {
                         new UsuarioNaoEncontradoException("Usuário não encontrado!")
                 );
 
-        return new UsuarioAutenticadoResponse(
+        UsuarioAutenticadoResponse response = new UsuarioAutenticadoResponse(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getPerfil()
         );
+        response.setTrocaSenhaObrigatoria(usuario.isTrocaSenhaObrigatoria());
+
+        return response;
+    }
+
+    @Transactional
+    public void trocarSenha(String email, TrocarSenhaRequest request) {
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsuarioNaoEncontradoException("Usuário não encontrado!")
+                );
+
+        if (!passwordEncoder.matches(request.getSenhaAtual(), usuario.getSenha())) {
+            throw new TrocaSenhaInvalidaException("A senha atual está incorreta!");
+        }
+
+        if (passwordEncoder.matches(request.getNovaSenha(), usuario.getSenha())) {
+            throw new TrocaSenhaInvalidaException("A nova senha deve ser diferente da senha atual!");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(request.getNovaSenha()));
+        usuario.setTrocaSenhaObrigatoria(false);
+
+        usuarioRepository.save(usuario);
     }
 }
